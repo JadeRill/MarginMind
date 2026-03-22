@@ -8,6 +8,8 @@ import {
 import {
   registerItemPaneSection,
   registerReaderItemPaneSection,
+  registerReaderSelectionListener,
+  unregisterReaderSelectionListener,
 } from "./modules/itemPane";
 import { getString, initLocale } from "./utils/locale";
 import { registerPrefsScripts } from "./modules/preferenceScript";
@@ -40,6 +42,7 @@ async function onStartup() {
 
   registerItemPaneSection();
   registerReaderItemPaneSection();
+  registerReaderSelectionListener();
 
   await Promise.all(
     Zotero.getMainWindows().map((win) => onMainWindowLoad(win)),
@@ -106,6 +109,7 @@ async function onMainWindowUnload(win: Window): Promise<void> {
 }
 
 function onShutdown(): void {
+  unregisterReaderSelectionListener();
   ztoolkit.unregisterAll();
   addon.data.dialog?.window?.close();
   // Remove addon object

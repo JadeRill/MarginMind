@@ -7,7 +7,11 @@
  * @LastEditTime : 2026-03-22 15:17:03
  * @Description  :
  */
-import { getLocaleID, getString } from "../utils/locale";
+import { getLocaleID } from "../utils/locale";
+
+const READER_SELECTION_LISTENER_ID = "insituai-reader-selection";
+const readerPaneBodies = new Set<any>();
+let latestSelectedText = "";
 
 function registerItemPaneSection() {
   Zotero.ItemPaneManager.registerSection({
@@ -45,14 +49,17 @@ function registerReaderItemPaneSection() {
       setEnabled(tabType === "reader");
       return true;
     },
-    onRender: ({ body, item }) => renderItemPane(body, item),
+    onRender: ({ body, item }) => {
+      readerPaneBodies.add(body);
+      renderItemPane(body, item, { showSelectedText: true });
+    },
 
     sectionButtons: [
       {
         type: "test",
         icon: "chrome://zotero/skin/16/universal/note.svg",
         l10nID: getLocaleID("item-section-example2-button-tooltip"),
-        onClick: ({ item, paneID }) => {
+        onClick: ({ item }) => {
           ztoolkit.log("Section clicked!", item?.id);
         },
       },
@@ -60,7 +67,56 @@ function registerReaderItemPaneSection() {
   });
 }
 
-function renderItemPane(body: any, item: any) {
+function registerReaderSelectionListener() {
+  try {
+    Zotero.Reader.unregisterEventListener(
+      "renderTextSelectionPopup",
+      READER_SELECTION_LISTENER_ID,
+    );
+  } catch (e) {}
+
+  Zotero.Reader.registerEventListener(
+    "renderTextSelectionPopup",
+    (event) => {
+      const text = event?.params?.annotation?.text?.trim();
+      if (!text) return;
+      updateSelectedText(text);
+    },
+    READER_SELECTION_LISTENER_ID,
+  );
+}
+
+function unregisterReaderSelectionListener() {
+  try {
+    Zotero.Reader.unregisterEventListener(
+      "renderTextSelectionPopup",
+      READER_SELECTION_LISTENER_ID,
+    );
+  } catch (e) {}
+}
+
+function updateSelectedText(text: string) {
+  latestSelectedText = text;
+
+  for (const body of [...readerPaneBodies]) {
+    const doc = body?.ownerDocument;
+    if (!body?.isConnected || !doc) {
+      readerPaneBodies.delete(body);
+      continue;
+    }
+
+    const node = body.querySelector("[data-insituai-selected-text]");
+    if (node) {
+      node.textContent = latestSelectedText;
+    }
+  }
+}
+
+function renderItemPane(
+  body: any,
+  item: any,
+  options: { showSelectedText?: boolean } = {},
+) {
   body.replaceChildren();
   const doc = body.ownerDocument;
 
@@ -91,9 +147,25 @@ function renderItemPane(body: any, item: any) {
   body.appendChild(makeLine(doc, "Year", year));
   body.appendChild(makeLine(doc, "Abstract", abstractPreview));
   body.appendChild(makeLine(doc, "Key", `${item.key} (ID: ${item.id ?? "-"})`));
+
+  if (options.showSelectedText) {
+    body.appendChild(
+      makeLine(
+        doc,
+        "Selected Text",
+        latestSelectedText || "No selection captured yet",
+        { selectedText: true },
+      ),
+    );
+  }
 }
 
-function makeLine(doc: Document, label: string, value: string) {
+function makeLine(
+  doc: Document,
+  label: string,
+  value: string,
+  options: { selectedText?: boolean } = {},
+) {
   const wrap = ztoolkit.UI.createElement(doc, "div", {
     namespace: "html",
     styles: {
@@ -120,8 +192,17 @@ function makeLine(doc: Document, label: string, value: string) {
     properties: { textContent: value },
   });
 
+  if (options.selectedText) {
+    valueNode.setAttribute("data-insituai-selected-text", "true");
+  }
+
   wrap.append(labelNode, valueNode);
   return wrap;
 }
 
-export { registerItemPaneSection, registerReaderItemPaneSection };
+export {
+  registerItemPaneSection,
+  registerReaderItemPaneSection,
+  registerReaderSelectionListener,
+  unregisterReaderSelectionListener,
+};
