@@ -1,2 +1,31 @@
-@tailwind components;
+﻿@tailwind components;
 @tailwind utilities;
+
+@layer components {
+  .cline-shell {
+    @apply flex h-full min-h-0 min-w-0 flex-col overflow-hidden bg-[var(--material-sidepane)] text-[var(--fill-primary)];
+  }
+
+  .cline-panel {
+    @apply rounded-lg border border-white/10 bg-black/10;
+  }
+
+  .cline-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in_srgb,var(--fill-primary)_22%,transparent) transparent;
+  }
+
+  .cline-composer {
+    @apply min-h-[84px] w-full resize-none rounded-lg border border-white/10 bg-transparent px-3 py-3 text-[13px] leading-6 text-[var(--fill-primary)] outline-none placeholder:text-white/35 focus:border-[var(--accent-blue)];
+  }
+
+  .cline-badge {
+    @apply inline-flex items-center gap-1 rounded-full border border-white/10 px-2.5 py-1 text-[11px] font-medium text-white/70;
+  }
+
+  .cline-tool-pill {
+    @apply inline-flex items-center rounded-md border border-white/10 px-2 py-1 text-[11px] font-medium text-white/65;
+  }
+}
+
+
