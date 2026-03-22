@@ -197,11 +197,11 @@ export function ItemPaneSection({
 
   return (
     <section className="cline-shell w-full min-w-0">
-      <header className="shrink-0 border-b border-white/8 px-3 py-3">
+      {/* <header className="shrink-0 border-b border-white/8 px-3 py-3">
         <div className="cline-panel flex min-w-0 items-start gap-3 px-3 py-3">
-          {/* <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[linear-gradient(180deg,#3b82f6,#1d4ed8)] text-[13px] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[linear-gradient(180deg,#3b82f6,#1d4ed8)] text-[13px] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]">
             C
-          </div> */}
+          </div>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <div className="truncate text-[13px] font-semibold text-[var(--fill-primary)]">
@@ -222,9 +222,15 @@ export function ItemPaneSection({
             </div>
           </div>
         </div>
+      </header> */}
+
+      <header className="flex min-h-0 flex-1 flex-col">
+        <div className="shrink-0 border-b border-white/8 px-3 py-3">
+          fasdfsafsdddddddddddddddddd
+        </div>
       </header>
 
-      <div className="flex min-h-0 flex-1 flex-col">
+      <main className="flex min-h-0 flex-1 flex-col">
         <div className="shrink-0 px-3 pt-3">
           <div className="cline-panel flex flex-wrap items-center gap-2 px-3 py-2.5 text-[11px] text-white/65">
             <span className="font-medium text-white/80">Context</span>
@@ -249,8 +255,10 @@ export function ItemPaneSection({
             <MessageBubble key={message.id} message={message} />
           ))}
         </div>
+      </main>
 
-        <footer className="shrink-0 border-t border-white/8 px-3 py-3">
+      <footer className="flex min-h-0 flex-1 flex-col">
+        <div className="shrink-0 border-t border-white/8 px-3 py-3">
           {queuedSelection ? (
             <div className="cline-panel mb-3 px-3 py-3">
               <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
@@ -313,9 +321,8 @@ export function ItemPaneSection({
               </button>
             </div>
           </div>
-        </footer>
-      </div>
+        </div>
+      </footer>
     </section>
   );
 }
-
