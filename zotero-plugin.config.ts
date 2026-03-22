@@ -1,5 +1,30 @@
+import { execFileSync } from "node:child_process";
+import { mkdirSync } from "node:fs";
+import { dirname } from "node:path";
 import { defineConfig } from "zotero-plugin-scaffold";
 import pkg from "./package.json";
+
+const tailwindCli = "./node_modules/tailwindcss/lib/cli.js";
+const tailwindInput = "src/react/styles/ui.css";
+const tailwindConfig = "tailwind.config.cjs";
+
+function buildTailwind(output: string) {
+  mkdirSync(dirname(output), { recursive: true });
+  execFileSync(
+    process.execPath,
+    [
+      tailwindCli,
+      "-i",
+      tailwindInput,
+      "-o",
+      output,
+      "--config",
+      tailwindConfig,
+      "--minify",
+    ],
+    { stdio: "inherit" },
+  );
+}
 
 export default defineConfig({
   source: ["src", "addon"],
@@ -38,6 +63,9 @@ export default defineConfig({
       },
       {
         entryPoints: ["src/react/window.tsx"],
+        define: {
+          __env__: `"${process.env.NODE_ENV}"`,
+        },
         bundle: true,
         jsx: "automatic",
         platform: "browser",
@@ -46,6 +74,22 @@ export default defineConfig({
         outfile: ".scaffold/build/addon/content/scripts/ui.js",
       },
     ],
+    hooks: {
+      "build:bundle"(ctx) {
+        buildTailwind(`${ctx.dist}/addon/content/styles/ui.css`);
+      },
+    },
+  },
+
+  server: {
+    hooks: {
+      "serve:prebuild"(ctx) {
+        buildTailwind(`${ctx.dist}/addon/content/styles/ui.css`);
+      },
+      "serve:onChanged"(ctx) {
+        buildTailwind(`${ctx.dist}/addon/content/styles/ui.css`);
+      },
+    },
   },
 
   test: {

@@ -5,6 +5,9 @@ const READER_SELECTION_LISTENER_ID = "insituai-reader-selection";
 const ITEM_PANE_MOUNT_ID = "insituai-item-pane-root";
 const READER_PANE_MOUNT_ID = "insituai-reader-item-pane-root";
 const REACT_WINDOW_SCRIPT_URL = `${rootURI}content/scripts/ui.js`;
+const REACT_STYLE_URL = `${rootURI}content/styles/ui.css`;
+const REACT_ASSET_VERSION =
+  __env__ === "development" ? `${Date.now()}` : "production";
 
 const readerBodies = new Set<HTMLDivElement>();
 let latestSelectedText = "";
@@ -151,17 +154,19 @@ function renderItemPane(
 }
 
 function ensureReactBridge(win: InSituAIReactWindow) {
-  const shouldForceReload = addon.data.env === "development";
-  if (!shouldForceReload && win.__insituaiReactLoaded && win.__insituaiReact) {
+  if (
+    win.__insituaiReactLoaded &&
+    win.__insituaiReact &&
+    win.__insituaiReactAssetVersion === REACT_ASSET_VERSION
+  ) {
     return;
   }
 
-  const scriptURL = shouldForceReload
-    ? `${REACT_WINDOW_SCRIPT_URL}?t=${Date.now()}`
-    : REACT_WINDOW_SCRIPT_URL;
-
-  Services.scriptloader.loadSubScript(scriptURL, win);
+  const suffix = __env__ === "development" ? `?t=${REACT_ASSET_VERSION}` : "";
+  win.__insituaiReactStyleURL = `${REACT_STYLE_URL}${suffix}`;
+  Services.scriptloader.loadSubScript(`${REACT_WINDOW_SCRIPT_URL}${suffix}`, win);
   win.__insituaiReactLoaded = true;
+  win.__insituaiReactAssetVersion = REACT_ASSET_VERSION;
 }
 
 function getBodyItem(body: HTMLDivElement) {

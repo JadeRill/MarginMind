@@ -21,4 +21,6 @@ export type InSituAIReactWindow = Window & {
   __insituaiReact?: InSituAIReactBridge;
   __insituaiReactLoaded?: boolean;
   __insituaiReactRoots?: WeakMap<Element, unknown>;
+  __insituaiReactStyleURL?: string;
+  __insituaiReactAssetVersion?: string;
 };
