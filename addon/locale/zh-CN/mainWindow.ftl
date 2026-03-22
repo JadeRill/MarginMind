@@ -9,3 +9,9 @@ item-section-example2-sidenav-tooltip =
 item-section-example2-button-tooltip =
     .tooltiptext = 移除此面板
 item-info-row-example-label = 示例行
+
+
+item-pane-head-text = 
+    .label = InSitu AI
+item-pane-sidenav-tooltip
+    .tooltiptext = InSitu AI 面板

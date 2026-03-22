@@ -9,3 +9,9 @@ item-section-example2-sidenav-tooltip =
 item-section-example2-button-tooltip =
     .tooltiptext = Unregister this section
 item-info-row-example-label = Example Row
+
+
+item-pane-head-text = 
+    .label = InSitu AI
+item-pane-sidenav-tooltip
+    .tooltiptext = InSitu AI Pane
