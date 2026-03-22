@@ -5,7 +5,10 @@ import {
   PromptExampleFactory,
   UIExampleFactory,
 } from "./modules/examples";
-import registerItemPane from "./modules/itemPane";
+import {
+  registerItemPaneSection,
+  registerReaderItemPaneSection,
+} from "./modules/itemPane";
 import { getString, initLocale } from "./utils/locale";
 import { registerPrefsScripts } from "./modules/preferenceScript";
 import { createZToolkit } from "./utils/ztoolkit";
@@ -31,11 +34,12 @@ async function onStartup() {
 
   UIExampleFactory.registerItemPaneCustomInfoRow();
 
-  UIExampleFactory.registerItemPaneSection();
+  // UIExampleFactory.registerItemPaneSection();
 
-  UIExampleFactory.registerReaderItemPaneSection();
+  // UIExampleFactory.registerReaderItemPaneSection();
 
-  registerItemPane();
+  registerItemPaneSection();
+  registerReaderItemPaneSection();
 
   await Promise.all(
     Zotero.getMainWindows().map((win) => onMainWindowLoad(win)),
@@ -87,11 +91,11 @@ async function onMainWindowLoad(win: _ZoteroTypes.MainWindow): Promise<void> {
 
   await Zotero.Promise.delay(1000);
 
-  popupWin.changeLine({
-    progress: 100,
-    text: `[100%] ${getString("startup-finish")}`,
-  });
-  popupWin.startCloseTimer(5000);
+  // popupWin.changeLine({
+  //   progress: 100,
+  //   text: `[100%] ${getString("startup-finish")}`,
+  // });
+  // popupWin.startCloseTimer(5000);
 
   addon.hooks.onDialogEvents("dialogExample");
 }
@@ -102,7 +106,6 @@ async function onMainWindowUnload(win: Window): Promise<void> {
 }
 
 function onShutdown(): void {
-  RightPaneFactory.unregister();
   ztoolkit.unregisterAll();
   addon.data.dialog?.window?.close();
   // Remove addon object
