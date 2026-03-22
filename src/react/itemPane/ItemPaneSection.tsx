@@ -196,34 +196,32 @@ export function ItemPaneSection({
   }
 
   return (
-    <section className="cline-shell flex h-full flex-col overflow-hidden text-white">
-      {/* Header: 合并了原有的两个 header 层 */}
-      <header className="shrink-0 border-b border-white/8 p-3">
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-[13px] font-semibold shadow-inner">
-            C
+    <aside className="cline-shell flex h-full flex-col overflow-hidden text-white">
+      {/* Header */}
+      <header className="flex shrink-0 items-center gap-3 border-b border-white/8 p-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-[13px] font-semibold shadow-inner">
+          C
+        </div>
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="truncate text-[13px] font-semibold text-blue-400">
+              Cline Research
+            </span>
+            <span className="cline-badge text-[10px]">Claude 3.5</span>
           </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="truncate text-[13px] font-semibold text-blue-400">
-                Cline Research
-              </span>
-              <span className="cline-badge text-[10px]">Claude 3.5</span>
-            </div>
-            <div className="text-[11px] text-white/50">{itemData.title}</div>
-          </div>
+          <div className="text-[11px] text-white/50">{itemData.title}</div>
         </div>
       </header>
 
       {/* Main: 滚动区域 */}
-      <main className="flex min-h-0 flex-1 flex-col overflow-y-auto cline-scrollbar p-3 space-y-3">
+      <main className="cline-scrollbar flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-3">
         {/* Context Bar */}
         <div className="cline-panel flex flex-wrap gap-2 px-3 py-2 text-[11px] text-white/60">
           <span className="font-medium text-white/80">Context:</span>
           <span>{itemData.creators}</span>
           <span className="opacity-20">/</span>
           <span>{itemData.year}</span>
-          <span className="truncate opacity-80 italic">{itemData.keyText}</span>
+          <span className="truncate italic opacity-80">{itemData.keyText}</span>
         </div>
 
         {/* System Prompt */}
@@ -240,18 +238,18 @@ export function ItemPaneSection({
         ))}
       </main>
 
-      {/* Footer: 输入区域 */}
-      <footer className="shrink-0 border-t border-white/8 p-3">
-        {/* Selection Preview - 仅在有内容时渲染 */}
+      {/* Footer: 与 Header/Main 保持一致的 Padding 和边框风格 */}
+      <footer className="flex shrink-0 flex-col gap-3 border-t border-white/8 p-3">
+        {/* Selection Preview */}
         {queuedSelection && (
-          <div className="cline-panel mb-3 p-3">
+          <div className="cline-panel p-3">
             <div className="mb-2 flex items-center justify-between">
               <span className="text-[10px] font-bold uppercase tracking-widest text-white/40">
                 Reader Selection
               </span>
               <button
                 onClick={useSelection}
-                className="cline-tool-pill hover:bg-blue-500/20 text-blue-400"
+                className="cline-tool-pill text-blue-400 hover:bg-blue-500/20"
               >
                 Insert Into Prompt
               </button>
@@ -262,47 +260,50 @@ export function ItemPaneSection({
           </div>
         )}
 
-        {/* Quick Actions */}
-        <div className="mb-3 flex flex-wrap gap-2">
-          {quickActions.map((action) => (
-            <button
-              key={action}
-              onClick={() => send(action)}
-              className="cline-badge hover:bg-white/10"
-            >
-              {action}
-            </button>
-          ))}
-        </div>
-
-        {/* Composer */}
-        <div className="cline-panel p-3">
-          <textarea
-            className="cline-composer w-full bg-transparent outline-none resize-none text-[13px]"
-            rows={3}
-            onChange={(e) => setDraft(e.target.value)}
-            placeholder="Ask about the paper..."
-            value={draft}
-          />
-          <div className="mt-2 flex items-center justify-between border-t border-white/5 pt-2">
-            <div className="flex gap-2 text-[10px]">
-              <span className="cline-tool-pill opacity-50">Paper Loaded</span>
-              {queuedSelection && (
-                <span className="cline-tool-pill text-blue-400">
-                  Selection Ready
-                </span>
-              )}
+        {/* Quick Actions & Composer Container */}
+        <div className="flex flex-col gap-3">
+          {quickActions.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {quickActions.map((action) => (
+                <button
+                  key={action}
+                  onClick={() => send(action)}
+                  className="cline-badge hover:bg-white/10"
+                >
+                  {action}
+                </button>
+              ))}
             </div>
-            <button
-              disabled={!draft.trim()}
-              onClick={() => send(draft)}
-              className="rounded-lg bg-blue-600 px-4 py-1.5 text-[12px] font-bold shadow-lg transition hover:brightness-110 disabled:opacity-30"
-            >
-              Send Message
-            </button>
+          )}
+
+          <div className="cline-panel p-3">
+            <textarea
+              className="cline-composer w-full resize-none bg-transparent text-[13px] outline-none"
+              rows={3}
+              onChange={(e) => setDraft(e.target.value)}
+              placeholder="Ask about the paper..."
+              value={draft}
+            />
+            <div className="mt-2 flex items-center justify-between border-t border-white/5 pt-2">
+              <div className="flex gap-2 text-[10px]">
+                <span className="cline-tool-pill opacity-50">Paper Loaded</span>
+                {queuedSelection && (
+                  <span className="cline-tool-pill text-blue-400">
+                    Selection Ready
+                  </span>
+                )}
+              </div>
+              <button
+                disabled={!draft.trim()}
+                onClick={() => send(draft)}
+                className="rounded-lg bg-blue-600 px-4 py-1.5 text-[12px] font-bold shadow-lg transition hover:brightness-110 disabled:opacity-30"
+              >
+                Send Message
+              </button>
+            </div>
           </div>
         </div>
       </footer>
-    </section>
+    </aside>
   );
 }
