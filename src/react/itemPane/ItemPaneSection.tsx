@@ -196,7 +196,7 @@ export function ItemPaneSection({
   }
 
   return (
-    <aside className="cline-shell flex h-full flex-col overflow-hidden text-white">
+    <aside className="cline-shell flex max-h-[80vh] flex-col overflow-hidden text-white">
       {/* Header */}
       <header className="flex shrink-0 items-center gap-3 border-b border-white/8 p-3">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-[13px] font-semibold shadow-inner">
