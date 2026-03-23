@@ -111,20 +111,38 @@ export function ItemPaneSection({
   const [isLocked, setIsLocked] = useState(true);
 
   useEffect(() => {
-    const el = sectionRef.current;
-    if (!el) return;
+    const aside = sectionRef.current;
+    if (!aside) return;
 
     const handleWheel = (e) => {
-      if (isLocked) {
+      // 检查点击的目标或其父级是否带有 data-can-scroll 属性
+      const isScrollableElement = e.target.closest('[data-can-scroll="true"]');
+
+      if (isScrollableElement) {
+        // 检查当前元素是否已经滚到底部或顶部
+        // 如果已经到底还继续滚，默认会触发父级（Aside）滚动，这里阻止它
+        const { scrollTop, scrollHeight, clientHeight } = isScrollableElement;
+        const isAtTop = e.deltaY < 0 && scrollTop <= 0;
+        const isAtBottom =
+          e.deltaY > 0 && scrollTop + clientHeight >= scrollHeight;
+
+        if (isAtTop || isAtBottom) {
+          // 只有当子容器滚不动时，才阻止
+          e.preventDefault();
+        }
+
+        // 在子容器内滚动，允许默认行为，但阻止事件冒泡到 aside
+        e.stopPropagation();
+      } else {
+        // 鼠标在 Header 或 Footer 其他空白处，直接禁用滚动
         e.preventDefault();
       }
     };
 
-    // 必须手动添加监听，因为 React 的 onWheel 默认是 passive: true，无法 preventDefault
-    el.addEventListener("wheel", handleWheel, { passive: false });
-
-    return () => el.removeEventListener("wheel", handleWheel);
-  }, [isLocked]); // 当 isLocked 改变时重新绑定或判断
+    // 必须使用 passive: false 才能 preventDefault
+    aside.addEventListener("wheel", handleWheel, { passive: false });
+    return () => aside.removeEventListener("wheel", handleWheel);
+  }, []); // 确保依赖项正确
 
   useEffect(() => {
     if (!data) {
@@ -235,7 +253,10 @@ export function ItemPaneSection({
       </header>
 
       {/* Main: 滚动区域 */}
-      <main className="cline-scrollbar flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-3">
+      <main
+        data-can-scroll="true"
+        className="cline-scrollbar flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-3"
+      >
         {/* Context Bar */}
         <div className="cline-panel flex flex-wrap gap-2 px-3 py-2 text-[11px] text-white/60">
           <span className="font-medium text-white/80">Context:</span>
@@ -275,7 +296,10 @@ export function ItemPaneSection({
                 Insert Into Prompt
               </button>
             </div>
-            <div className="max-h-20 overflow-y-auto rounded-lg bg-black/20 p-2 text-[12px] text-white/70">
+            <div
+              data-can-scroll="true"
+              className="max-h-20 overflow-y-auto rounded-lg bg-black/20 p-2 text-[12px] text-white/70"
+            >
               {queuedSelection}
             </div>
           </div>
@@ -299,6 +323,7 @@ export function ItemPaneSection({
 
           <div className="cline-panel p-3">
             <textarea
+              data-can-scroll="true"
               className="cline-composer w-full resize-none bg-transparent text-[13px] outline-none"
               rows={3}
               onChange={(e) => setDraft(e.target.value)}
