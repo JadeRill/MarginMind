@@ -107,16 +107,18 @@ export function ItemPaneSection({
   const [queuedSelection, setQueuedSelection] = useState("");
   const selectionSignatureRef = useRef("");
   const itemSignature = data?.keyText ?? "";
-  const sectionRef = useRef(null);
-  const messageRef = useRef(null);
+  const asideRef = useRef<HTMLElement | null>(null);
+  const messageRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const aside = sectionRef.current;
+    const aside = asideRef.current;
     if (!aside) return;
 
-    const handleWheel = (e) => {
+    const handleWheel = (e: WheelEvent) => {
       // 检查点击的目标或其父级是否带有 data-can-scroll 属性
-      const isScrollableElement = e.target.closest('[data-can-scroll="true"]');
+      const isScrollableElement = (e.target as Element)?.closest(
+        '[data-can-scroll="true"]',
+      );
 
       if (isScrollableElement) {
         // 检查当前元素是否已经滚到底部或顶部
@@ -199,6 +201,7 @@ export function ItemPaneSection({
       "Extract the main claim",
       "Critique the argument",
       "Turn selection into notes",
+      "Insert selection into prompt",
     ],
     [],
   );
@@ -247,7 +250,7 @@ export function ItemPaneSection({
 
   return (
     <aside
-      ref={sectionRef}
+      ref={asideRef}
       className="cline-shell flex max-h-[80vh] flex-col overflow-hidden text-white"
     >
       {/* Header */}
