@@ -263,7 +263,7 @@ export function ItemPaneSection({
             <span className="truncate text-[13px] font-semibold text-blue-400">
               Cline Research
             </span>
-            <span className="inline-flex items-center gap-1 rounded-full border border-white/10 px-2.5 py-1 text-[10px] font-medium text-white/70">
+            <span className="flex items-center gap-1 rounded-full border border-white/10 px-2.5 py-1 text-[10px] font-medium text-white/70">
               Claude 4.5
             </span>
           </div>
@@ -275,7 +275,7 @@ export function ItemPaneSection({
       <main
         data-can-scroll="true"
         ref={messageRef}
-        className="scrollbar-width: thin; scrollbar-color: color-mix(in_srgb,var(--fill-primary)_22%,transparent) transparent flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-3"
+        className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-3"
       >
         {/* Context Bar */}
         <div className="flex flex-wrap gap-2 rounded-lg border border-white/10 bg-black/10 px-3 py-2 text-[11px] text-white/60">
