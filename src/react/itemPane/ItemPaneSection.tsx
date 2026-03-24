@@ -22,7 +22,7 @@ type ChatMessage = {
 function makeAssistantGreeting(
   data: NonNullable<ItemPaneSectionProps["data"]>,
 ) {
-  return "I have the paper context loaded. Ask for a summary, critique, rewrite, extraction, or use the reader selection as grounded evidence.";
+  return `I have the paper context loaded. Ask for a summary, critique, rewrite, extraction, or use the reader selection as grounded evidence. ${data.creators} | ${data.year}`;
 }
 
 function makeSelectionPrompt(selection: string) {
