@@ -251,7 +251,7 @@ export function ItemPaneSection({
   return (
     <aside
       ref={asideRef}
-      className="flex h-full max-h-[80vh] min-h-0 min-w-0 flex-col overflow-hidden bg-[var(--material-sidepane)] text-[var(--fill-primary)]"
+      // className="flex h-full max-h-[80vh] min-h-0 min-w-0 flex-col overflow-hidden bg-[var(--material-sidepane)] text-[var(--fill-primary)]"
     >
       {/* Header */}
       <header className="border-white/8 flex shrink-0 items-center gap-3 border-b p-3">
@@ -275,7 +275,7 @@ export function ItemPaneSection({
       <main
         data-can-scroll="true"
         ref={messageRef}
-        className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-3"
+        className="flex max-h-[50vh] min-h-0 flex-1 flex-col gap-3 overflow-hidden overflow-y-auto p-3"
       >
         {/* Context Bar */}
         <div className="flex flex-wrap gap-2 rounded-lg border border-white/10 bg-black/10 px-3 py-2 text-[11px] text-white/60">
