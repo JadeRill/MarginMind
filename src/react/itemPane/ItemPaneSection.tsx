@@ -197,14 +197,32 @@ export function ItemPaneSection({
 
   const quickActions = useMemo(
     () => [
-      "Summarize the paper",
-      "Extract the main claim",
-      "Critique the argument",
-      "Turn selection into notes",
-      "Insert selection into prompt",
+      {
+        id: "summarize",
+        label: "Summarize the paper",
+        // 情况 A：调用 send 并传入特定字符串
+        onClick: () => send("Summarize the main points of this paper."),
+      },
+      {
+        id: "critique",
+        label: "Critique the paper",
+        // 情况 B：调用另一个函数并传参
+        onClick: () => send("Critique the methodology."),
+      },
+      {
+        id: "to-notes",
+        label: "Turn selection into notes",
+        onClick: () => send("Turn selection into notes."),
+      },
+      {
+        id: "insert",
+        label: "Insert into prompt",
+        // 情况 D：直接转发引用（如果不需参数）
+        onClick: useSelection,
+      },
     ],
-    [],
-  );
+    [send, useSelection],
+  ); // 必须包含依赖，否则函数内部拿到的数据是旧的
 
   if (!data) {
     return <EmptyPane />;
@@ -251,14 +269,13 @@ export function ItemPaneSection({
   return (
     <aside
       ref={asideRef}
-      className="w-full"
-      // className="flex h-full max-h-[80vh] min-h-0 min-w-0 flex-col overflow-hidden bg-[var(--material-sidepane)] text-[var(--fill-primary)]"
+      className="flex max-h-[80vh] min-h-0 w-full flex-col overflow-hidden bg-[var(--material-sidepane)] text-[var(--fill-primary)]"
     >
       {/* Header */}
-      <section className="flex shrink-0 items-center gap-3 p-3">
-        {/* <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-[13px] font-semibold shadow-inner">
+      {/* <section className="flex shrink-0 items-center gap-3 p-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-[13px] font-semibold shadow-inner">
           C
-        </div> */}
+        </div>
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <span className="truncate text-[13px] font-semibold text-blue-400">
@@ -266,6 +283,19 @@ export function ItemPaneSection({
             </span>
           </div>
           <div className="text-[11px] text-white/50">{itemData.title}</div>
+        </div>
+      </section> */}
+
+      <section className="flex shrink-0 flex-col justify-center gap-3 p-3">
+        {/* Context Bar */}
+        <div className="rounded-lg border border-white/10 bg-black/10 p-3 text-[12px] leading-relaxed text-white/60">
+          <div className="mb-1 text-[10px] font-bold uppercase tracking-widest text-white/30">
+            Context:
+          </div>
+          <div className="text-md">
+            {itemData.title} / {itemData.creators} / {itemData.year} /{" "}
+            {itemData.keyText}
+          </div>
         </div>
       </section>
 
@@ -275,23 +305,6 @@ export function ItemPaneSection({
         ref={messageRef}
         className="flex max-h-[40vh] min-h-0 flex-1 flex-col gap-3 overflow-hidden overflow-y-auto p-3"
       >
-        {/* Context Bar */}
-        <div className="flex flex-wrap gap-2 rounded-lg border border-white/10 bg-black/10 px-3 py-2 text-[11px] text-white/60">
-          <span className="font-medium text-white/80">Context:</span>
-          <span>{itemData.creators}</span>
-          <span className="opacity-20">/</span>
-          <span>{itemData.year}</span>
-          <span className="truncate italic opacity-80">{itemData.keyText}</span>
-        </div>
-
-        {/* System Prompt */}
-        <div className="rounded-lg border border-white/10 bg-black/10 p-3 text-[12px] leading-relaxed text-white/60">
-          <div className="mb-1 text-[10px] font-bold uppercase tracking-widest text-white/30">
-            System
-          </div>
-          Abstract context preloaded. Grounded in paper and selection.
-        </div>
-
         {/* Messages */}
         {messages.map((m) => (
           <MessageBubble key={m.id} message={m} />
@@ -301,7 +314,7 @@ export function ItemPaneSection({
       {/* Footer: 与 Header/Main 保持一致的 Padding 和边框风格 */}
       <section className="border-white/8 flex shrink-0 flex-col gap-3 border-t p-3">
         {/* Selection Preview */}
-        {queuedSelection && (
+        {/* {queuedSelection && (
           <div className="rounded-lg border border-white/10 bg-black/10 p-3">
             <div className="mb-2 flex items-center justify-between">
               <span className="text-[10px] font-bold uppercase tracking-widest text-white/40">
@@ -321,7 +334,7 @@ export function ItemPaneSection({
               {queuedSelection}
             </div>
           </div>
-        )}
+        )} */}
 
         {/* Quick Actions & Composer Container */}
         <div className="flex flex-col gap-3">
@@ -329,11 +342,11 @@ export function ItemPaneSection({
             <div className="flex flex-wrap gap-2">
               {quickActions.map((action) => (
                 <button
-                  key={action}
-                  onClick={() => send(action)}
+                  key={action.id}
+                  onClick={action.onClick}
                   className="inline-flex items-center gap-1 rounded-full border border-white/10 px-2.5 py-1 text-[11px] font-medium text-white/70 hover:bg-white/10"
                 >
-                  {action}
+                  {action.label}
                 </button>
               ))}
             </div>
