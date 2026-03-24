@@ -49,8 +49,9 @@ function createInitialMessages(
     {
       id: "assistant-greeting",
       role: "assistant",
-      text: makeAssistantGreeting(data),
-      meta: "Context ready",
+      // text: makeAssistantGreeting(data),
+      text: "Hello! I'm your AI assistant. How can I help you today?",
+      meta: "Greeting",
     },
   ];
 }
@@ -286,7 +287,7 @@ export function ItemPaneSection({
         </div>
       </section> */}
 
-      <section className="flex shrink-0 flex-col justify-center gap-3 p-3">
+      <section className="flex shrink-0 grow-0 flex-col justify-center gap-3 p-3">
         {/* Context Bar */}
         <div className="rounded-lg border border-white/10 bg-black/10 p-3 text-[12px] leading-relaxed text-white/60">
           <div className="mb-1 text-[10px] font-bold uppercase tracking-widest text-white/30">
@@ -312,7 +313,7 @@ export function ItemPaneSection({
       </section>
 
       {/* Footer: 与 Header/Main 保持一致的 Padding 和边框风格 */}
-      <section className="border-white/8 flex shrink-0 flex-col gap-3 border-t p-3">
+      <section className="border-white/8 flex shrink-0 grow-0 flex-col gap-3 border-t p-3">
         {/* Selection Preview */}
         {/* {queuedSelection && (
           <div className="rounded-lg border border-white/10 bg-black/10 p-3">
