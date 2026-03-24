@@ -255,7 +255,7 @@ export function ItemPaneSection({
       // className="flex h-full max-h-[80vh] min-h-0 min-w-0 flex-col overflow-hidden bg-[var(--material-sidepane)] text-[var(--fill-primary)]"
     >
       {/* Header */}
-      <header className="flex shrink-0 items-center gap-3 p-3">
+      <section className="flex shrink-0 items-center gap-3 p-3">
         {/* <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-[13px] font-semibold shadow-inner">
           C
         </div> */}
@@ -267,10 +267,10 @@ export function ItemPaneSection({
           </div>
           <div className="text-[11px] text-white/50">{itemData.title}</div>
         </div>
-      </header>
+      </section>
 
       {/* Main: 滚动区域 */}
-      <main
+      <section
         data-can-scroll="true"
         ref={messageRef}
         className="flex max-h-[40vh] min-h-0 flex-1 flex-col gap-3 overflow-hidden overflow-y-auto p-3"
@@ -296,10 +296,10 @@ export function ItemPaneSection({
         {messages.map((m) => (
           <MessageBubble key={m.id} message={m} />
         ))}
-      </main>
+      </section>
 
       {/* Footer: 与 Header/Main 保持一致的 Padding 和边框风格 */}
-      <footer className="border-white/8 flex shrink-0 flex-col gap-3 border-t p-3">
+      <section className="border-white/8 flex shrink-0 flex-col gap-3 border-t p-3">
         {/* Selection Preview */}
         {queuedSelection && (
           <div className="rounded-lg border border-white/10 bg-black/10 p-3">
@@ -372,7 +372,7 @@ export function ItemPaneSection({
             </div>
           </div>
         </div>
-      </footer>
+      </section>
     </aside>
   );
 }
