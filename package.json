@@ -30,6 +30,8 @@
     "update-deps": "npm update --save"
   },
   "dependencies": {
+    "@openrouter/ai-sdk-provider": "^2.3.3",
+    "ai": "^6.0.138",
     "zotero-plugin-toolkit": "^5.1.0-beta.13"
   },
   "devDependencies": {

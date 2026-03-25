@@ -1,9 +1,9 @@
 pref("enable", true);
 pref("input", "This is input");
-pref("aiProvider", "openai");
+pref("aiProvider", "openrouter");
 pref("aiApiKey", "");
-pref("aiBaseURL", "");
-pref("aiModel", "gpt-4.1-mini");
+pref("aiBaseURL", "https://openrouter.ai/api/v1");
+pref("aiModel", "stepfun/step-3.5-flash:free");
 pref("aiTemperature", 0.2);
 pref("aiMaxTokens", 1200);
 pref(

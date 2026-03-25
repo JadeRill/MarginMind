@@ -117,8 +117,7 @@ export function PreferencesPanel() {
             InSituAI Preferences
           </h2>
           <p className="text-sm text-white/65">
-            Configure provider credentials and model defaults for Item Pane
-            chat.
+            Configure OpenRouter + model routing for Item Pane streaming chat.
           </p>
         </header>
 
@@ -192,7 +191,7 @@ export function PreferencesPanel() {
                 onChange={(event) =>
                   updateAISetting("apiKey", event.target.value)
                 }
-                placeholder="sk-..."
+                placeholder="OpenRouter API key"
                 className="w-full rounded-md border border-white/15 bg-black/20 px-3 py-2 text-sm outline-none transition focus:border-[var(--accent-blue)]"
               />
             </label>

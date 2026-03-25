@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { generateAIReply, type AIChatMessage } from "../../modules/aiService";
+import { streamAIReply, type AIChatMessage } from "../../modules/aiService";
 import { loadAISettings } from "../../utils/aiPrefs";
 
 type ItemPaneSectionProps = {
@@ -247,19 +247,41 @@ export function ItemPaneSection({
           })),
       ];
 
-      const reply = await generateAIReply({
-        settings: currentSettings,
-        messages: apiMessages,
-      });
+      const assistantMessageId = `assistant-${Date.now()}`;
       setMessages((current) => [
         ...current,
         {
-          id: `assistant-${Date.now()}`,
+          id: assistantMessageId,
           role: "assistant",
-          text: reply,
+          text: "",
           meta: `${currentSettings.provider} / ${currentSettings.model}`,
         },
       ]);
+
+      let fullText = "";
+      for await (const delta of streamAIReply({
+        settings: currentSettings,
+        messages: apiMessages,
+      })) {
+        fullText += delta;
+        setMessages((current) =>
+          current.map((message) =>
+            message.id === assistantMessageId
+              ? { ...message, text: fullText }
+              : message,
+          ),
+        );
+      }
+
+      if (!fullText.trim()) {
+        setMessages((current) =>
+          current.map((message) =>
+            message.id === assistantMessageId
+              ? { ...message, text: "(empty response)" }
+              : message,
+          ),
+        );
+      }
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Request failed.";

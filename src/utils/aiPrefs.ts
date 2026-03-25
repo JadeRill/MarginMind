@@ -20,17 +20,17 @@ export type AISettings = {
 
 export const AI_PROVIDER_OPTIONS: Array<{ value: AIProvider; label: string }> =
   [
-    { value: "openai", label: "OpenAI" },
-    { value: "anthropic", label: "Claude (Anthropic)" },
-    { value: "openrouter", label: "OpenRouter" },
+    { value: "openrouter", label: "OpenRouter (Auto)" },
+    { value: "openai", label: "OpenRouter -> OpenAI" },
+    { value: "anthropic", label: "OpenRouter -> Anthropic" },
     { value: "openaiCompatible", label: "OpenAI Compatible" },
   ];
 
 export const AI_DEFAULTS: AISettings = {
-  provider: "openai",
+  provider: "openrouter",
   apiKey: "",
-  baseURL: "",
-  model: "gpt-4.1-mini",
+  baseURL: "https://openrouter.ai/api/v1",
+  model: "stepfun/step-3.5-flash:free",
   temperature: 0.2,
   maxTokens: 1200,
   systemPrompt:
@@ -40,9 +40,9 @@ export const AI_DEFAULTS: AISettings = {
 export function getDefaultBaseURL(provider: AIProvider) {
   switch (provider) {
     case "openai":
-      return "https://api.openai.com/v1";
+      return "https://openrouter.ai/api/v1";
     case "anthropic":
-      return "https://api.anthropic.com/v1";
+      return "https://openrouter.ai/api/v1";
     case "openrouter":
       return "https://openrouter.ai/api/v1";
     case "openaiCompatible":
@@ -55,11 +55,11 @@ export function getDefaultBaseURL(provider: AIProvider) {
 export function getDefaultModel(provider: AIProvider) {
   switch (provider) {
     case "openai":
-      return "gpt-4.1-mini";
-    case "anthropic":
-      return "claude-3-7-sonnet-latest";
-    case "openrouter":
       return "openai/gpt-4.1-mini";
+    case "anthropic":
+      return "anthropic/claude-3.7-sonnet";
+    case "openrouter":
+      return "stepfun/step-3.5-flash:free";
     case "openaiCompatible":
       return "gpt-4.1-mini";
     default:
