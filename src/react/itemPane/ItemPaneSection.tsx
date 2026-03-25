@@ -775,7 +775,7 @@ export function ItemPaneSection({
                           : "border-white/10 bg-black/20 hover:bg-white/5",
                       )}
                     >
-                      <div className="flex h-7 items-center gap-2">
+                      <div className="flex items-center gap-2">
                         <div className="min-w-0 flex-1 truncate pr-1 text-[13px] font-medium leading-4 text-[var(--fill-primary)]">
                           {session.title}
                         </div>
