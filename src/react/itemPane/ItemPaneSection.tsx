@@ -498,11 +498,11 @@ export function ItemPaneSection({
         .map((message) => {
           const roleLabel =
             message.role === "assistant"
-              ? "Assistant"
+              ? "━━━━━━━━━━ 🤖 Assistant ━━━━━━━━━━"
               : message.role === "user"
-                ? "User"
+                ? "━━━━━━━━━━━━ 🙋 User ━━━━━━━━━━━━"
                 : "System";
-          return `[${roleLabel}] ${message.text}`;
+          return `${roleLabel}\n${message.text}`;
         })
         .join("\n\n");
 
