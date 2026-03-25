@@ -11,6 +11,8 @@ const REACT_ASSET_VERSION =
 
 const readerBodies = new Set<HTMLDivElement>();
 let latestSelectedText = "";
+let latestSelectedAnnotation: _ZoteroTypes.Annotations.AnnotationJson | null =
+  null;
 
 const readerSelectionHandler: _ZoteroTypes.Reader.EventHandler<
   "renderTextSelectionPopup"
@@ -20,7 +22,7 @@ const readerSelectionHandler: _ZoteroTypes.Reader.EventHandler<
   const page = annotation.position.pageIndex + 1;
 
   if (!text) return;
-  updateSelectedText(`page ${page}, ${text}`);
+  updateSelectedText(`page ${page}, ${text}`, annotation);
 };
 
 function registerItemPaneSection() {
@@ -109,8 +111,12 @@ function unregisterReaderSelectionListener() {
   } catch (_error) {}
 }
 
-function updateSelectedText(text: string) {
+function updateSelectedText(
+  text: string,
+  annotation: _ZoteroTypes.Annotations.AnnotationJson,
+) {
   latestSelectedText = text;
+  latestSelectedAnnotation = annotation;
 
   for (const body of [...readerBodies]) {
     if (!body.isConnected) {
@@ -151,6 +157,9 @@ function renderItemPane(
     data: item ? serializeItem(item) : null,
     showSelectedText: options.showSelectedText,
     selectedText: latestSelectedText,
+    selectedAnnotation: options.showSelectedText
+      ? latestSelectedAnnotation
+      : null,
   });
 }
 
@@ -193,12 +202,32 @@ function serializeItem(item: Zotero.Item): ItemPaneData {
       : abstractText || "No abstract";
 
   return {
+    itemID: item.id ?? null,
+    attachmentItemID: resolveAttachmentItemID(item),
     title,
     creators: formatCreators(item),
     year,
     abstractPreview,
     keyText: `${item.key} (ID: ${item.id ?? "-"})`,
   };
+}
+
+function resolveAttachmentItemID(item: Zotero.Item) {
+  if (item.isAttachment() && item.isPDFAttachment()) {
+    return item.id ?? null;
+  }
+
+  const attachmentIDs = item.getAttachments();
+  for (const attachmentID of attachmentIDs) {
+    const attachment = Zotero.Items.get(attachmentID) as
+      | Zotero.Item
+      | undefined;
+    if (attachment?.isAttachment() && attachment.isPDFAttachment()) {
+      return attachment.id ?? null;
+    }
+  }
+
+  return null;
 }
 
 function formatCreators(item: Zotero.Item) {

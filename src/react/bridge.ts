@@ -1,4 +1,6 @@
 export type ItemPaneData = {
+  itemID: number | null;
+  attachmentItemID: number | null;
   title: string;
   creators: string;
   year: string;
@@ -11,6 +13,7 @@ export type ItemPaneRenderPayload = {
   data: ItemPaneData | null;
   showSelectedText: boolean;
   selectedText: string;
+  selectedAnnotation: _ZoteroTypes.Annotations.AnnotationJson | null;
 };
 
 export type PreferencesRenderPayload = {

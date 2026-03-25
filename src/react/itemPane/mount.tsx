@@ -13,6 +13,7 @@ export function mountItemPane({
   data,
   showSelectedText,
   selectedText,
+  selectedAnnotation,
 }: ItemPaneRenderPayload) {
   let root = roots.get(container);
   if (!root) {
@@ -25,6 +26,7 @@ export function mountItemPane({
       data={data}
       showSelectedText={showSelectedText}
       selectedText={selectedText}
+      selectedAnnotation={selectedAnnotation}
     />,
   );
 }
