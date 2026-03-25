@@ -308,7 +308,6 @@ export function ItemPaneSection({
       itemData ? `Year: ${itemData.year}` : "Year: (none)",
       itemData ? `Key: ${itemData.keyText}` : "Key: (none)",
       itemData ? `Abstract: ${itemData.abstractPreview}` : "Abstract: (none)",
-      queuedSelection ? `Reader selection: ${queuedSelection}` : "",
     ]
       .filter(Boolean)
       .join("\n");
