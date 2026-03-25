@@ -1,5 +1,6 @@
 import type { InSituAIReactWindow } from "./bridge";
 import { mountItemPane } from "./itemPane/mount";
+import { mountPreferences } from "./preferences/mount";
 
 const reactWindow = globalThis as unknown as InSituAIReactWindow;
 const REACT_STYLE_ID = "insituai-react-ui-style";
@@ -24,6 +25,7 @@ function ensureReactStyles() {
 
 reactWindow.__insituaiReact = {
   renderItemPane: mountItemPane,
+  renderPreferences: mountPreferences,
 };
 reactWindow.__insituaiReactLoaded = true;
 ensureReactStyles();

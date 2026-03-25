@@ -13,8 +13,13 @@ export type ItemPaneRenderPayload = {
   selectedText: string;
 };
 
+export type PreferencesRenderPayload = {
+  container: Element;
+};
+
 export type InSituAIReactBridge = {
   renderItemPane(payload: ItemPaneRenderPayload): void;
+  renderPreferences(payload: PreferencesRenderPayload): void;
 };
 
 export type InSituAIReactWindow = Window & {

@@ -1,7 +1,4 @@
-import {
-  BasicExampleFactory,
-  KeyExampleFactory,
-} from "./modules/examples";
+import { BasicExampleFactory, KeyExampleFactory } from "./modules/examples";
 import {
   registerItemPaneSection,
   registerReaderItemPaneSection,
