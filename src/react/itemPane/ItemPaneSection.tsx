@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { streamAIReply, type AIChatMessage } from "../../modules/aiService";
 import { loadAISettings } from "../../utils/aiPrefs";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -14,22 +14,22 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
+type ItemPaneData = {
+  itemID: number | null;
+  attachmentItemID: number | null;
+  title: string;
+  creators: string;
+  year: string;
+  abstractPreview: string;
+  keyText: string;
+};
+
 type ItemPaneSectionProps = {
-  data: {
-    itemID: number | null;
-    attachmentItemID: number | null;
-    title: string;
-    creators: string;
-    year: string;
-    abstractPreview: string;
-    keyText: string;
-  } | null;
+  data: ItemPaneData | null;
   showSelectedText?: boolean;
   selectedText: string;
   selectedAnnotation: _ZoteroTypes.Annotations.AnnotationJson | null;
 };
-
-type ItemContext = NonNullable<ItemPaneSectionProps["data"]>;
 
 type ChatMessage = {
   id: string;
@@ -47,27 +47,23 @@ type ChatSession = {
   queuedSelection: string;
 };
 
-type PersistedChatState = {
+type PersistedState = {
   sessions: ChatSession[];
   activeSessionID: string;
-  activeContext: ItemContext | null;
+  activeContext: ItemPaneData | null;
 };
 
 type InSituAIChatWindow = Window & {
-  __insituaiItemPaneChatState?: PersistedChatState;
+  __insituaiItemPaneChatState?: PersistedState;
 };
 
-function getPersistedState(): PersistedChatState | null {
-  const win = globalThis as unknown as InSituAIChatWindow;
-  return win.__insituaiItemPaneChatState ?? null;
+const PREVIEW_ID = "selection-preview";
+
+function nowID(prefix: string) {
+  return `${prefix}-${Date.now()}`;
 }
 
-function setPersistedState(state: PersistedChatState) {
-  const win = globalThis as unknown as InSituAIChatWindow;
-  win.__insituaiItemPaneChatState = state;
-}
-
-function createInitialMessages(): ChatMessage[] {
+function initialMessages(): ChatMessage[] {
   return [
     {
       id: "assistant-greeting",
@@ -79,65 +75,62 @@ function createInitialMessages(): ChatMessage[] {
 }
 
 function createSession(partial?: Partial<ChatSession>): ChatSession {
-  const now = Date.now();
+  const ts = Date.now();
   return {
-    id: partial?.id ?? `session-${now}`,
+    id: partial?.id ?? nowID("session"),
     title: partial?.title ?? "New chat",
-    updatedAt: partial?.updatedAt ?? now,
-    messages: partial?.messages ?? createInitialMessages(),
+    updatedAt: partial?.updatedAt ?? ts,
+    messages: partial?.messages ?? initialMessages(),
     draft: partial?.draft ?? "",
     queuedSelection: partial?.queuedSelection ?? "",
   };
 }
 
-function seedState(
-  persisted: PersistedChatState | null,
-  data: ItemContext | null,
-): PersistedChatState {
-  if (persisted?.sessions?.length) {
-    const activeSessionExists = persisted.sessions.some(
-      (session) => session.id === persisted.activeSessionID,
-    );
+function getPersisted(): PersistedState | null {
+  return (globalThis as unknown as InSituAIChatWindow).__insituaiItemPaneChatState ?? null;
+}
+
+function setPersisted(state: PersistedState) {
+  (globalThis as unknown as InSituAIChatWindow).__insituaiItemPaneChatState = state;
+}
+
+function seedState(data: ItemPaneData | null): PersistedState {
+  const saved = getPersisted();
+  if (saved?.sessions?.length) {
+    const activeExists = saved.sessions.some((s) => s.id === saved.activeSessionID);
     return {
-      sessions: persisted.sessions,
-      activeSessionID: activeSessionExists
-        ? persisted.activeSessionID
-        : persisted.sessions[0].id,
-      activeContext: persisted.activeContext ?? data,
+      sessions: saved.sessions,
+      activeSessionID: activeExists ? saved.activeSessionID : saved.sessions[0].id,
+      activeContext: saved.activeContext ?? data,
     };
   }
-
-  const initialSession = createSession();
+  const first = createSession();
   return {
-    sessions: [initialSession],
-    activeSessionID: initialSession.id,
+    sessions: [first],
+    activeSessionID: first.id,
     activeContext: data,
   };
 }
 
+function toTime(ts: number) {
+  const d = new Date(ts);
+  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+}
+
 function trimTitle(text: string, max = 42) {
-  const cleaned = text.replace(/\s+/g, " ").trim();
-  if (!cleaned) return "New chat";
-  return cleaned.length > max ? `${cleaned.slice(0, max)}...` : cleaned;
+  const s = text.replace(/\s+/g, " ").trim();
+  if (!s) return "New chat";
+  return s.length > max ? `${s.slice(0, max)}...` : s;
 }
 
-function formatUpdatedAt(timestamp: number) {
-  const date = new Date(timestamp);
-  return `${String(date.getHours()).padStart(2, "0")}:${String(
-    date.getMinutes(),
-  ).padStart(2, "0")}`;
-}
-
-function MessageContent({ text }: { text: string }) {
-  // Markdown render hook point: swap this block with a markdown renderer later.
-  return (
-    <div
-      data-render-mode="plain"
-      className="whitespace-pre-wrap break-words text-[14px] leading-6"
-    >
-      {text}
-    </div>
-  );
+function bubbleClass(role: ChatMessage["role"]) {
+  if (role === "system") {
+    return "border-[var(--accent-blue)]/20 bg-[color-mix(in_srgb,var(--accent-blue)_10%,transparent)] text-[13px] text-white/75";
+  }
+  if (role === "assistant") {
+    return "border-white/10 bg-white/5 text-[14px] text-[var(--fill-primary)]";
+  }
+  return "border-[var(--accent-blue)]/35 bg-[color-mix(in_srgb,var(--accent-blue)_22%,transparent)] text-[14px] text-[var(--fill-primary)]";
 }
 
 function MessageBubble({
@@ -149,27 +142,15 @@ function MessageBubble({
   selectionMode: boolean;
   selected: boolean;
 }) {
-  const isAssistant = message.role === "assistant";
-  const isSystem = message.role === "system";
+  const isAssistantSide = message.role !== "user";
 
   return (
-    <div
-      className={cn(
-        "flex",
-        isAssistant || isSystem ? "justify-start" : "justify-end",
-      )}
-    >
+    <div className={cn("flex", isAssistantSide ? "justify-start" : "justify-end")}>
       <Card
         className={cn(
-          "relative min-w-0 max-w-[92%] rounded-2xl border px-3 py-2.5",
-          isSystem
-            ? "border-[var(--accent-blue)]/20 bg-[color-mix(in_srgb,var(--accent-blue)_10%,transparent)] text-[13px] text-white/75"
-            : isAssistant
-              ? "border-white/10 bg-white/5 text-[14px] text-[var(--fill-primary)]"
-              : "border-[var(--accent-blue)]/35 bg-[color-mix(in_srgb,var(--accent-blue)_22%,transparent)] text-[14px] text-[var(--fill-primary)]",
-          selectionMode && selected
-            ? "ring-[var(--accent-blue)]/55 ring-2"
-            : "",
+          "relative max-w-[92%] rounded-2xl border px-3 py-2.5",
+          bubbleClass(message.role),
+          selectionMode && selected ? "ring-[var(--accent-blue)]/55 ring-2" : "",
         )}
       >
         {selectionMode ? (
@@ -182,13 +163,13 @@ function MessageBubble({
         ) : null}
 
         <div className="mb-1 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-white/45">
-          <span>{isAssistant ? "InSitu" : isSystem ? "Selection" : "You"}</span>
-          {message.meta ? (
-            <span className="text-white/30">{message.meta}</span>
-          ) : null}
+          <span>{message.role === "assistant" ? "InSitu" : message.role === "system" ? "Selection" : "You"}</span>
+          {message.meta ? <span className="text-white/30">{message.meta}</span> : null}
         </div>
 
-        <MessageContent text={message.text} />
+        <div data-render-mode="plain" className="whitespace-pre-wrap break-words text-[14px] leading-6">
+          {message.text}
+        </div>
       </Card>
     </div>
   );
@@ -196,7 +177,7 @@ function MessageBubble({
 
 function EmptyPane() {
   return (
-    <Card className="flex h-full min-h-0 w-full min-w-0 flex-col overflow-hidden rounded-xl border-white/10 bg-[var(--material-sidepane)] px-4 py-5 text-[var(--fill-primary)]">
+    <Card className="h-full rounded-xl border-white/10 bg-[var(--material-sidepane)] px-4 py-5 text-[var(--fill-primary)]">
       <CardTitle className="text-[16px]">No item selected</CardTitle>
       <CardDescription className="mt-1 text-[14px] text-white/55">
         Select an item to open the assistant workspace.
@@ -211,33 +192,34 @@ export function ItemPaneSection({
   selectedText,
   selectedAnnotation,
 }: ItemPaneSectionProps) {
-  const seeded = seedState(getPersistedState(), data);
+  const seeded = useMemo(() => seedState(data), []);
+
   const [sessions, setSessions] = useState<ChatSession[]>(seeded.sessions);
-  const [activeSessionID, setActiveSessionID] = useState(
-    seeded.activeSessionID,
-  );
-  const [activeContext, setActiveContext] = useState<ItemContext | null>(
+  const [activeSessionID, setActiveSessionID] = useState(seeded.activeSessionID);
+  const [activeContext, setActiveContext] = useState<ItemPaneData | null>(
     seeded.activeContext ?? data ?? null,
   );
+
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [requestError, setRequestError] = useState("");
-  const [showJumpToLatest, setShowJumpToLatest] = useState(false);
+  const [showJump, setShowJump] = useState(false);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
-  const [selectedMessageIds, setSelectedMessageIds] = useState<string[]>([]);
+  const [selectedIDs, setSelectedIDs] = useState<string[]>([]);
   const [isSavingAnnotation, setIsSavingAnnotation] = useState(false);
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
-  const selectionSignatureRef = useRef("");
+  const selectionSigRef = useRef("");
   const asideRef = useRef<HTMLElement | null>(null);
   const messageRef = useRef<HTMLDivElement | null>(null);
   const autoScrollRef = useRef(true);
   const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const errorTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const currentSettings = loadAISettings();
+  const longPressTriggeredRef = useRef(false);
+  const errorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const settings = loadAISettings();
 
   const activeSession = useMemo(
-    () =>
-      sessions.find((session) => session.id === activeSessionID) ?? sessions[0],
+    () => sessions.find((s) => s.id === activeSessionID) ?? sessions[0],
     [sessions, activeSessionID],
   );
 
@@ -245,22 +227,242 @@ export function ItemPaneSection({
   const draft = activeSession?.draft ?? "";
   const queuedSelection = activeSession?.queuedSelection ?? "";
 
-  function updateSessionByID(
-    sessionID: string,
-    updater: (session: ChatSession) => ChatSession,
-  ) {
+  const canSaveToAnnotation =
+    !!queuedSelection.trim() &&
+    !!selectedAnnotation &&
+    !!activeContext?.attachmentItemID &&
+    selectedIDs.length > 0 &&
+    !isSavingAnnotation;
+
+  function patchSession(sessionID: string, mutate: (session: ChatSession) => ChatSession) {
     setSessions((current) =>
       current.map((session) =>
         session.id === sessionID
-          ? { ...updater(session), updatedAt: Date.now() }
+          ? { ...mutate(session), updatedAt: Date.now() }
           : session,
       ),
     );
   }
 
-  function updateActiveSession(updater: (session: ChatSession) => ChatSession) {
+  function patchActive(mutate: (session: ChatSession) => ChatSession) {
     if (!activeSession) return;
-    updateSessionByID(activeSession.id, updater);
+    patchSession(activeSession.id, mutate);
+  }
+
+  function clearSelectionMode() {
+    setIsSelectionMode(false);
+    setSelectedIDs([]);
+  }
+
+  function showError(text: string, ms = 5000) {
+    if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
+    setRequestError(text);
+    errorTimerRef.current = setTimeout(() => setRequestError(""), ms);
+  }
+
+  function buildSystemPrompt(context: ItemPaneData | null) {
+    const lines = [
+      "Paper context:",
+      context ? `Title: ${context.title}` : "Title: (none)",
+      context ? `Creators: ${context.creators}` : "Creators: (none)",
+      context ? `Year: ${context.year}` : "Year: (none)",
+      context ? `Key: ${context.keyText}` : "Key: (none)",
+      context ? `Abstract: ${context.abstractPreview}` : "Abstract: (none)",
+    ];
+    return `${settings.systemPrompt}\n\n${lines.join("\n")}`;
+  }
+
+  function normalizePrompt(input: string, baseMessages: ChatMessage[]) {
+    const trimmed = input.trim();
+    if (!trimmed) return null;
+
+    const previewIndex = baseMessages.findIndex((m) => m.id === PREVIEW_ID);
+    if (previewIndex === -1) {
+      return {
+        text: trimmed,
+        messages: [...baseMessages, { id: nowID("user"), role: "user" as const, text: trimmed }],
+      };
+    }
+
+    const preview = baseMessages[previewIndex];
+    const merged = `${trimmed}\n\n[Selected text from paper]\n${preview.text}`;
+    const next = [...baseMessages];
+    next[previewIndex] = { id: nowID("user"), role: "user", text: merged };
+    return { text: merged, messages: next };
+  }
+
+  async function send(prompt: string) {
+    if (!activeSession || isSending) return;
+
+    const sessionID = activeSession.id;
+    const normalized = normalizePrompt(prompt, activeSession.messages);
+    if (!normalized) return;
+
+    const userAndHistory = normalized.messages;
+
+    patchSession(sessionID, (session) => ({
+      ...session,
+      title: session.title === "New chat" ? trimTitle(normalized.text) : session.title,
+      messages: userAndHistory,
+      draft: "",
+      queuedSelection: "",
+    }));
+
+    setIsSending(true);
+    setRequestError("");
+
+    const assistantID = nowID("assistant");
+    patchSession(sessionID, (session) => ({
+      ...session,
+      messages: [
+        ...session.messages,
+        {
+          id: assistantID,
+          role: "assistant",
+          text: "",
+          meta: `${settings.provider} / ${settings.model}`,
+        },
+      ],
+    }));
+
+    try {
+      const apiMessages: AIChatMessage[] = [
+        { role: "system", content: buildSystemPrompt(activeContext) },
+        ...userAndHistory
+          .filter((m): m is ChatMessage & { role: "user" | "assistant" } =>
+            m.role === "user" || m.role === "assistant",
+          )
+          .map((m) => ({ role: m.role, content: m.text })),
+      ];
+
+      let full = "";
+      for await (const delta of streamAIReply({ settings, messages: apiMessages })) {
+        full += delta;
+        patchSession(sessionID, (session) => ({
+          ...session,
+          messages: session.messages.map((m) =>
+            m.id === assistantID ? { ...m, text: full } : m,
+          ),
+        }));
+      }
+
+      if (!full.trim()) {
+        patchSession(sessionID, (session) => ({
+          ...session,
+          messages: session.messages.map((m) =>
+            m.id === assistantID ? { ...m, text: "(empty response)" } : m,
+          ),
+        }));
+      }
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : "Request failed.";
+      showError(msg);
+      patchSession(sessionID, (session) => ({
+        ...session,
+        messages: [
+          ...session.messages,
+          { id: nowID("assistant-error"), role: "assistant", text: `Request failed: ${msg}`, meta: "Error" },
+        ],
+      }));
+    } finally {
+      setIsSending(false);
+    }
+  }
+
+  function updateDraft(next: string) {
+    patchActive((session) => ({ ...session, draft: next }));
+  }
+
+  function insertSelectionToDraft() {
+    if (!queuedSelection) return;
+    const nextDraft = draft.trim()
+      ? `${draft.trim()}\n\n[Selected text]\n${queuedSelection}`
+      : `[Selected text]\n${queuedSelection}`;
+    updateDraft(nextDraft);
+  }
+
+  function createNewSession() {
+    const next = createSession();
+    setSessions((current) => [next, ...current]);
+    setActiveSessionID(next.id);
+    setRequestError("");
+    selectionSigRef.current = "";
+    clearSelectionMode();
+  }
+
+  function jumpToLatest() {
+    const el = messageRef.current;
+    if (!el) return;
+    autoScrollRef.current = true;
+    setShowJump(false);
+    el.scrollTop = el.scrollHeight;
+  }
+
+  function toggleMessage(id: string) {
+    setSelectedIDs((current) =>
+      current.includes(id) ? current.filter((x) => x !== id) : [...current, id],
+    );
+  }
+
+  function startLongPress(id: string) {
+    if (isSelectionMode) return;
+    longPressTriggeredRef.current = false;
+    if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
+    longPressTimerRef.current = setTimeout(() => {
+      longPressTriggeredRef.current = true;
+      setIsSelectionMode(true);
+      setSelectedIDs([id]);
+    }, 420);
+  }
+
+  function endLongPress() {
+    if (!longPressTimerRef.current) return;
+    clearTimeout(longPressTimerRef.current);
+    longPressTimerRef.current = null;
+  }
+
+  async function saveSelectionAsAnnotation() {
+    if (!canSaveToAnnotation || !selectedAnnotation || !activeContext?.attachmentItemID) {
+      return;
+    }
+
+    setIsSavingAnnotation(true);
+    setRequestError("");
+
+    try {
+      const attachment = Zotero.Items.get(activeContext.attachmentItemID) as Zotero.Item | undefined;
+      if (!attachment || !attachment.isAttachment()) {
+        throw new Error("Attachment not found for annotation.");
+      }
+
+      const comment = messages
+        .filter((m) => selectedIDs.includes(m.id))
+        .map((m) => `----- ${m.role.toUpperCase()} -----\n${m.text}`)
+        .join("\n\n");
+
+      const annotation = new Zotero.Item("annotation") as any;
+      annotation.libraryID = attachment.libraryID;
+      annotation.parentKey = attachment.key;
+      annotation.annotationType = selectedAnnotation.type || "highlight";
+      annotation.annotationPageLabel = selectedAnnotation.position.pageIndex + 1;
+      annotation.annotationText = selectedAnnotation.text || "";
+      annotation.annotationComment = comment;
+      annotation.annotationColor = selectedAnnotation.color || "#ffd400";
+      annotation.annotationPosition = JSON.stringify({
+        pageIndex: selectedAnnotation.position.pageIndex,
+        rects: selectedAnnotation.position.rects || [],
+      });
+      annotation.annotationSortIndex =
+        selectedAnnotation.sortIndex || `00000|${Date.now().toString().padStart(6, "0")}|00000`;
+
+      await annotation.saveTx();
+      clearSelectionMode();
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : "Failed to save annotation.";
+      showError(msg, 2000);
+    } finally {
+      setIsSavingAnnotation(false);
+    }
   }
 
   useEffect(() => {
@@ -271,19 +473,23 @@ export function ItemPaneSection({
       return;
     }
 
-    if (!sessions.some((session) => session.id === activeSessionID)) {
+    if (!sessions.some((s) => s.id === activeSessionID)) {
       setActiveSessionID(sessions[0].id);
     }
   }, [sessions, activeSessionID]);
 
   useEffect(() => {
+    if (data) setActiveContext(data);
+  }, [data]);
+
+  useEffect(() => {
+    setPersisted({ sessions, activeSessionID, activeContext });
+  }, [sessions, activeSessionID, activeContext]);
+
+  useEffect(() => {
     return () => {
-      if (longPressTimerRef.current) {
-        clearTimeout(longPressTimerRef.current);
-      }
-      if (errorTimeoutRef.current) {
-        clearTimeout(errorTimeoutRef.current);
-      }
+      if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
+      if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
     };
   }, []);
 
@@ -291,118 +497,83 @@ export function ItemPaneSection({
     const aside = asideRef.current;
     if (!aside) return;
 
-    const handleWheel = (e: WheelEvent) => {
-      const isScrollableElement = (e.target as Element)?.closest(
-        '[data-can-scroll="true"]',
-      );
-      if (isScrollableElement) {
-        const { scrollTop, scrollHeight, clientHeight } = isScrollableElement;
-        const isAtTop = e.deltaY < 0 && scrollTop <= 0;
-        const isAtBottom =
-          e.deltaY > 0 && scrollTop + clientHeight >= scrollHeight;
-        if (isAtTop || isAtBottom) {
-          e.preventDefault();
-        }
-        e.stopPropagation();
-      } else {
+    const onWheel = (e: WheelEvent) => {
+      const target = (e.target as Element)?.closest('[data-can-scroll="true"]') as HTMLElement | null;
+      if (!target) {
         e.preventDefault();
+        return;
       }
+      const atTop = e.deltaY < 0 && target.scrollTop <= 0;
+      const atBottom = e.deltaY > 0 && target.scrollTop + target.clientHeight >= target.scrollHeight;
+      if (atTop || atBottom) e.preventDefault();
+      e.stopPropagation();
     };
 
-    aside.addEventListener("wheel", handleWheel, { passive: false });
-    return () => aside.removeEventListener("wheel", handleWheel);
+    aside.addEventListener("wheel", onWheel, { passive: false });
+    return () => aside.removeEventListener("wheel", onWheel);
   }, []);
 
   useEffect(() => {
-    const messageContainer = messageRef.current;
-    if (!messageContainer || !autoScrollRef.current) return;
-    messageContainer.scrollTop = messageContainer.scrollHeight;
+    const list = messageRef.current;
+    if (!list || !autoScrollRef.current) return;
+    list.scrollTop = list.scrollHeight;
   }, [messages, isSending]);
 
   useEffect(() => {
-    const messageContainer = messageRef.current;
-    if (!messageContainer) return;
+    const list = messageRef.current;
+    if (!list) return;
 
-    const nearBottomThreshold = 48;
     const onScroll = () => {
-      const distanceToBottom =
-        messageContainer.scrollHeight -
-        messageContainer.scrollTop -
-        messageContainer.clientHeight;
-      const isNearBottom = distanceToBottom <= nearBottomThreshold;
-      autoScrollRef.current = isNearBottom;
-      setShowJumpToLatest(!isNearBottom);
+      const distance = list.scrollHeight - list.scrollTop - list.clientHeight;
+      const nearBottom = distance <= 48;
+      autoScrollRef.current = nearBottom;
+      setShowJump(!nearBottom);
     };
 
     onScroll();
-    messageContainer.addEventListener("scroll", onScroll, { passive: true });
-    return () => messageContainer.removeEventListener("scroll", onScroll);
+    list.addEventListener("scroll", onScroll, { passive: true });
+    return () => list.removeEventListener("scroll", onScroll);
   }, []);
-
-  useEffect(() => {
-    if (!data) return;
-    setActiveContext(data);
-  }, [data]);
-
-  useEffect(() => {
-    setPersistedState({
-      sessions,
-      activeSessionID,
-      activeContext,
-    });
-  }, [sessions, activeSessionID, activeContext]);
 
   useEffect(() => {
     if (!activeSession) return;
 
     if (!showSelectedText || !selectedText) {
-      updateActiveSession((session) => {
-        const hasPreview = session.messages.some(
-          (message) => message.id === "selection-preview",
-        );
-        if (!hasPreview && !session.queuedSelection) {
-          return session;
-        }
+      patchActive((session) => {
+        const hasPreview = session.messages.some((m) => m.id === PREVIEW_ID);
+        if (!hasPreview && !session.queuedSelection) return session;
         return {
           ...session,
-          messages: session.messages.filter(
-            (message) => message.id !== "selection-preview",
-          ),
           queuedSelection: "",
+          messages: session.messages.filter((m) => m.id !== PREVIEW_ID),
         };
       });
       return;
     }
 
-    if (selectionSignatureRef.current === selectedText) return;
+    if (selectionSigRef.current === selectedText) return;
+    selectionSigRef.current = selectedText;
 
-    selectionSignatureRef.current = selectedText;
-    updateActiveSession((session) => {
-      const previewIndex = session.messages.findIndex(
-        (message) => message.id === "selection-preview",
-      );
-      const previewMessage: ChatMessage = {
-        id: "selection-preview",
+    patchActive((session) => {
+      const index = session.messages.findIndex((m) => m.id === PREVIEW_ID);
+      const preview: ChatMessage = {
+        id: PREVIEW_ID,
         role: "user",
         text: selectedText,
         meta: "Selection preview",
       };
 
-      if (previewIndex !== -1) {
-        const nextMessages = [...session.messages];
-        nextMessages[previewIndex] = previewMessage;
+      if (index === -1) {
         return {
           ...session,
           queuedSelection: selectedText,
-          messages: nextMessages,
+          messages: [...session.messages, preview],
         };
       }
 
-      return {
-        ...session,
-        queuedSelection: selectedText,
-        messages: [...session.messages, previewMessage],
-      };
+      const next = [...session.messages];
+      next[index] = preview;
+      return { ...session, queuedSelection: selectedText, messages: next };
     });
   }, [selectedText, showSelectedText, activeSessionID]);
 
@@ -410,327 +581,25 @@ export function ItemPaneSection({
     return <EmptyPane />;
   }
 
-  const itemData = activeContext;
-
-  const canSaveToAnnotation =
-    !!queuedSelection.trim() &&
-    !!selectedAnnotation &&
-    !!itemData?.attachmentItemID &&
-    selectedMessageIds.length > 0 &&
-    !isSavingAnnotation;
-
   const quickActions = [
-    {
-      id: "summarize",
-      label: "Summarize the paper",
-      onClick: () => send("Summarize the main points of this paper."),
-    },
-    {
-      id: "critique",
-      label: "Critique the paper",
-      onClick: () => send("Critique the methodology and assumptions."),
-    },
-    {
-      id: "to-notes",
-      label: "Turn selection into notes",
-      onClick: () =>
-        send("Turn the selection into concise notes with bullets."),
-    },
-    {
-      id: "insert",
-      label: "Insert selection",
-      onClick: useSelection,
-    },
+    { id: "sum", label: "Summarize", run: () => send("Summarize the main points of this paper.") },
+    { id: "crit", label: "Critique", run: () => send("Critique the methodology and assumptions.") },
+    { id: "notes", label: "To notes", run: () => send("Turn the selection into concise notes with bullets.") },
+    { id: "ins", label: "Insert selection", run: insertSelectionToDraft },
   ];
-
-  function buildSystemPrompt() {
-    const contextPrompt = [
-      "Paper context:",
-      itemData ? `Title: ${itemData.title}` : "Title: (none)",
-      itemData ? `Creators: ${itemData.creators}` : "Creators: (none)",
-      itemData ? `Year: ${itemData.year}` : "Year: (none)",
-      itemData ? `Key: ${itemData.keyText}` : "Key: (none)",
-      itemData ? `Abstract: ${itemData.abstractPreview}` : "Abstract: (none)",
-    ]
-      .filter(Boolean)
-      .join("\n");
-    return `${currentSettings.systemPrompt}\n\n${contextPrompt}`;
-  }
-
-  async function send(prompt: string) {
-    if (!activeSession || isSending) return;
-
-    const trimmed = prompt.trim();
-    if (!trimmed) return;
-
-    const sessionID = activeSession.id;
-    const previewIndex = activeSession.messages.findIndex(
-      (message) => message.id === "selection-preview",
-    );
-
-    let updatedMessages: ChatMessage[];
-    let finalPrompt = trimmed;
-
-    if (previewIndex !== -1) {
-      const previewMessage = activeSession.messages[previewIndex];
-      finalPrompt = `${trimmed}\n\n[Selected text from paper]\n${previewMessage.text}`;
-      updatedMessages = [...activeSession.messages];
-      updatedMessages[previewIndex] = {
-        id: `user-${Date.now()}`,
-        role: "user",
-        text: finalPrompt,
-      };
-    } else {
-      updatedMessages = [
-        ...activeSession.messages,
-        {
-          id: `user-${Date.now()}`,
-          role: "user",
-          text: finalPrompt,
-        },
-      ];
-    }
-
-    updateSessionByID(sessionID, (session) => ({
-      ...session,
-      title:
-        session.title === "New chat" ? trimTitle(finalPrompt) : session.title,
-      messages: updatedMessages,
-      draft: "",
-      queuedSelection: "",
-    }));
-
-    setRequestError("");
-    setIsSending(true);
-
-    try {
-      const apiMessages: AIChatMessage[] = [
-        {
-          role: "system",
-          content: buildSystemPrompt(),
-        },
-        ...updatedMessages
-          .filter(
-            (
-              message,
-            ): message is ChatMessage & { role: "user" | "assistant" } =>
-              message.role === "user" || message.role === "assistant",
-          )
-          .map((message) => ({
-            role: message.role,
-            content: message.text,
-          })),
-      ];
-
-      const assistantMessageID = `assistant-${Date.now()}`;
-      updateSessionByID(sessionID, (session) => ({
-        ...session,
-        messages: [
-          ...session.messages,
-          {
-            id: assistantMessageID,
-            role: "assistant",
-            text: "",
-            meta: `${currentSettings.provider} / ${currentSettings.model}`,
-          },
-        ],
-      }));
-
-      let fullText = "";
-      for await (const delta of streamAIReply({
-        settings: currentSettings,
-        messages: apiMessages,
-      })) {
-        fullText += delta;
-        updateSessionByID(sessionID, (session) => ({
-          ...session,
-          messages: session.messages.map((message) =>
-            message.id === assistantMessageID
-              ? { ...message, text: fullText }
-              : message,
-          ),
-        }));
-      }
-
-      if (!fullText.trim()) {
-        updateSessionByID(sessionID, (session) => ({
-          ...session,
-          messages: session.messages.map((message) =>
-            message.id === assistantMessageID
-              ? { ...message, text: "(empty response)" }
-              : message,
-          ),
-        }));
-      }
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Request failed.";
-      if (errorTimeoutRef.current) {
-        clearTimeout(errorTimeoutRef.current);
-      }
-      setRequestError(errorMessage);
-      errorTimeoutRef.current = setTimeout(() => {
-        setRequestError("");
-      }, 5000);
-
-      updateSessionByID(sessionID, (session) => ({
-        ...session,
-        messages: [
-          ...session.messages,
-          {
-            id: `assistant-error-${Date.now()}`,
-            role: "assistant",
-            text: `Request failed: ${errorMessage}`,
-            meta: "Error",
-          },
-        ],
-      }));
-    } finally {
-      setIsSending(false);
-    }
-  }
-
-  function updateDraft(nextDraft: string) {
-    updateActiveSession((session) => ({
-      ...session,
-      draft: nextDraft,
-    }));
-  }
-
-  function useSelection() {
-    if (!queuedSelection) return;
-    const nextDraft = draft.trim()
-      ? `${draft.trim()}\n\n[Selected text]\n${queuedSelection}`
-      : `[Selected text]\n${queuedSelection}`;
-    updateDraft(nextDraft);
-  }
-
-  function jumpToLatest() {
-    const messageContainer = messageRef.current;
-    if (!messageContainer) return;
-    autoScrollRef.current = true;
-    setShowJumpToLatest(false);
-    messageContainer.scrollTop = messageContainer.scrollHeight;
-  }
-
-  function createNewSession() {
-    const nextSession = createSession();
-    setSessions((current) => [nextSession, ...current]);
-    setActiveSessionID(nextSession.id);
-    setIsSelectionMode(false);
-    setSelectedMessageIds([]);
-    setRequestError("");
-    selectionSignatureRef.current = "";
-  }
-
-  function toggleMessageSelection(messageID: string) {
-    setSelectedMessageIds((current) =>
-      current.includes(messageID)
-        ? current.filter((id) => id !== messageID)
-        : [...current, messageID],
-    );
-  }
-
-  function handleMessagePointerDown(messageID: string) {
-    if (isSelectionMode) return;
-    if (longPressTimerRef.current) {
-      clearTimeout(longPressTimerRef.current);
-    }
-    longPressTimerRef.current = setTimeout(() => {
-      setIsSelectionMode(true);
-      setSelectedMessageIds([messageID]);
-    }, 450);
-  }
-
-  function cancelLongPress() {
-    if (!longPressTimerRef.current) return;
-    clearTimeout(longPressTimerRef.current);
-    longPressTimerRef.current = null;
-  }
-
-  function clearSelectionMode() {
-    setIsSelectionMode(false);
-    setSelectedMessageIds([]);
-  }
-
-  async function saveSelectedMessagesAsAnnotation() {
-    if (
-      !canSaveToAnnotation ||
-      !selectedAnnotation ||
-      !itemData?.attachmentItemID
-    ) {
-      return;
-    }
-
-    setRequestError("");
-    setIsSavingAnnotation(true);
-    try {
-      const attachment = Zotero.Items.get(itemData.attachmentItemID) as
-        | Zotero.Item
-        | undefined;
-      if (!attachment || !attachment.isAttachment()) {
-        throw new Error("Attachment not found for annotation.");
-      }
-
-      const messageComment = messages
-        .filter((message) => selectedMessageIds.includes(message.id))
-        .map((message) => {
-          const roleLabel =
-            message.role === "assistant"
-              ? "Assistant"
-              : message.role === "user"
-                ? "User"
-                : "System";
-          return `----- ${roleLabel} -----\n${message.text}`;
-        })
-        .join("\n\n");
-
-      const annotation = new Zotero.Item("annotation") as any;
-      annotation.libraryID = attachment.libraryID;
-      annotation.parentKey = attachment.key;
-      annotation.annotationType = selectedAnnotation.type || "highlight";
-      annotation.annotationPageLabel =
-        selectedAnnotation.position.pageIndex + 1;
-      annotation.annotationText = selectedAnnotation.text || "";
-      annotation.annotationComment = messageComment;
-      annotation.annotationColor = selectedAnnotation.color || "#ffd400";
-      annotation.annotationPosition = JSON.stringify({
-        pageIndex: selectedAnnotation.position.pageIndex,
-        rects: selectedAnnotation.position.rects || [],
-      });
-      annotation.annotationSortIndex =
-        selectedAnnotation.sortIndex ||
-        `00000|${Date.now().toString().padStart(6, "0")}|00000`;
-
-      await annotation.saveTx();
-      clearSelectionMode();
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Failed to save annotation.";
-      if (errorTimeoutRef.current) {
-        clearTimeout(errorTimeoutRef.current);
-      }
-      setRequestError(errorMessage);
-      errorTimeoutRef.current = setTimeout(() => {
-        setRequestError("");
-      }, 1500);
-    } finally {
-      setIsSavingAnnotation(false);
-    }
-  }
 
   return (
     <aside
       ref={asideRef}
-      className="border-width-[0.5px] flex max-h-[80vh] min-h-0 w-full flex-col overflow-hidden border-solid border-[var(--accent-blue)] bg-[var(--material-sidepane)] text-[var(--fill-primary)]"
+      className="flex max-h-[80vh] min-h-0 w-full flex-col overflow-hidden border border-[var(--accent-blue)] bg-[var(--material-sidepane)] text-[var(--fill-primary)]"
     >
-      <section className="flex shrink-0 grow-0 flex-col gap-2 p-2.5">
+      <section className="space-y-2 p-2.5">
         <div className="flex items-center justify-between gap-1.5">
           <Button
             size="xs"
             variant="outline"
-            onClick={() => setIsHistoryOpen((current) => !current)}
-            className="h-7 border-white/15 bg-black/20 px-2 text-[12px] text-[var(--fill-primary)] hover:bg-white/10"
+            onClick={() => setIsHistoryOpen((v) => !v)}
+            className="h-7 border-white/15 bg-black/20 px-2 text-[12px] text-[var(--fill-primary)]"
           >
             {isHistoryOpen ? "Hide history" : "Show history"}
           </Button>
@@ -739,7 +608,7 @@ export function ItemPaneSection({
             variant="outline"
             onClick={createNewSession}
             disabled={isSending}
-            className="h-7 border-white/15 bg-black/20 px-2 text-[12px] text-[var(--fill-primary)] hover:bg-white/10"
+            className="h-7 border-white/15 bg-black/20 px-2 text-[12px] text-[var(--fill-primary)]"
           >
             New chat
           </Button>
@@ -747,15 +616,12 @@ export function ItemPaneSection({
 
         {isHistoryOpen ? (
           <Card className="border-white/10 bg-black/15 p-1.5">
-            <CardContent
-              data-can-scroll="true"
-              className="flex max-h-[240px] flex-col gap-1.5 overflow-y-auto p-0 pr-1"
-            >
+            <CardContent data-can-scroll="true" className="max-h-[240px] space-y-1.5 overflow-y-auto p-0 pr-1">
               {sessions
                 .slice()
                 .sort((a, b) => b.updatedAt - a.updatedAt)
                 .map((session) => {
-                  const isActive = session.id === activeSessionID;
+                  const active = session.id === activeSessionID;
                   return (
                     <button
                       key={session.id}
@@ -763,27 +629,24 @@ export function ItemPaneSection({
                       disabled={isSending}
                       onClick={() => {
                         setActiveSessionID(session.id);
-                        setIsSelectionMode(false);
-                        setSelectedMessageIds([]);
-                        setRequestError("");
                         setIsHistoryOpen(false);
+                        setRequestError("");
+                        clearSelectionMode();
                       }}
                       className={cn(
-                        "rounded-lg border p-2 text-left transition",
-                        isActive
+                        "w-full rounded-lg border p-2 text-left transition",
+                        active
                           ? "border-[var(--accent-blue)]/45 bg-[color-mix(in_srgb,var(--accent-blue)_14%,transparent)]"
                           : "border-white/10 bg-black/20 hover:bg-white/5",
                       )}
                     >
-                      <div className="flex items-center gap-2">
-                        <div className="min-w-0 flex-1 truncate pr-1 text-[13px] font-medium leading-4 text-[var(--fill-primary)]">
-                          {session.title}
-                        </div>
-                        <div className="shrink-0 whitespace-nowrap text-[12px] font-medium leading-4 text-white/80">
-                          {session.messages.length} messages |{" "}
-                          {formatUpdatedAt(session.updatedAt)}
-                        </div>
+                      <div className="truncate pr-1 text-[13px] font-medium leading-5 text-[var(--fill-primary)]">
+                        {session.title}
                       </div>
+                      <div className="mt-0.5 text-[11px] leading-4 text-white/50">
+                        {session.messages.length} messages
+                      </div>
+                      <div className="text-[11px] leading-4 text-white/45">{toTime(session.updatedAt)}</div>
                     </button>
                   );
                 })}
@@ -798,8 +661,8 @@ export function ItemPaneSection({
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-0 text-[13px] leading-relaxed text-white/65">
-            {itemData
-              ? `${itemData.title} / ${itemData.creators} / ${itemData.year} / ${itemData.keyText}`
+            {activeContext
+              ? `${activeContext.title} / ${activeContext.creators} / ${activeContext.year} / ${activeContext.keyText}`
               : "No active item context"}
           </CardContent>
         </Card>
@@ -814,65 +677,63 @@ export function ItemPaneSection({
           <div
             key={message.id}
             className={isSelectionMode ? "cursor-pointer select-none" : ""}
-            onPointerDown={() => handleMessagePointerDown(message.id)}
-            onPointerUp={cancelLongPress}
-            onPointerLeave={cancelLongPress}
-            onPointerCancel={cancelLongPress}
+            onPointerDown={() => startLongPress(message.id)}
+            onPointerUp={endLongPress}
+            onPointerLeave={endLongPress}
+            onPointerCancel={endLongPress}
             onClick={() => {
-              if (isSelectionMode) {
-                toggleMessageSelection(message.id);
+              if (!isSelectionMode) return;
+              if (longPressTriggeredRef.current) {
+                longPressTriggeredRef.current = false;
+                return;
               }
+              toggleMessage(message.id);
             }}
           >
             <MessageBubble
               message={message}
               selectionMode={isSelectionMode}
-              selected={selectedMessageIds.includes(message.id)}
+              selected={selectedIDs.includes(message.id)}
             />
           </div>
         ))}
 
-        {isSending ? (
-          <div className="text-sm text-white/55">Thinking...</div>
-        ) : null}
+        {isSending ? <div className="text-sm text-white/55">Thinking...</div> : null}
 
-        {showJumpToLatest ? (
+        {showJump ? (
           <Button
             type="button"
             size="xs"
             variant="outline"
             onClick={jumpToLatest}
-            className="sticky bottom-0 ml-auto rounded-full border-white/15 bg-black/60 px-2.5 text-[12px] text-white/80 backdrop-blur-sm hover:bg-black/75"
+            className="sticky bottom-0 ml-auto rounded-full border-white/15 bg-black/60 px-2.5 text-[12px] text-white/80"
           >
             Jump to latest
           </Button>
         ) : null}
       </section>
 
-      <section className="flex shrink-0 grow-0 flex-col gap-2 border-t border-white/10 p-2.5">
-        {quickActions.length > 0 ? (
-          <div className="flex flex-wrap gap-2">
-            {quickActions.map((action) => (
-              <Button
-                key={action.id}
-                size="xs"
-                variant="outline"
-                onClick={action.onClick}
-                disabled={isSending || isSelectionMode}
-                className="rounded-full border-white/10 bg-black/10 px-2 text-[12px] text-white/75 hover:bg-white/10"
-              >
-                {action.label}
-              </Button>
-            ))}
-          </div>
-        ) : null}
+      <section className="space-y-2 border-t border-white/10 p-2.5">
+        <div className="flex flex-wrap gap-1.5">
+          {quickActions.map((action) => (
+            <Button
+              key={action.id}
+              size="xs"
+              variant="outline"
+              onClick={action.run}
+              disabled={isSending || isSelectionMode}
+              className="rounded-full border-white/10 bg-black/10 px-2 text-[12px] text-white/75"
+            >
+              {action.label}
+            </Button>
+          ))}
+        </div>
 
         {isSelectionMode ? (
           <Card className="border-white/10 bg-black/20 px-2.5 py-1.5">
             <CardContent className="flex items-center justify-between p-0">
               <div className="text-[13px] text-white/70">
-                Selected {selectedMessageIds.length} message
-                {selectedMessageIds.length === 1 ? "" : "s"}
+                Selected {selectedIDs.length} message{selectedIDs.length === 1 ? "" : "s"}
               </div>
               <div className="flex items-center gap-2">
                 <Button
@@ -888,7 +749,7 @@ export function ItemPaneSection({
                   type="button"
                   size="xs"
                   variant="outline"
-                  onClick={saveSelectedMessagesAsAnnotation}
+                  onClick={saveSelectionAsAnnotation}
                   disabled={!canSaveToAnnotation}
                   className="h-7 border-white/10 bg-transparent px-2 text-[12px] text-white/80"
                   title={
@@ -911,7 +772,7 @@ export function ItemPaneSection({
               rows={3}
               placeholder="Ask about the paper..."
               value={draft}
-              onChange={(event) => updateDraft(event.target.value)}
+              onChange={(e) => updateDraft(e.target.value)}
               disabled={isSending || isSelectionMode}
               className="min-h-[76px] resize-none border-white/10 bg-transparent text-[14px] leading-6 text-[var(--fill-primary)] placeholder:text-white/35"
             />
@@ -920,46 +781,29 @@ export function ItemPaneSection({
 
             <div className="flex items-center justify-between gap-2">
               <div className="flex flex-wrap gap-1.5">
-                <Badge
-                  variant="outline"
-                  className="border-white/10 px-1.5 py-0 text-[12px] text-white/65"
-                >
-                  {currentSettings.provider}
+                <Badge variant="outline" className="border-white/10 px-1.5 py-0 text-[12px] text-white/65">
+                  {settings.provider}
                 </Badge>
-                <Badge
-                  variant="outline"
-                  className="border-white/10 px-1.5 py-0 text-[12px] text-white/65"
-                >
-                  {currentSettings.model}
+                <Badge variant="outline" className="border-white/10 px-1.5 py-0 text-[12px] text-white/65">
+                  {settings.model}
                 </Badge>
                 {queuedSelection ? (
-                  <Badge
-                    variant="outline"
-                    className="border-white/10 px-1.5 py-0 text-[12px] text-white/65"
-                  >
+                  <Badge variant="outline" className="border-white/10 px-1.5 py-0 text-[12px] text-white/65">
                     Selection Ready
                   </Badge>
                 ) : null}
-                <Badge
-                  variant="outline"
-                  className="border-white/10 px-1.5 py-0 text-[12px] text-white/50"
-                >
-                  Markdown-ready
-                </Badge>
               </div>
 
               <Button
-                disabled={!draft.trim() || isSending || isSelectionMode}
                 onClick={() => send(draft)}
-                className="rounded-lg bg-blue-600 px-3 py-1.5 text-[13px] font-semibold shadow-lg hover:brightness-110"
+                disabled={!draft.trim() || isSending || isSelectionMode}
+                className="rounded-lg bg-blue-600 px-3 py-1.5 text-[13px] font-semibold"
               >
                 {isSending ? "Sending..." : "Send"}
               </Button>
             </div>
 
-            {requestError ? (
-              <div className="text-[13px] text-red-300">{requestError}</div>
-            ) : null}
+            {requestError ? <div className="text-[13px] text-red-300">{requestError}</div> : null}
           </CardContent>
         </Card>
       </section>
