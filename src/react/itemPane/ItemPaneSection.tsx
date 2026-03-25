@@ -47,11 +47,6 @@ function setPersistedState(state: PersistedChatState) {
   win.__insituaiItemPaneChatState = state;
 }
 
-function makeSelectionPrompt(selection: string) {
-  // return `Use this selection as evidence and explain its role in the paper:\n\n${selection}`;
-  return selection;
-}
-
 function createInitialMessages(): ChatMessage[] {
   return [
     {
@@ -319,24 +314,24 @@ export function ItemPaneSection({
     const trimmed = prompt.trim();
     if (!trimmed) return;
 
-    // 查找预览消息
+    // 查找预览消息并构建新的消息列表
     const previewIndex = messages.findIndex(
       (msg) => msg.id === "selection-preview",
     );
+    let updatedMessages: ChatMessage[];
     let finalPrompt = trimmed;
 
     if (previewIndex !== -1) {
       const previewMessage = messages[previewIndex];
-      // 合并预览文本和用户输入
-      finalPrompt = `${makeSelectionPrompt(previewMessage.text)}\n\n${trimmed}`;
+      // 合并：用户指令在前，选中的文本在后，使用更明确的格式
+      finalPrompt = `${trimmed}\n\n[Selected text from paper]\n${previewMessage.text}`;
       // 替换预览消息为合并后的消息
-      const newMessages = [...messages];
-      newMessages[previewIndex] = {
+      updatedMessages = [...messages];
+      updatedMessages[previewIndex] = {
         id: `user-${Date.now()}`,
         role: "user",
         text: finalPrompt,
       };
-      setMessages(newMessages);
     } else {
       // 没有预览消息，直接添加用户消息
       const userMessage: ChatMessage = {
@@ -344,21 +339,24 @@ export function ItemPaneSection({
         role: "user",
         text: finalPrompt,
       };
-      setMessages((current) => [...current, userMessage]);
+      updatedMessages = [...messages, userMessage];
     }
 
+    // 先更新状态
+    setMessages(updatedMessages);
     setDraft("");
     setQueuedSelection("");
     setRequestError("");
     setIsSending(true);
 
     try {
+      // 使用更新后的消息构建 API 请求
       const apiMessages: AIChatMessage[] = [
         {
           role: "system",
           content: buildSystemPrompt(),
         },
-        ...messages
+        ...updatedMessages
           .filter(
             (
               message,
@@ -433,8 +431,8 @@ export function ItemPaneSection({
   function useSelection() {
     if (!queuedSelection) return;
     const nextDraft = draft.trim()
-      ? `${draft.trim()}\n\n${makeSelectionPrompt(queuedSelection)}`
-      : makeSelectionPrompt(queuedSelection);
+      ? `${draft.trim()}\n\n[Selected text]\n${queuedSelection}`
+      : `[Selected text]\n${queuedSelection}`;
     setDraft(nextDraft);
   }
 
@@ -641,7 +639,7 @@ export function ItemPaneSection({
                   title={
                     queuedSelection.trim()
                       ? "Create annotation with selected messages in comment"
-                      : "Select text in Reader first"
+                      : "Select text in reader first"
                   }
                   className="rounded-md border border-white/10 px-2 py-1 text-[11px] text-white/80 disabled:opacity-40"
                 >
