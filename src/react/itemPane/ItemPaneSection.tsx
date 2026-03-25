@@ -474,25 +474,26 @@ export function ItemPaneSection({
         })
         .join("\n\n");
 
-      const annotationJSON = {
-        ...selectedAnnotation,
-        comment: messageComment,
-        readOnly: false,
-        isExternal: false,
-        dateModified: new Date().toISOString(),
-      } as _ZoteroTypes.Annotations.AnnotationJson;
+      // Use the correct Zotero API to create annotation
+      // Based on user's working example
+      const annotation = new Zotero.Item("annotation") as any;
+      annotation.libraryID = attachment.libraryID;
+      annotation.parentKey = attachment.key; // Set parent PDF item key
+      annotation.annotationType = selectedAnnotation.type || "highlight";
+      annotation.annotationPage = selectedAnnotation.position.pageIndex + 1; // Page numbers start from 1
+      annotation.annotationText = selectedAnnotation.text || "";
+      annotation.annotationComment = messageComment;
+      annotation.annotationColor = selectedAnnotation.color || "#ffd400";
+      annotation.annotationPosition = JSON.stringify({
+        pageIndex: selectedAnnotation.position.pageIndex,
+        rects: selectedAnnotation.position.rects || [],
+      });
+      annotation.annotationSortIndex =
+        selectedAnnotation.sortIndex ||
+        `00000|${Date.now().toString().padStart(6, "0")}|00000`;
 
-      // Only generate new key if not present (should be present from selectedAnnotation)
-      if (!annotationJSON.id) {
-        const keyGenerator = (Zotero as any).DataObjectUtilities?.generateKey;
-        if (typeof keyGenerator === "function") {
-          const key = keyGenerator();
-          annotationJSON.key = key;
-          annotationJSON.id = key;
-        }
-      }
+      await annotation.saveTx();
 
-      await Zotero.Annotations.saveFromJSON(attachment, annotationJSON);
       clearSelectionMode();
     } catch (error) {
       const errorMessage =
