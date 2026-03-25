@@ -88,10 +88,12 @@ export function ItemPaneSection({
   const [queuedSelection, setQueuedSelection] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [requestError, setRequestError] = useState("");
+  const [showJumpToLatest, setShowJumpToLatest] = useState(false);
   const selectionSignatureRef = useRef("");
   const itemSignature = data?.keyText ?? "";
   const asideRef = useRef<HTMLElement | null>(null);
   const messageRef = useRef<HTMLDivElement | null>(null);
+  const autoScrollRef = useRef(true);
   const currentSettings = loadAISettings();
 
   useEffect(() => {
@@ -123,11 +125,31 @@ export function ItemPaneSection({
   useEffect(() => {
     const messageContainer = messageRef.current;
     if (!messageContainer) return;
-    messageContainer.scrollTo({
-      top: messageContainer.scrollHeight,
-      behavior: "smooth",
-    });
+    if (!autoScrollRef.current) {
+      return;
+    }
+    messageContainer.scrollTop = messageContainer.scrollHeight;
   }, [messages, isSending]);
+
+  useEffect(() => {
+    const messageContainer = messageRef.current;
+    if (!messageContainer) return;
+
+    const nearBottomThreshold = 48;
+    const onScroll = () => {
+      const distanceToBottom =
+        messageContainer.scrollHeight -
+        messageContainer.scrollTop -
+        messageContainer.clientHeight;
+      const isNearBottom = distanceToBottom <= nearBottomThreshold;
+      autoScrollRef.current = isNearBottom;
+      setShowJumpToLatest(!isNearBottom);
+    };
+
+    onScroll();
+    messageContainer.addEventListener("scroll", onScroll, { passive: true });
+    return () => messageContainer.removeEventListener("scroll", onScroll);
+  }, []);
 
   useEffect(() => {
     if (!data) {
@@ -144,6 +166,8 @@ export function ItemPaneSection({
     setDraft("");
     setQueuedSelection(showSelectedText ? selectedText : "");
     setRequestError("");
+    autoScrollRef.current = true;
+    setShowJumpToLatest(false);
     selectionSignatureRef.current = showSelectedText ? selectedText : "";
   }, [itemSignature, data, selectedText, showSelectedText]);
 
@@ -308,6 +332,14 @@ export function ItemPaneSection({
     setDraft(nextDraft);
   }
 
+  function jumpToLatest() {
+    const messageContainer = messageRef.current;
+    if (!messageContainer) return;
+    autoScrollRef.current = true;
+    setShowJumpToLatest(false);
+    messageContainer.scrollTop = messageContainer.scrollHeight;
+  }
+
   return (
     <aside
       ref={asideRef}
@@ -328,13 +360,22 @@ export function ItemPaneSection({
       <section
         data-can-scroll="true"
         ref={messageRef}
-        className="flex max-h-[40vh] min-h-0 flex-1 flex-col gap-3 overflow-hidden overflow-y-auto p-3"
+        className="relative flex max-h-[40vh] min-h-0 flex-1 flex-col gap-3 overflow-hidden overflow-y-auto p-3"
       >
         {messages.map((message) => (
           <MessageBubble key={message.id} message={message} />
         ))}
         {isSending ? (
           <div className="text-xs text-white/55">Thinking...</div>
+        ) : null}
+        {showJumpToLatest ? (
+          <button
+            type="button"
+            onClick={jumpToLatest}
+            className="sticky bottom-0 self-end rounded-full border border-white/15 bg-black/60 px-3 py-1 text-[11px] font-medium text-white/80 backdrop-blur-sm transition hover:bg-black/75"
+          >
+            Jump to latest
+          </button>
         ) : null}
       </section>
 
