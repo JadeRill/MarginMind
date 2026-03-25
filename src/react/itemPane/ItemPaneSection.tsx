@@ -480,7 +480,8 @@ export function ItemPaneSection({
       annotation.libraryID = attachment.libraryID;
       annotation.parentKey = attachment.key; // Set parent PDF item key
       annotation.annotationType = selectedAnnotation.type || "highlight";
-      annotation.annotationPage = selectedAnnotation.position.pageIndex + 1; // Page numbers start from 1
+      annotation.annotationPageLabel =
+        selectedAnnotation.position.pageIndex + 1; // Page numbers start from 1
       annotation.annotationText = selectedAnnotation.text || "";
       annotation.annotationComment = messageComment;
       annotation.annotationColor = selectedAnnotation.color || "#ffd400";
