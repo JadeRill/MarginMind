@@ -22,7 +22,7 @@ const readerSelectionHandler: _ZoteroTypes.Reader.EventHandler<
   const page = annotation.position.pageIndex + 1;
 
   if (!text) return;
-  updateSelectedText(`page ${page}, ${text}`, annotation);
+  updateSelectedText(`${text} (page ${page})`, annotation);
 };
 
 function registerItemPaneSection() {
