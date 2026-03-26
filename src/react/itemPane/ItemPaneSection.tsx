@@ -695,7 +695,7 @@ export function ItemPaneSection({
           <Card className="border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_86%,var(--fill-primary)_8%)] p-1.5">
             <CardContent
               data-can-scroll="true"
-              className="max-h-[240px] space-y-1.5 overflow-y-auto p-0 pr-1"
+              className="max-h-[240px] space-y-1.5 p-0 pr-1"
             >
               {sessions
                 .slice()
@@ -720,7 +720,7 @@ export function ItemPaneSection({
                           : "border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_82%,var(--fill-primary)_8%)] hover:bg-[color-mix(in_srgb,var(--material-sidepane)_78%,var(--fill-primary)_12%)]",
                       )}
                     >
-                      <div className="truncate pr-1 text-[13px] font-medium text-[var(--fill-primary)]">
+                      <div className="line-clamp-1 pr-1 text-[13px] font-medium text-[var(--fill-primary)]">
                         {session.title}
                       </div>
                       <div className="mt-3 flex justify-between text-[12px] text-[color-mix(in_srgb,var(--fill-primary)_56%,transparent)]">
