@@ -61,10 +61,11 @@ const ROLE_LABEL: Record<ChatRole, string> = {
   system: "Selection",
 };
 const ROLE_BUBBLE: Record<ChatRole, string> = {
-  system: "border-blue-400/30 bg-blue-500/10 text-[13px] text-white/80",
+  system:
+    "border-[color-mix(in_srgb,var(--accent-blue)_35%,transparent)] bg-[color-mix(in_srgb,var(--accent-blue)_16%,transparent)] text-[13px] text-[color-mix(in_srgb,var(--fill-primary)_88%,transparent)]",
   assistant:
-    "border-white/10 bg-white/5 text-[14px] text-[var(--fill-primary)]",
-  user: "border-blue-400/40 bg-blue-500/20 text-[14px] text-[var(--fill-primary)]",
+    "border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[14px] text-[var(--fill-primary)]",
+  user: "border-[color-mix(in_srgb,var(--accent-blue)_45%,transparent)] bg-[color-mix(in_srgb,var(--accent-blue)_20%,transparent)] text-[14px] text-[var(--fill-primary)]",
 };
 const QUICK_ACTIONS = [
   {
@@ -544,9 +545,9 @@ export function ItemPaneSection({
 
   if (!activeContext && !messages.length) {
     return (
-      <Card className="h-full rounded-xl border-white/10 bg-[var(--material-sidepane)] px-4 py-5 text-[var(--fill-primary)]">
+      <Card className="h-full rounded-xl border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] bg-[var(--material-sidepane)] px-4 py-5 text-[var(--fill-primary)]">
         <CardTitle className="text-[16px]">No item selected</CardTitle>
-        <CardDescription className="mt-1 text-[14px] text-white/55">
+        <CardDescription className="mt-1 text-[14px] text-[color-mix(in_srgb,var(--fill-primary)_58%,transparent)]">
           Select an item to open the assistant workspace.
         </CardDescription>
       </Card>
@@ -556,7 +557,7 @@ export function ItemPaneSection({
   return (
     <aside
       ref={asideRef}
-      className="flex max-h-[80vh] min-h-0 w-full flex-col overflow-hidden border border-[var(--accent-blue)] bg-[var(--material-sidepane)] text-[var(--fill-primary)]"
+      className="flex max-h-[80vh] min-h-0 w-full flex-col overflow-hidden border border-[color-mix(in_srgb,var(--accent-blue)_40%,var(--fill-primary)_12%)] bg-[var(--material-sidepane)] text-[var(--fill-primary)]"
     >
       <section className="space-y-2 p-2.5">
         <div className="flex items-center justify-between gap-1.5">
@@ -564,7 +565,7 @@ export function ItemPaneSection({
             size="xs"
             variant="outline"
             onClick={() => setIsHistoryOpen((v) => !v)}
-            className="h-7 border-white/15 bg-black/20 px-2 text-[12px] text-[var(--fill-primary)]"
+            className="h-7 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] px-2 text-[12px] text-[var(--fill-primary)]"
           >
             {isHistoryOpen ? "Hide history" : "Show history"}
           </Button>
@@ -573,14 +574,14 @@ export function ItemPaneSection({
             variant="outline"
             onClick={createNewSession}
             disabled={isSending}
-            className="h-7 border-white/15 bg-black/20 px-2 text-[12px] text-[var(--fill-primary)]"
+            className="h-7 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] px-2 text-[12px] text-[var(--fill-primary)]"
           >
             New chat
           </Button>
         </div>
 
         {isHistoryOpen ? (
-          <Card className="border-white/10 bg-black/20 p-1.5">
+          <Card className="border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_86%,var(--fill-primary)_8%)] p-1.5">
             <CardContent
               data-can-scroll="true"
               className="max-h-[240px] space-y-1.5 overflow-y-auto p-0 pr-1"
@@ -604,14 +605,14 @@ export function ItemPaneSection({
                       className={cn(
                         "w-full rounded-lg border p-2 text-left transition",
                         active
-                          ? "border-blue-400/45 bg-blue-500/15"
-                          : "border-white/10 bg-black/20 hover:bg-white/5",
+                          ? "border-[color-mix(in_srgb,var(--accent-blue)_50%,transparent)] bg-[color-mix(in_srgb,var(--accent-blue)_20%,transparent)]"
+                          : "border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_82%,var(--fill-primary)_8%)] hover:bg-[color-mix(in_srgb,var(--material-sidepane)_78%,var(--fill-primary)_12%)]",
                       )}
                     >
                       <div className="truncate pr-1 text-[13px] font-medium text-[var(--fill-primary)]">
                         {session.title}
                       </div>
-                      <div className="mt-3 flex justify-between text-[12px] text-white/50">
+                      <div className="mt-3 flex justify-between text-[12px] text-[color-mix(in_srgb,var(--fill-primary)_56%,transparent)]">
                         <span>{toTime(session.updatedAt)}</span>
                         <span>{session.messages.length} messages</span>
                       </div>
@@ -624,9 +625,9 @@ export function ItemPaneSection({
 
         <div
           title={contextTooltip}
-          className="flex items-center gap-1.5 rounded-md border border-white/10 bg-black/10 p-2 text-[12px] text-white/55"
+          className="flex items-center gap-1.5 rounded-md border border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_88%,var(--fill-primary)_7%)] p-2 text-[12px] text-[color-mix(in_srgb,var(--fill-primary)_60%,transparent)]"
         >
-          <span className="shrink-0 font-semibold uppercase tracking-wide text-white/40">
+          <span className="shrink-0 font-semibold uppercase tracking-wide text-[color-mix(in_srgb,var(--fill-primary)_44%,transparent)]">
             CONTEXT
           </span>
           {/* <span className="min-w-0 truncate">{contextSummary}</span> */}
@@ -666,7 +667,7 @@ export function ItemPaneSection({
                   ROLE_BUBBLE[message.role],
                   isSelectionMode ? "select-none" : "select-text",
                   isSelectionMode && selectedIDs.includes(message.id)
-                    ? "ring-2 ring-blue-400/60"
+                    ? "ring-2 ring-[color-mix(in_srgb,var(--accent-blue)_62%,transparent)]"
                     : "",
                 )}
               >
@@ -675,13 +676,15 @@ export function ItemPaneSection({
                     type="checkbox"
                     checked={selectedIDs.includes(message.id)}
                     readOnly
-                    className="absolute right-2 top-2 h-4 w-4 accent-blue-500"
+                    className="absolute right-2 top-2 h-4 w-4 accent-[var(--accent-blue)]"
                   />
                 ) : null}
-                <div className="mb-1 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-white/45">
+                <div className="mb-1 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-[color-mix(in_srgb,var(--fill-primary)_48%,transparent)]">
                   <span>{ROLE_LABEL[message.role]}</span>
                   {message.meta ? (
-                    <span className="text-white/30">{message.meta}</span>
+                    <span className="text-[color-mix(in_srgb,var(--fill-primary)_36%,transparent)]">
+                      {message.meta}
+                    </span>
                   ) : null}
                 </div>
                 <MessageContent message={message} />
@@ -691,7 +694,9 @@ export function ItemPaneSection({
         ))}
 
         {isSending ? (
-          <div className="text-sm text-white/55">Thinking...</div>
+          <div className="text-sm text-[color-mix(in_srgb,var(--fill-primary)_60%,transparent)]">
+            Thinking...
+          </div>
         ) : null}
         {showJump ? (
           <Button
@@ -699,14 +704,14 @@ export function ItemPaneSection({
             size="xs"
             variant="outline"
             onClick={jumpToLatest}
-            className="sticky bottom-0 ml-auto rounded-full border-white/15 bg-black/60 px-2.5 text-[12px] text-white/80"
+            className="sticky bottom-0 ml-auto rounded-full border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_72%,var(--fill-primary)_16%)] px-2.5 text-[12px] text-[color-mix(in_srgb,var(--fill-primary)_84%,transparent)]"
           >
             Jump to latest
           </Button>
         ) : null}
       </section>
 
-      <section className="space-y-2 border-t border-white/10 p-2.5">
+      <section className="space-y-2 border-t border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] p-2.5">
         <div className="flex flex-wrap gap-1.5">
           {QUICK_ACTIONS.map((a) => (
             <Button
@@ -715,7 +720,7 @@ export function ItemPaneSection({
               variant="outline"
               onClick={() => send(a.prompt)}
               disabled={isSending || isSelectionMode}
-              className="rounded-full border-white/10 bg-black/10 px-2 text-[12px] text-white/75"
+              className="rounded-full border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_88%,var(--fill-primary)_8%)] px-2 text-[12px] text-[color-mix(in_srgb,var(--fill-primary)_78%,transparent)]"
             >
               {a.label}
             </Button>
@@ -725,16 +730,16 @@ export function ItemPaneSection({
             variant="outline"
             onClick={insertSelectionToDraft}
             disabled={isSending || isSelectionMode}
-            className="rounded-full border-white/10 bg-black/10 px-2 text-[12px] text-white/75"
+            className="rounded-full border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_88%,var(--fill-primary)_8%)] px-2 text-[12px] text-[color-mix(in_srgb,var(--fill-primary)_78%,transparent)]"
           >
             Insert selection
           </Button>
         </div>
 
         {isSelectionMode ? (
-          <Card className="border-white/10 bg-black/20 px-2.5 py-1.5">
+          <Card className="border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_86%,var(--fill-primary)_8%)] px-2.5 py-1.5">
             <CardContent className="flex items-center justify-between p-0">
-              <div className="text-[13px] text-white/70">
+              <div className="text-[13px] text-[color-mix(in_srgb,var(--fill-primary)_72%,transparent)]">
                 Selected {selectedIDs.length} message
                 {selectedIDs.length === 1 ? "" : "s"}
               </div>
@@ -744,7 +749,7 @@ export function ItemPaneSection({
                   size="xs"
                   variant="outline"
                   onClick={clearSelectionMode}
-                  className="h-7 border-white/10 bg-transparent px-2 text-[12px] text-white/80"
+                  className="h-7 border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] bg-transparent px-2 text-[12px] text-[color-mix(in_srgb,var(--fill-primary)_82%,transparent)]"
                 >
                   Cancel
                 </Button>
@@ -754,7 +759,7 @@ export function ItemPaneSection({
                   variant="outline"
                   onClick={saveSelectionAsAnnotation}
                   disabled={!canSaveToAnnotation}
-                  className="h-7 border-white/10 bg-transparent px-2 text-[12px] text-white/80"
+                  className="h-7 border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] bg-transparent px-2 text-[12px] text-[color-mix(in_srgb,var(--fill-primary)_82%,transparent)]"
                   title={
                     queuedSelection.trim()
                       ? "Create annotation with selected messages in comment"
@@ -768,7 +773,7 @@ export function ItemPaneSection({
           </Card>
         ) : null}
 
-        <Card className="border-white/10 bg-black/10 p-2.5">
+        <Card className="border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_90%,var(--fill-primary)_7%)] p-2.5">
           <CardContent className="space-y-2 p-0">
             <Textarea
               data-can-scroll="true"
@@ -777,29 +782,29 @@ export function ItemPaneSection({
               value={draft}
               onChange={(e) => updateDraft(e.target.value)}
               disabled={isSending || isSelectionMode}
-              className="min-h-[76px] resize-none border-white/10 bg-transparent text-[14px] leading-6 text-[var(--fill-primary)] placeholder:text-white/35"
+              className="min-h-[76px] resize-none border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] bg-transparent text-[14px] leading-6 text-[var(--fill-primary)] placeholder:text-[color-mix(in_srgb,var(--fill-primary)_38%,transparent)]"
             />
 
-            <Separator className="bg-white/5" />
+            <Separator className="bg-[color-mix(in_srgb,var(--fill-primary)_12%,transparent)]" />
 
             <div className="flex items-center justify-between gap-2">
               <div className="flex flex-wrap gap-1.5">
                 <Badge
                   variant="outline"
-                  className="border-white/10 px-1.5 py-0 text-[12px] text-white/65"
+                  className="border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] px-1.5 py-0 text-[12px] text-[color-mix(in_srgb,var(--fill-primary)_68%,transparent)]"
                 >
                   {settings.provider}
                 </Badge>
                 <Badge
                   variant="outline"
-                  className="border-white/10 px-1.5 py-0 text-[12px] text-white/65"
+                  className="border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] px-1.5 py-0 text-[12px] text-[color-mix(in_srgb,var(--fill-primary)_68%,transparent)]"
                 >
                   {settings.model}
                 </Badge>
                 {queuedSelection ? (
                   <Badge
                     variant="outline"
-                    className="border-white/10 px-1.5 py-0 text-[12px] text-white/65"
+                    className="border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] px-1.5 py-0 text-[12px] text-[color-mix(in_srgb,var(--fill-primary)_68%,transparent)]"
                   >
                     Selection Ready
                   </Badge>
@@ -808,14 +813,16 @@ export function ItemPaneSection({
               <Button
                 onClick={() => send(draft)}
                 disabled={!draft.trim() || isSending || isSelectionMode}
-                className="rounded-lg bg-blue-600 px-3 py-1.5 text-[13px] font-semibold"
+                className="rounded-lg border border-[color-mix(in_srgb,var(--accent-blue)_55%,transparent)] bg-[color-mix(in_srgb,var(--accent-blue)_82%,var(--material-sidepane)_18%)] px-3 py-1.5 text-[13px] font-semibold text-[var(--fill-primary-inverse,var(--fill-primary))]"
               >
                 {isSending ? "Sending..." : "Send"}
               </Button>
             </div>
 
             {requestError ? (
-              <div className="text-[13px] text-red-300">{requestError}</div>
+              <div className="text-[13px] text-[var(--accent-red,#d14)]">
+                {requestError}
+              </div>
             ) : null}
           </CardContent>
         </Card>
