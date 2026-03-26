@@ -198,7 +198,7 @@ function MessageContent({ message }: { message: ChatMessage }) {
     return (
       <div
         data-render-mode="plain"
-        className="select-text whitespace-pre-wrap text-[16px] leading-8"
+        className="select-text whitespace-pre-wrap text-[20px] leading-[32px]"
       >
         {message.text}
       </div>
@@ -206,7 +206,7 @@ function MessageContent({ message }: { message: ChatMessage }) {
   }
 
   return (
-    <div className="select-text text-[16px] leading-8">
+    <div className="select-text text-[20px] leading-[32px]">
       <Markdown
         remarkPlugins={[remarkGfm, remarkMath]}
         rehypePlugins={[rehypeKatex, rehypeHighlight]}
@@ -491,7 +491,7 @@ export function ItemPaneSection({
         selectedAnnotation.position.pageIndex + 1;
       annotation.annotationText = selectedAnnotation.text || "";
       annotation.annotationComment = comment;
-      annotation.annotationColor = selectedAnnotation.color || "#ffd400";
+      annotation.annotationColor = selectedAnnotation.color || "#8000ff";
       annotation.annotationPosition = JSON.stringify({
         pageIndex: selectedAnnotation.position.pageIndex,
         rects: selectedAnnotation.position.rects || [],
