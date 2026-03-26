@@ -5,6 +5,7 @@ import remarkMath from "remark-math";
 import rehypeHighlight from "rehype-highlight";
 import rehypeKatex from "rehype-katex";
 import { streamAIReply, type AIChatMessage } from "../../modules/aiService";
+import { getPref } from "../../utils/prefs";
 import { loadAISettings } from "../../utils/aiPrefs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -258,6 +259,7 @@ export function ItemPaneSection({
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const settings = loadAISettings();
+  const annotationColor = getPref("annotationColor");
   const activeSession = useMemo(
     () => sessions.find((s) => s.id === activeSessionID) ?? sessions[0],
     [sessions, activeSessionID],
@@ -491,7 +493,7 @@ export function ItemPaneSection({
         selectedAnnotation.position.pageIndex + 1;
       annotation.annotationText = selectedAnnotation.text || "";
       annotation.annotationComment = comment;
-      annotation.annotationColor = selectedAnnotation.color || "#8000ff";
+      annotation.annotationColor = selectedAnnotation.color || annotationColor;
       annotation.annotationPosition = JSON.stringify({
         pageIndex: selectedAnnotation.position.pageIndex,
         rects: selectedAnnotation.position.rects || [],

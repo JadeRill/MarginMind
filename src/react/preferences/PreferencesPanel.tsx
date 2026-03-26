@@ -27,11 +27,13 @@ import { Textarea } from "@/components/ui/textarea";
 type BaseSettings = {
   enable: boolean;
   input: string;
+  annotationColor: string;
 };
 
 const DEFAULT_BASE_SETTINGS: BaseSettings = {
   enable: true,
   input: "This is input",
+  annotationColor: "#8000ff",
 };
 
 export function PreferencesPanel() {
@@ -46,6 +48,7 @@ export function PreferencesPanel() {
     setBaseSettings({
       enable: getPref("enable"),
       input: getPref("input"),
+      annotationColor: getPref("annotationColor") || "#8000ff",
     });
     setAISettings(loadAISettings());
   }, []);
@@ -74,10 +77,18 @@ export function PreferencesPanel() {
     value: BaseSettings[K],
   ) {
     setBaseSettings((current) => ({ ...current, [key]: value }));
-    if (key === "enable") {
-      setPref("enable", value as boolean);
-    } else {
-      setPref("input", value as string);
+    switch (key) {
+      case "enable":
+        setPref("enable", value as boolean);
+        break;
+      case "input":
+        setPref("input", value as string);
+        break;
+      case "annotationColor":
+        setPref("annotationColor", value as string);
+        break;
+      default:
+        break;
     }
     markSaved();
   }
@@ -185,6 +196,29 @@ export function PreferencesPanel() {
                 className="border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[var(--fill-primary)]"
               />
             </div>
+            <label className="space-y-1.5">
+              <span className="block text-[12px] font-medium uppercase tracking-wide text-[color-mix(in_srgb,var(--fill-primary)_58%,transparent)]">
+                Annotation Color
+              </span>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={baseSettings.annotationColor}
+                  onChange={(event) =>
+                    updateBaseSetting("annotationColor", event.target.value)
+                  }
+                  className="h-8 w-12 cursor-pointer rounded border border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-transparent p-1"
+                />
+                <Input
+                  type="text"
+                  value={baseSettings.annotationColor}
+                  onChange={(event) =>
+                    updateBaseSetting("annotationColor", event.target.value)
+                  }
+                  className="h-8 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[var(--fill-primary)]"
+                />
+              </div>
+            </label>
           </CardContent>
         </Card>
 
