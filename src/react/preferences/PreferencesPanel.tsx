@@ -119,11 +119,11 @@ export function PreferencesPanel() {
   }
 
   return (
-    <section className="relative min-h-[320px] w-[92%] overflow-hidden rounded-xl border border-[color-mix(in_srgb,var(--accent-blue)_30%,transparent)] bg-[linear-gradient(145deg,color-mix(in_srgb,var(--material-sidepane)_88%,var(--accent-blue)_12%),var(--material-sidepane))] p-5 text-[var(--fill-primary)]">
+    <section className="relative min-h-[320px] rounded-xl border border-[color-mix(in_srgb,var(--accent-blue)_30%,transparent)] bg-[linear-gradient(145deg,color-mix(in_srgb,var(--material-sidepane)_88%,var(--accent-blue)_12%),var(--material-sidepane))] p-5 text-[var(--fill-primary)]">
       {/* 背景装饰 */}
       <div className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-[color-mix(in_srgb,var(--accent-blue)_20%,transparent)] blur-3xl" />
 
-      <div className="relative flex flex-col gap-5">
+      <div className="flex flex-col gap-5">
         {/* Header Section */}
         <header className="space-y-2">
           <div className="flex items-center justify-between">
@@ -250,42 +250,38 @@ export function PreferencesPanel() {
 
             <Separator className="bg-[color-mix(in_srgb,var(--fill-primary)_14%,transparent)]" />
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <span className="text-[12px] font-bold uppercase tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
-                  Temperature
-                </span>
-                <Input
-                  type="number"
-                  min={0}
-                  max={2}
-                  step={0.1}
-                  value={aiSettings.temperature}
-                  onChange={(event) =>
-                    updateAISetting(
-                      "temperature",
-                      parseFloat(event.target.value || "0"),
-                    )
-                  }
-                  className="h-9 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)]"
-                />
-              </div>
-              <div>
-                <span className="text-[12px] font-bold uppercase tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
-                  Max Tokens
-                </span>
-                <Input
-                  type="number"
-                  value={aiSettings.maxTokens}
-                  onChange={(event) =>
-                    updateAISetting(
-                      "maxTokens",
-                      parseInt(event.target.value || "1", 10),
-                    )
-                  }
-                  className="h-9 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)]"
-                />
-              </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[12px] font-bold uppercase tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
+                Temperature
+              </span>
+              <Input
+                type="number"
+                value={aiSettings.temperature}
+                min={0}
+                max={2}
+                step={0.1}
+                onChange={(event) =>
+                  updateAISetting(
+                    "temperature",
+                    parseFloat(event.target.value || "0"),
+                  )
+                }
+                className="h-9 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] font-mono text-[var(--fill-primary)]"
+              />
+              <span className="text-[12px] font-bold uppercase tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
+                Max Tokens
+              </span>
+              <Input
+                type="number"
+                value={aiSettings.maxTokens}
+                onChange={(event) =>
+                  updateAISetting(
+                    "maxTokens",
+                    parseInt(event.target.value || "1", 10),
+                  )
+                }
+                className="h-9 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] font-mono text-[var(--fill-primary)]"
+              />
             </div>
 
             <Separator className="bg-[color-mix(in_srgb,var(--fill-primary)_14%,transparent)]" />
