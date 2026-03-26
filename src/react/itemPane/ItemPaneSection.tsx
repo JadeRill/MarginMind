@@ -1,4 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import Markdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeHighlight from "rehype-highlight";
+import rehypeKatex from "rehype-katex";
 import { streamAIReply, type AIChatMessage } from "../../modules/aiService";
 import { loadAISettings } from "../../utils/aiPrefs";
 import { Badge } from "@/components/ui/badge";
@@ -149,6 +154,35 @@ const buildSystemPrompt = (ctx: ItemPaneData | null, systemPrompt: string) => {
   ];
   return `${systemPrompt}\n\n${lines.join("\n")}`;
 };
+
+function MessageContent({ message }: { message: ChatMessage }) {
+  if (message.role !== "assistant") {
+    return (
+      <div
+        data-render-mode="plain"
+        className="whitespace-pre-wrap break-words text-[14px] leading-6"
+      >
+        {message.text}
+      </div>
+    );
+  }
+
+  return (
+    <div className="break-words text-[14px] leading-6">
+      <Markdown
+        remarkPlugins={[remarkGfm, remarkMath]}
+        rehypePlugins={[[rehypeKatex, { output: "mathml" }], rehypeHighlight]}
+        components={{
+          a: ({ ...props }) => (
+            <a {...props} target="_blank" rel="noopener noreferrer" />
+          ),
+        }}
+      >
+        {message.text}
+      </Markdown>
+    </div>
+  );
+}
 
 export function ItemPaneSection({
   data,
@@ -654,12 +688,7 @@ export function ItemPaneSection({
                     <span className="text-white/30">{message.meta}</span>
                   ) : null}
                 </div>
-                <div
-                  data-render-mode="plain"
-                  className="whitespace-pre-wrap break-words text-[14px] leading-6"
-                >
-                  {message.text}
-                </div>
+                <MessageContent message={message} />
               </Card>
             </div>
           </div>
