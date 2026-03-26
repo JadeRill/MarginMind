@@ -33,10 +33,36 @@ export async function* streamAIReply(args: {
     maxOutputTokens: Math.max(1, Math.floor(settings.maxTokens)),
   });
 
-  for await (const delta of result.textStream) {
-    if (delta) {
-      yield delta;
+  for await (const part of result.fullStream) {
+    if (part.type === "error") {
+      throw new Error(normalizeErrorMessage(part.error));
     }
+    if (part.type === "text-delta" && part.text) {
+      yield part.text;
+    }
+  }
+}
+
+function normalizeErrorMessage(error: unknown) {
+  if (!error) return "Unknown stream error.";
+  if (error instanceof Error && error.message) return error.message;
+  if (typeof error === "string") return error;
+
+  if (typeof error === "object") {
+    const maybe = error as {
+      message?: string;
+      error?: { message?: string };
+      cause?: { message?: string };
+    };
+    if (maybe.message) return maybe.message;
+    if (maybe.error?.message) return maybe.error.message;
+    if (maybe.cause?.message) return maybe.cause.message;
+  }
+
+  try {
+    return JSON.stringify(error);
+  } catch {
+    return String(error);
   }
 }
 

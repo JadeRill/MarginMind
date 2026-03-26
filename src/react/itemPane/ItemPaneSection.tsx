@@ -354,10 +354,13 @@ export function ItemPaneSection({
           .map((m) => ({ role: m.role, content: m.text })),
       ];
       let full = "";
-      for await (const delta of streamAIReply({
+      let streamError: unknown = null;
+      const stream = streamAIReply({
         settings,
         messages: apiMessages,
-      })) {
+      });
+
+      for await (const delta of stream) {
         full += delta;
         patchSession(sessionID, (s) => ({
           ...s,
@@ -366,13 +369,15 @@ export function ItemPaneSection({
           ),
         }));
       }
+
       if (!full.trim()) {
-        patchSession(sessionID, (s) => ({
-          ...s,
-          messages: s.messages.map((m) =>
-            m.id === assistantID ? { ...m, text: "(empty response)" } : m,
-          ),
-        }));
+        streamError = new Error(
+          "Model returned an empty response. Check provider/model/API key or try again.",
+        );
+      }
+
+      if (streamError) {
+        throw streamError;
       }
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Request failed.";
