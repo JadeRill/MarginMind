@@ -229,6 +229,7 @@ export function ItemPaneSection({
   const messages = activeSession?.messages ?? [];
   const draft = activeSession?.draft ?? "";
   const queuedSelection = activeSession?.queuedSelection ?? "";
+  const hasSelectionPreview = messages.some((m) => m.id === PREVIEW_ID);
   const contextSummary = activeContext
     ? `${activeContext.title} · ${activeContext.creators} · ${activeContext.year}`
     : "No active item context";
@@ -268,6 +269,14 @@ export function ItemPaneSection({
         ? `${draft.trim()}\n\n[Selected text]\n${queuedSelection}`
         : `[Selected text]\n${queuedSelection}`,
     );
+  };
+  const clearQueuedSelection = () => {
+    selectionSigRef.current = "";
+    patchActive((s) => ({
+      ...s,
+      queuedSelection: "",
+      messages: s.messages.filter((m) => m.id !== PREVIEW_ID),
+    }));
   };
   const translateSelection = async () => {
     const target = (queuedSelection || selectedText || "").trim();
@@ -752,6 +761,15 @@ export function ItemPaneSection({
             className="rounded-full border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_88%,var(--fill-primary)_8%)] px-2 text-[12px] text-[color-mix(in_srgb,var(--fill-primary)_78%,transparent)]"
           >
             Insert selection
+          </Button>
+          <Button
+            size="xs"
+            variant="outline"
+            onClick={clearQueuedSelection}
+            disabled={isSending || isSelectionMode || !hasSelectionPreview}
+            className="rounded-full border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_88%,var(--fill-primary)_8%)] px-2 text-[12px] text-[color-mix(in_srgb,var(--fill-primary)_78%,transparent)]"
+          >
+            Clear selection
           </Button>
           <Button
             size="xs"
