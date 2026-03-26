@@ -13,7 +13,7 @@ declare namespace _ZoteroTypes {
       "aiApiKey": string;
       "aiBaseURL": string;
       "aiModel": string;
-      "aiTemperature": number;
+      "aiTemperature": string;
       "aiMaxTokens": number;
       "aiSystemPrompt": string;
     };

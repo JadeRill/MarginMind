@@ -75,14 +75,16 @@ export function loadAISettings(): AISettings {
   const temperature = getPref("aiTemperature");
   const maxTokens = getPref("aiMaxTokens");
   const systemPrompt = getPref("aiSystemPrompt");
+  const parsedTemperature = Number.parseFloat(temperature);
 
   return {
     provider: isAIProvider(provider) ? provider : AI_DEFAULTS.provider,
     apiKey: typeof apiKey === "string" ? apiKey : AI_DEFAULTS.apiKey,
     baseURL: typeof baseURL === "string" ? baseURL : AI_DEFAULTS.baseURL,
     model: typeof model === "string" ? model : AI_DEFAULTS.model,
-    temperature:
-      typeof temperature === "number" ? temperature : AI_DEFAULTS.temperature,
+    temperature: Number.isFinite(parsedTemperature)
+      ? parsedTemperature
+      : AI_DEFAULTS.temperature,
     maxTokens:
       typeof maxTokens === "number" ? maxTokens : AI_DEFAULTS.maxTokens,
     systemPrompt:
@@ -119,7 +121,7 @@ export function saveAISetting<K extends keyof AISettings>(
       setPref("aiModel", value as string);
       break;
     case "temperature":
-      setPref("aiTemperature", value as number);
+      setPref("aiTemperature", String(value));
       break;
     case "maxTokens":
       setPref("aiMaxTokens", value as number);
@@ -137,7 +139,7 @@ export function resetAISettings() {
   setPref("aiApiKey", AI_DEFAULTS.apiKey);
   setPref("aiBaseURL", AI_DEFAULTS.baseURL);
   setPref("aiModel", AI_DEFAULTS.model);
-  setPref("aiTemperature", AI_DEFAULTS.temperature);
+  setPref("aiTemperature", String(AI_DEFAULTS.temperature));
   setPref("aiMaxTokens", AI_DEFAULTS.maxTokens);
   setPref("aiSystemPrompt", AI_DEFAULTS.systemPrompt);
 }

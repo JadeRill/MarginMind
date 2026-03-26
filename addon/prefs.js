@@ -4,7 +4,7 @@ pref("aiProvider", "openrouter");
 pref("aiApiKey", "");
 pref("aiBaseURL", "https://openrouter.ai/api/v1");
 pref("aiModel", "stepfun/step-3.5-flash:free");
-pref("aiTemperature", 0.2);
+pref("aiTemperature", "0.2");
 pref("aiMaxTokens", 1200);
 pref(
   "aiSystemPrompt",
