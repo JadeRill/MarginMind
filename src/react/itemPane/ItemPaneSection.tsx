@@ -769,22 +769,14 @@ export function ItemPaneSection({
         </div>
 
         {isSelectionMode ? (
-          <Card className="border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_86%,var(--fill-primary)_8%)] px-2.5 py-1.5">
+          // <Card className="border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_86%,var(--fill-primary)_8%)] px-2.5 py-1.5">
+          <Card className="border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] bg-red-500/20 px-2.5 py-1.5">
             <CardContent className="flex items-center justify-between p-0">
               <div className="text-[13px] text-[color-mix(in_srgb,var(--fill-primary)_72%,transparent)]">
                 Selected {selectedIDs.length} message
                 {selectedIDs.length === 1 ? "" : "s"}
               </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  size="xs"
-                  variant="outline"
-                  onClick={clearSelectionMode}
-                  className="h-7 border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] bg-transparent px-2 text-[12px] text-[color-mix(in_srgb,var(--fill-primary)_82%,transparent)]"
-                >
-                  Cancel
-                </Button>
+              <div className="">
                 <Button
                   type="button"
                   size="xs"
@@ -799,6 +791,15 @@ export function ItemPaneSection({
                   }
                 >
                   {isSavingAnnotation ? "Saving..." : "Save to annotation"}
+                </Button>
+                <Button
+                  type="button"
+                  size="xs"
+                  variant="outline"
+                  onClick={clearSelectionMode}
+                  className="h-7 border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] bg-transparent px-2 text-[12px] text-[color-mix(in_srgb,var(--fill-primary)_82%,transparent)]"
+                >
+                  Cancel
                 </Button>
               </div>
             </CardContent>
