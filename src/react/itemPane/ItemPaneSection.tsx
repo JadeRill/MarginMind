@@ -84,6 +84,8 @@ const QUICK_ACTIONS = [
     prompt: "Turn the selection into concise notes with bullets.",
   },
 ] as const;
+const TRANSLATE_SELECTION_PROMPT =
+  "Translate the selected text to Chinese. Keep the terminology accurate and output only the translation.";
 
 const uid = (p: string) => `${p}-${Date.now()}`;
 const initialMessages = (): ChatMessage[] => [
@@ -265,6 +267,21 @@ export function ItemPaneSection({
       draft.trim()
         ? `${draft.trim()}\n\n[Selected text]\n${queuedSelection}`
         : `[Selected text]\n${queuedSelection}`,
+    );
+  };
+  const translateSelection = async () => {
+    const target = (queuedSelection || selectedText || "").trim();
+    if (!target) {
+      showError("No selected text to translate.");
+      return;
+    }
+    const hasPreview = activeSession?.messages.some((m) => m.id === PREVIEW_ID);
+    if (hasPreview) {
+      await send(TRANSLATE_SELECTION_PROMPT);
+      return;
+    }
+    await send(
+      `${TRANSLATE_SELECTION_PROMPT}\n\n[Selected text from paper]\n${target}`,
     );
   };
   const createNewSession = () => {
@@ -735,6 +752,19 @@ export function ItemPaneSection({
             className="rounded-full border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_88%,var(--fill-primary)_8%)] px-2 text-[12px] text-[color-mix(in_srgb,var(--fill-primary)_78%,transparent)]"
           >
             Insert selection
+          </Button>
+          <Button
+            size="xs"
+            variant="outline"
+            onClick={translateSelection}
+            disabled={
+              isSending ||
+              isSelectionMode ||
+              !(queuedSelection || selectedText).trim()
+            }
+            className="rounded-full border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_88%,var(--fill-primary)_8%)] px-2 text-[12px] text-[color-mix(in_srgb,var(--fill-primary)_78%,transparent)]"
+          >
+            Translate selection
           </Button>
         </div>
 
