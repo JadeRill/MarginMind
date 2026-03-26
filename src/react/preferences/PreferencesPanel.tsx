@@ -125,7 +125,9 @@ export function PreferencesPanel() {
 
       <div className="relative flex flex-col gap-4">
         <header className="space-y-1.5">
-          <h2 className="text-[22px] font-semibold tracking-tight">InSituAI Preferences</h2>
+          <h2 className="text-[22px] font-semibold tracking-tight">
+            InSituAI Preferences
+          </h2>
           <p className="text-[14px] text-[color-mix(in_srgb,var(--fill-primary)_66%,transparent)]">
             Configure OpenRouter + model routing for Item Pane streaming chat.
           </p>
@@ -147,7 +149,9 @@ export function PreferencesPanel() {
           <CardContent className="space-y-3">
             <label className="flex cursor-pointer items-center justify-between gap-4">
               <div className="space-y-0.5">
-                <p className="text-[14px] font-medium">Enable plugin features</p>
+                <p className="text-[14px] font-medium">
+                  Enable plugin features
+                </p>
                 <p className="text-[13px] text-[color-mix(in_srgb,var(--fill-primary)_58%,transparent)]">
                   Global switch for InSituAI.
                 </p>
@@ -165,7 +169,10 @@ export function PreferencesPanel() {
             <Separator className="bg-[color-mix(in_srgb,var(--fill-primary)_14%,transparent)]" />
 
             <div className="space-y-1.5">
-              <label htmlFor="insituai-pref-input" className="block text-[14px] font-medium">
+              <label
+                htmlFor="insituai-pref-input"
+                className="block text-[14px] font-medium"
+              >
                 Default input text
               </label>
               <Input
@@ -199,7 +206,7 @@ export function PreferencesPanel() {
                 onChange={(event) =>
                   changeProvider(event.target.value as AIProvider)
                 }
-                className="h-8 w-full rounded-md border border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] px-2.5 py-1 text-[14px] text-[var(--fill-primary)] outline-none transition focus:border-[var(--accent-blue)]"
+                className="h-8 w-full rounded-md border border-solid border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] px-2.5 py-1 text-[14px] text-[var(--fill-primary)] outline-none transition focus:border-[var(--accent-blue)]"
               >
                 {AI_PROVIDER_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -216,7 +223,9 @@ export function PreferencesPanel() {
               <Input
                 type="password"
                 value={aiSettings.apiKey}
-                onChange={(event) => updateAISetting("apiKey", event.target.value)}
+                onChange={(event) =>
+                  updateAISetting("apiKey", event.target.value)
+                }
                 placeholder="OpenRouter API key"
                 className="border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[var(--fill-primary)]"
               />
@@ -229,7 +238,9 @@ export function PreferencesPanel() {
               <Input
                 type="text"
                 value={aiSettings.baseURL}
-                onChange={(event) => updateAISetting("baseURL", event.target.value)}
+                onChange={(event) =>
+                  updateAISetting("baseURL", event.target.value)
+                }
                 placeholder={getDefaultBaseURL(aiSettings.provider)}
                 className="border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[var(--fill-primary)]"
               />
@@ -243,7 +254,9 @@ export function PreferencesPanel() {
                 <Input
                   type="text"
                   value={aiSettings.model}
-                  onChange={(event) => updateAISetting("model", event.target.value)}
+                  onChange={(event) =>
+                    updateAISetting("model", event.target.value)
+                  }
                   placeholder={getDefaultModel(aiSettings.provider)}
                   className="border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[var(--fill-primary)]"
                 />
