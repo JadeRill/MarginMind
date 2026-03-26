@@ -1,5 +1,3 @@
-pref("enable", true);
-pref("input", "This is input");
 pref("aiProvider", "openrouter");
 pref("aiApiKey", "");
 pref("aiBaseURL", "https://openrouter.ai/api/v1");

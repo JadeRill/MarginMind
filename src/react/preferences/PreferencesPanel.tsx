@@ -25,14 +25,10 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 
 type BaseSettings = {
-  enable: boolean;
-  input: string;
   annotationColor: string;
 };
 
 const DEFAULT_BASE_SETTINGS: BaseSettings = {
-  enable: true,
-  input: "This is input",
   annotationColor: "#8000ff",
 };
 
@@ -46,8 +42,6 @@ export function PreferencesPanel() {
 
   useEffect(() => {
     setBaseSettings({
-      enable: getPref("enable"),
-      input: getPref("input"),
       annotationColor: getPref("annotationColor") || "#8000ff",
     });
     setAISettings(loadAISettings());
@@ -326,7 +320,7 @@ export function PreferencesPanel() {
               className={`h-1.5 w-1.5 rounded-full ${status === "saved" ? "bg-green-500" : "bg-amber-500"}`}
             />
             <span className="text-[12px] font-medium text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
-              {status === "saved" ? "Changes saved" : "Auto-saving..."}
+              {status === "saved" ? "Changes saved" : "idle"}
             </span>
           </div>
         </footer>
