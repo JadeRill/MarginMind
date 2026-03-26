@@ -78,12 +78,6 @@ export function PreferencesPanel() {
   ) {
     setBaseSettings((current) => ({ ...current, [key]: value }));
     switch (key) {
-      case "enable":
-        setPref("enable", value as boolean);
-        break;
-      case "input":
-        setPref("input", value as string);
-        break;
       case "annotationColor":
         setPref("annotationColor", value as string);
         break;
@@ -131,73 +125,35 @@ export function PreferencesPanel() {
   }
 
   return (
-    <section className="relative min-h-[320px] w-[92%] overflow-hidden rounded-xl border border-[color-mix(in_srgb,var(--accent-blue)_30%,transparent)] bg-[linear-gradient(145deg,color-mix(in_srgb,var(--material-sidepane)_88%,var(--accent-blue)_12%),var(--material-sidepane))] p-4 text-[var(--fill-primary)]">
+    <section className="relative min-h-[320px] w-[92%] overflow-hidden rounded-xl border border-[color-mix(in_srgb,var(--accent-blue)_30%,transparent)] bg-[linear-gradient(145deg,color-mix(in_srgb,var(--material-sidepane)_88%,var(--accent-blue)_12%),var(--material-sidepane))] p-5 text-[var(--fill-primary)]">
+      {/* 背景装饰 */}
       <div className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-[color-mix(in_srgb,var(--accent-blue)_20%,transparent)] blur-3xl" />
 
-      <div className="relative flex flex-col gap-4">
-        <header className="space-y-1.5">
-          <h2 className="text-[22px] font-semibold tracking-tight">
-            InSituAI Preferences
-          </h2>
-          <p className="text-[14px] text-[color-mix(in_srgb,var(--fill-primary)_66%,transparent)]">
-            Configure OpenRouter + model routing for Item Pane streaming chat.
-          </p>
-          <Badge
-            variant="outline"
-            className="border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] px-1.5 py-0 text-[12px] text-[color-mix(in_srgb,var(--fill-primary)_66%,transparent)]"
-          >
-            {status === "saved" ? "Saved" : "Auto-save enabled"}
-          </Badge>
+      <div className="relative flex flex-col gap-5">
+        {/* Header Section */}
+        <header className="space-y-2">
+          <div className="flex items-center justify-between">
+            <h2 className="text-[22px] font-semibold tracking-tight">
+              InSituAI Preferences
+            </h2>
+            <Badge
+              variant="outline"
+              className="border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] px-2 py-0 text-[11px] font-medium text-[color-mix(in_srgb,var(--fill-primary)_60%,transparent)]"
+            >
+              {status === "saved" ? "Saved" : "Auto-save enabled"}
+            </Badge>
+          </div>
         </header>
 
-        <Card className="border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_90%,var(--fill-primary)_8%)] text-[var(--fill-primary)]">
-          <CardHeader className="pb-2.5">
+        {/* General Card */}
+        <Card className="border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_90%,var(--fill-primary)_8%)] p-4 text-[var(--fill-primary)]">
+          <CardHeader className="p-0 pb-4">
             <CardTitle className="text-[16px]">General</CardTitle>
-            <CardDescription className="text-[13px] text-[color-mix(in_srgb,var(--fill-primary)_58%,transparent)]">
-              Basic plugin controls.
-            </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <label className="flex cursor-pointer items-center justify-between gap-4">
-              <div className="space-y-0.5">
-                <p className="text-[14px] font-medium">
-                  Enable plugin features
-                </p>
-                <p className="text-[13px] text-[color-mix(in_srgb,var(--fill-primary)_58%,transparent)]">
-                  Global switch for InSituAI.
-                </p>
-              </div>
-              <input
-                type="checkbox"
-                className="h-4 w-4 accent-[var(--accent-blue)]"
-                checked={baseSettings.enable}
-                onChange={(event) =>
-                  updateBaseSetting("enable", event.target.checked)
-                }
-              />
-            </label>
 
-            <Separator className="bg-[color-mix(in_srgb,var(--fill-primary)_14%,transparent)]" />
-
-            <div className="space-y-1.5">
-              <label
-                htmlFor="insituai-pref-input"
-                className="block text-[14px] font-medium"
-              >
-                Default input text
-              </label>
-              <Input
-                id="insituai-pref-input"
-                type="text"
-                value={baseSettings.input}
-                onChange={(event) =>
-                  updateBaseSetting("input", event.target.value)
-                }
-                className="border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[var(--fill-primary)]"
-              />
-            </div>
-            <label className="space-y-1.5">
-              <span className="block text-[12px] font-medium uppercase tracking-wide text-[color-mix(in_srgb,var(--fill-primary)_58%,transparent)]">
+          <CardContent className="flex flex-col justify-between gap-4 p-0">
+            <div>
+              <span className="text-[12px] font-bold uppercase tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
                 Annotation Color
               </span>
               <div className="flex items-center gap-2">
@@ -207,7 +163,7 @@ export function PreferencesPanel() {
                   onChange={(event) =>
                     updateBaseSetting("annotationColor", event.target.value)
                   }
-                  className="h-8 w-12 cursor-pointer rounded border border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-transparent p-1"
+                  className="h-9 w-14 cursor-pointer rounded border border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-transparent p-1"
                 />
                 <Input
                   type="text"
@@ -215,24 +171,23 @@ export function PreferencesPanel() {
                   onChange={(event) =>
                     updateBaseSetting("annotationColor", event.target.value)
                   }
-                  className="h-8 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[var(--fill-primary)]"
+                  className="h-9 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] font-mono text-[var(--fill-primary)]"
                 />
               </div>
-            </label>
+            </div>
+            <Separator className="bg-[color-mix(in_srgb,var(--fill-primary)_14%,transparent)]" />
           </CardContent>
         </Card>
 
-        <Card className="border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_90%,var(--fill-primary)_8%)] text-[var(--fill-primary)]">
-          <CardHeader className="pb-2.5">
+        {/* API Configuration Card */}
+        <Card className="border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_90%,var(--fill-primary)_8%)] p-4 text-[var(--fill-primary)]">
+          <CardHeader className="p-0 pb-4">
             <CardTitle className="text-[16px]">AI API Configuration</CardTitle>
-            <CardDescription className="text-[13px] text-[color-mix(in_srgb,var(--fill-primary)_58%,transparent)]">
-              These values are used by the item pane assistant.
-            </CardDescription>
           </CardHeader>
 
-          <CardContent className="grid gap-2.5">
-            <label className="space-y-1.5">
-              <span className="block text-[12px] font-medium uppercase tracking-wide text-[color-mix(in_srgb,var(--fill-primary)_58%,transparent)]">
+          <CardContent className="flex flex-col justify-between gap-4 p-0">
+            <div>
+              <span className="text-[12px] font-bold uppercase tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
                 Provider
               </span>
               <select
@@ -240,7 +195,7 @@ export function PreferencesPanel() {
                 onChange={(event) =>
                   changeProvider(event.target.value as AIProvider)
                 }
-                className="h-8 w-full rounded-md border border-solid border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] px-2.5 py-1 text-[14px] text-[var(--fill-primary)] outline-none transition focus:border-[var(--accent-blue)]"
+                className="h-9 w-full rounded-md border border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] px-3 text-[14px] outline-none transition focus:border-[var(--accent-blue)]"
               >
                 {AI_PROVIDER_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -248,10 +203,12 @@ export function PreferencesPanel() {
                   </option>
                 ))}
               </select>
-            </label>
+            </div>
 
-            <label className="space-y-1.5">
-              <span className="block text-[12px] font-medium uppercase tracking-wide text-[color-mix(in_srgb,var(--fill-primary)_58%,transparent)]">
+            <Separator className="bg-[color-mix(in_srgb,var(--fill-primary)_14%,transparent)]" />
+
+            <div className="overflow-hidden">
+              <span className="text-[12px] font-bold uppercase tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
                 API Key
               </span>
               <Input
@@ -261,43 +218,47 @@ export function PreferencesPanel() {
                   updateAISetting("apiKey", event.target.value)
                 }
                 placeholder="OpenRouter API key"
-                className="border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[var(--fill-primary)]"
+                className="h-9 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)]"
               />
-            </label>
+            </div>
 
-            <label className="space-y-1.5">
-              <span className="block text-[12px] font-medium uppercase tracking-wide text-[color-mix(in_srgb,var(--fill-primary)_58%,transparent)]">
+            <Separator className="bg-[color-mix(in_srgb,var(--fill-primary)_14%,transparent)]" />
+
+            <div className="overflow-hidden">
+              <span className="text-[12px] font-bold uppercase tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
                 Base URL
               </span>
               <Input
-                type="text"
                 value={aiSettings.baseURL}
                 onChange={(event) =>
                   updateAISetting("baseURL", event.target.value)
                 }
                 placeholder={getDefaultBaseURL(aiSettings.provider)}
-                className="border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[var(--fill-primary)]"
+                className="h-9 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)]"
               />
-            </label>
+            </div>
 
-            <div className="grid grid-cols-2 gap-2.5">
-              <label className="space-y-1.5">
-                <span className="block text-[12px] font-medium uppercase tracking-wide text-[color-mix(in_srgb,var(--fill-primary)_58%,transparent)]">
-                  Model
-                </span>
-                <Input
-                  type="text"
-                  value={aiSettings.model}
-                  onChange={(event) =>
-                    updateAISetting("model", event.target.value)
-                  }
-                  placeholder={getDefaultModel(aiSettings.provider)}
-                  className="border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[var(--fill-primary)]"
-                />
-              </label>
+            <Separator className="bg-[color-mix(in_srgb,var(--fill-primary)_14%,transparent)]" />
 
-              <label className="space-y-1.5">
-                <span className="block text-[12px] font-medium uppercase tracking-wide text-[color-mix(in_srgb,var(--fill-primary)_58%,transparent)]">
+            <div className="overflow-hidden">
+              <span className="text-[12px] font-bold uppercase tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
+                Model
+              </span>
+              <Input
+                value={aiSettings.model}
+                onChange={(event) =>
+                  updateAISetting("model", event.target.value)
+                }
+                placeholder={getDefaultModel(aiSettings.provider)}
+                className="h-9 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)]"
+              />
+            </div>
+
+            <Separator className="bg-[color-mix(in_srgb,var(--fill-primary)_14%,transparent)]" />
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <span className="text-[12px] font-bold uppercase tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
                   Temperature
                 </span>
                 <Input
@@ -309,36 +270,34 @@ export function PreferencesPanel() {
                   onChange={(event) =>
                     updateAISetting(
                       "temperature",
-                      Number.parseFloat(event.target.value || "0"),
+                      parseFloat(event.target.value || "0"),
                     )
                   }
-                  className="border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[var(--fill-primary)]"
+                  className="h-9 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)]"
                 />
-              </label>
+              </div>
+              <div>
+                <span className="text-[12px] font-bold uppercase tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
+                  Max Tokens
+                </span>
+                <Input
+                  type="number"
+                  value={aiSettings.maxTokens}
+                  onChange={(event) =>
+                    updateAISetting(
+                      "maxTokens",
+                      parseInt(event.target.value || "1", 10),
+                    )
+                  }
+                  className="h-9 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)]"
+                />
+              </div>
             </div>
 
-            <label className="space-y-1.5">
-              <span className="block text-[12px] font-medium uppercase tracking-wide text-[color-mix(in_srgb,var(--fill-primary)_58%,transparent)]">
-                Max Tokens
-              </span>
-              <Input
-                type="number"
-                min={1}
-                max={8192}
-                step={1}
-                value={aiSettings.maxTokens}
-                onChange={(event) =>
-                  updateAISetting(
-                    "maxTokens",
-                    Number.parseInt(event.target.value || "1", 10),
-                  )
-                }
-                className="border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[var(--fill-primary)]"
-              />
-            </label>
+            <Separator className="bg-[color-mix(in_srgb,var(--fill-primary)_14%,transparent)]" />
 
-            <label className="space-y-1.5">
-              <span className="block text-[12px] font-medium uppercase tracking-wide text-[color-mix(in_srgb,var(--fill-primary)_58%,transparent)]">
+            <div className="overflow-hidden">
+              <span className="text-[12px] font-bold uppercase tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
                 System Prompt
               </span>
               <Textarea
@@ -347,24 +306,29 @@ export function PreferencesPanel() {
                 onChange={(event) =>
                   updateAISetting("systemPrompt", event.target.value)
                 }
-                className="resize-y border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[var(--fill-primary)]"
+                className="resize-none border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] p-3"
               />
-            </label>
+            </div>
           </CardContent>
         </Card>
 
-        <footer className="flex items-center justify-between">
+        {/* Footer Section */}
+        <footer className="flex items-center justify-between pt-2">
           <Button
-            type="button"
             variant="outline"
             onClick={resetAllAISettings}
-            className="h-8 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] px-2.5 text-[13px] text-[color-mix(in_srgb,var(--fill-primary)_82%,transparent)] hover:bg-[color-mix(in_srgb,var(--material-sidepane)_80%,var(--fill-primary)_12%)]"
+            className="h-8 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] px-4 text-[12px] font-medium transition-colors hover:bg-[color-mix(in_srgb,var(--fill-primary)_10%,transparent)]"
           >
             Reset AI defaults
           </Button>
-          <span className="text-[13px] text-[color-mix(in_srgb,var(--fill-primary)_62%,transparent)]">
-            {status === "saved" ? "Saved" : "Auto-save enabled"}
-          </span>
+          <div className="flex items-center gap-2">
+            <div
+              className={`h-1.5 w-1.5 rounded-full ${status === "saved" ? "bg-green-500" : "bg-amber-500"}`}
+            />
+            <span className="text-[12px] font-medium text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
+              {status === "saved" ? "Changes saved" : "Auto-saving..."}
+            </span>
+          </div>
         </footer>
       </div>
     </section>
