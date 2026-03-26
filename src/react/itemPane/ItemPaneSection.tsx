@@ -225,6 +225,12 @@ export function ItemPaneSection({
   const messages = activeSession?.messages ?? [];
   const draft = activeSession?.draft ?? "";
   const queuedSelection = activeSession?.queuedSelection ?? "";
+  const contextSummary = activeContext
+    ? `${activeContext.title} · ${activeContext.creators} · ${activeContext.year}`
+    : "No active item context";
+  const contextTooltip = activeContext
+    ? `${activeContext.title} / ${activeContext.creators} / ${activeContext.year} / ${activeContext.keyText}`
+    : "No active item context";
   const canSaveToAnnotation =
     !!queuedSelection.trim() &&
     !!selectedAnnotation &&
@@ -631,18 +637,16 @@ export function ItemPaneSection({
           </Card>
         ) : null}
 
-        <Card className="border-white/10 bg-black/10 text-white/70">
-          <CardHeader className="pb-1.5">
-            <CardTitle className="text-[12px] font-bold uppercase tracking-wide text-white/40">
-              Context
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0 text-[13px] leading-relaxed text-white/65">
-            {activeContext
-              ? `${activeContext.title} / ${activeContext.creators} / ${activeContext.year} / ${activeContext.keyText}`
-              : "No active item context"}
-          </CardContent>
-        </Card>
+        <div
+          title={contextTooltip}
+          className="flex items-center gap-1.5 rounded-md border border-white/10 bg-black/10 p-2 text-[12px] text-white/55"
+        >
+          <span className="shrink-0 font-semibold uppercase tracking-wide text-white/40">
+            CONTEXT
+          </span>
+          {/* <span className="min-w-0 truncate">{contextSummary}</span> */}
+          <span className="line-clamp-1 min-w-0">{contextSummary}</span>
+        </div>
       </section>
 
       <section
