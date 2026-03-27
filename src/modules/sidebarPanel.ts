@@ -3,6 +3,7 @@ import { config } from "../../package.json";
 
 const PANEL_ID = `${config.addonRef}-react-sidebar-panel`;
 const PANEL_ROOT_ID = `${config.addonRef}-react-sidebar-panel-root`;
+const ITEM_CONTAINER_ID = "zotero-view-item-container";
 const REACT_WINDOW_SCRIPT_URL = `${rootURI}content/scripts/ui.js`;
 const REACT_STYLE_URL = `${rootURI}content/styles/ui.css`;
 const REACT_ASSET_VERSION =
@@ -13,6 +14,8 @@ type SidebarState = {
   root: HTMLDivElement;
   visible: boolean;
   tickerID: number;
+  widthSyncID: number;
+  resizeHandler: () => void;
   lastKey: string;
 };
 
@@ -30,6 +33,8 @@ export function unregisterSidebarPanel(win: Window) {
   const state = windowStates.get(win);
   if (!state) return;
   win.clearInterval(state.tickerID);
+  win.clearInterval(state.widthSyncID);
+  win.removeEventListener("resize", state.resizeHandler);
   state.panel.remove();
   windowStates.delete(win);
 }
@@ -78,9 +83,9 @@ function createSidebarState(win: Window): SidebarState {
   panel.id = PANEL_ID;
   panel.style.cssText = [
     "position: fixed",
-    "top: 52px",
-    "right: 10px",
-    "width: 360px",
+    "top: 71px",
+    "right: 37px",
+    "width: 660px",
     "height: calc(100vh - 76px)",
     "min-height: 320px",
     "z-index: 9999",
@@ -100,6 +105,10 @@ function createSidebarState(win: Window): SidebarState {
   root.style.cssText = "width:100%;height:100%;";
   panel.appendChild(root);
   doc.documentElement?.appendChild(panel);
+  syncPanelWidth(panel, doc);
+
+  const resizeHandler = () => syncPanelWidth(panel, doc);
+  win.addEventListener("resize", resizeHandler);
 
   const state: SidebarState = {
     panel,
@@ -110,9 +119,22 @@ function createSidebarState(win: Window): SidebarState {
       if (!latest?.visible) return;
       renderPanel(win, latest);
     }, 900),
+    widthSyncID: win.setInterval(() => syncPanelWidth(panel, doc), 450),
+    resizeHandler,
     lastKey: "",
   };
   return state;
+}
+
+function syncPanelWidth(panel: HTMLDivElement, doc: Document) {
+  const itemContainer = doc.getElementById(
+    ITEM_CONTAINER_ID,
+  ) as HTMLElement | null;
+  if (!itemContainer) return;
+
+  // 4px for the splitter
+  const nextWidth = itemContainer.clientWidth - 4;
+  panel.style.width = `${nextWidth}px`;
 }
 
 function renderPanel(win: Window, state: SidebarState, force = false) {
