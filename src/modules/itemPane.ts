@@ -1,9 +1,10 @@
 import { getLocaleID } from "../utils/locale";
 import type { MarginMindReactWindow, ItemPaneData } from "../react/bridge";
+import { config } from "../../package.json";
 
-const READER_SELECTION_LISTENER_ID = "marginmind-reader-selection";
-const ITEM_PANE_MOUNT_ID = "marginmind-item-pane-root";
-const READER_PANE_MOUNT_ID = "marginmind-reader-item-pane-root";
+const READER_SELECTION_LISTENER_ID = `${config.addonRef}-reader-selection`;
+const ITEM_PANE_MOUNT_ID = `${config.addonRef}-item-pane-root`;
+const READER_PANE_MOUNT_ID = `${config.addonRef}-reader-item-pane-root`;
 const REACT_WINDOW_SCRIPT_URL = `${rootURI}content/scripts/ui.js`;
 const REACT_STYLE_URL = `${rootURI}content/styles/ui.css`;
 const REACT_ASSET_VERSION =
@@ -27,7 +28,7 @@ const readerSelectionHandler: _ZoteroTypes.Reader.EventHandler<
 
 function registerItemPaneSection() {
   Zotero.ItemPaneManager.registerSection({
-    paneID: "marginmind-item-pane",
+    paneID: `${config.addonRef}-item-pane`,
     pluginID: addon.data.config.addonID,
     bodyXHTML: `<html:div id="${ITEM_PANE_MOUNT_ID}" />`,
     header: {
@@ -52,7 +53,7 @@ function registerItemPaneSection() {
 
 function registerReaderItemPaneSection() {
   Zotero.ItemPaneManager.registerSection({
-    paneID: "marginmind-reader-item-pane",
+    paneID: `${config.addonRef}-reader-item-pane`,
     pluginID: addon.data.config.addonID,
     bodyXHTML: `<html:div id="${READER_PANE_MOUNT_ID}" />`,
     header: {

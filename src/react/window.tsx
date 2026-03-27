@@ -2,9 +2,10 @@ import type { MarginMindReactWindow } from "./bridge";
 import { mountItemPane } from "./itemPane/mount";
 import { mountPreferences } from "./preferences/mount";
 import { mountSidebarPanel } from "./SidebarPanel/mount";
+import { config } from "../../package.json";
 
 const reactWindow = globalThis as unknown as MarginMindReactWindow;
-const REACT_STYLE_ID = "marginmind-react-ui-style";
+const REACT_STYLE_ID = `${config.addonRef}-react-ui-style`;
 
 function ensureReactStyles() {
   const doc = reactWindow.document;

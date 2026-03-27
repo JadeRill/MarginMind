@@ -1,7 +1,8 @@
 import type { MarginMindReactWindow, SidebarPanelData } from "../react/bridge";
+import { config } from "../../package.json";
 
-const PANEL_ID = `marginmind-react-sidebar-panel`;
-const PANEL_ROOT_ID = `marginmind-react-sidebar-panel-root`;
+const PANEL_ID = `${config.addonRef}-react-sidebar-panel`;
+const PANEL_ROOT_ID = `${config.addonRef}-react-sidebar-panel-root`;
 const REACT_WINDOW_SCRIPT_URL = `${rootURI}content/scripts/ui.js`;
 const REACT_STYLE_URL = `${rootURI}content/styles/ui.css`;
 const REACT_ASSET_VERSION =
