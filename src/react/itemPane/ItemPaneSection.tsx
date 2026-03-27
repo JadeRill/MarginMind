@@ -280,6 +280,7 @@ export function ItemPaneSection({
     !!activeContext?.attachmentItemID &&
     selectedIDs.length > 0 &&
     !isSavingAnnotation;
+  const canDeleteSelected = selectedIDs.length > 0 && !isSending;
 
   const patchSession = (id: string, fn: (s: ChatSession) => ChatSession) =>
     setSessions((curr) =>
@@ -511,6 +512,23 @@ export function ItemPaneSection({
     } finally {
       setIsSavingAnnotation(false);
     }
+  }
+
+  function deleteSelectedMessages() {
+    if (!activeSession || !canDeleteSelected) return;
+    const selectedSet = new Set(selectedIDs);
+    const deletingPreview = selectedSet.has(PREVIEW_ID);
+
+    patchSession(activeSession.id, (s) => ({
+      ...s,
+      queuedSelection: deletingPreview ? "" : s.queuedSelection,
+      messages: s.messages.filter((m) => !selectedSet.has(m.id)),
+    }));
+
+    if (deletingPreview) {
+      selectionSigRef.current = "";
+    }
+    clearSelectionMode();
   }
 
   useEffect(() => {
@@ -899,6 +917,16 @@ export function ItemPaneSection({
                   }
                 >
                   {isSavingAnnotation ? "Saving..." : "Save to annotation"}
+                </Button>
+                <Button
+                  type="button"
+                  size="xs"
+                  variant="outline"
+                  onClick={deleteSelectedMessages}
+                  disabled={!canDeleteSelected}
+                  className="h-7 border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] bg-transparent px-2 text-[12px] text-[color-mix(in_srgb,var(--fill-primary)_82%,transparent)]"
+                >
+                  Delete selected
                 </Button>
                 <Button
                   type="button"
