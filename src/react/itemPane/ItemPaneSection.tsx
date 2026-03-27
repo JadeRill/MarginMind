@@ -1,4 +1,10 @@
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent,
+} from "react";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
@@ -70,10 +76,10 @@ const ROLE_LABEL: Record<ChatRole, string> = {
 };
 const ROLE_BUBBLE: Record<ChatRole, string> = {
   system:
-    "border-[color-mix(in_srgb,var(--accent-blue)_35%,transparent)] bg-[color-mix(in_srgb,var(--accent-blue)_16%,transparent)] text-[13px] text-[color-mix(in_srgb,var(--fill-primary)_88%,transparent)]",
+    "w-full border-[color-mix(in_srgb,var(--accent-blue)_35%,transparent)] border-solid bg-[color-mix(in_srgb,var(--accent-blue)_16%,transparent)] text-[13px] text-[color-mix(in_srgb,var(--fill-primary)_88%,transparent)]",
   assistant:
-    "border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[14px] text-[var(--fill-primary)]",
-  user: "border-[color-mix(in_srgb,var(--accent-blue)_45%,transparent)] bg-[color-mix(in_srgb,var(--accent-blue)_20%,transparent)] text-[14px] text-[var(--fill-primary)]",
+    "w-full border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] border-solid bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[var(--fill-primary)] text-[20px] leading-[32px]",
+  user: "max-w-[80%] border-[color-mix(in_srgb,var(--accent-blue)_45%,transparent)] border-solid bg-[color-mix(in_srgb,var(--accent-blue)_20%,transparent)] text-[var(--fill-primary)] text-[20px] leading-[32px]",
 };
 const PROMPTS_EN = {
   summarizeFullText:
@@ -99,7 +105,7 @@ const PROMPTS = {
     "对所选文本的假设、方法论和论证进行批判性分析，指出其中的不足之处、未经检验的前提以及牵强的解读。",
   bulletizeSelection: "将所选文本提炼为要点，每条要点保持简洁、清晰。",
   translateSelection:
-    "使用正式的学术术语将以下内容翻译成中文。确保技术术语符合【计算机科学/化学/生物学/人工智能】领域的标准表述。仅输出翻译结果，保持专业、客观的语气。",
+    "使用规范的学术术语将以下内容翻译成【中文】。确保技术术语符合【计算机科学/化学/生物学/人工智能】领域的标准表述。重要术语保留英文原文，并在括号内附上【中文】翻译。仅输出翻译结果，保持专业、客观的语气。",
 };
 
 // const QUICK_ACTIONS = [
@@ -199,7 +205,7 @@ function MessageContent({ message }: { message: ChatMessage }) {
     return (
       <div
         data-render-mode="plain"
-        className="select-text whitespace-pre-wrap text-[20px] leading-[32px]"
+        // className="select-text whitespace-pre-wrap text-[20px] leading-[32px]"
       >
         {message.text}
       </div>
@@ -207,7 +213,9 @@ function MessageContent({ message }: { message: ChatMessage }) {
   }
 
   return (
-    <div className="select-text text-[20px] leading-[32px]">
+    // <div className="select-text text-[20px] leading-[32px]">
+    // 解决markdown首末边距过大的问题
+    <div className="[&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
       <Markdown
         remarkPlugins={[remarkGfm, remarkMath]}
         rehypePlugins={[rehypeKatex, rehypeHighlight]}
@@ -812,7 +820,7 @@ export function ItemPaneSection({
             >
               <Card
                 className={cn(
-                  "relative max-w-[92%] rounded-2xl border px-3 py-2.5",
+                  "relative rounded-2xl px-3 py-2",
                   ROLE_BUBBLE[message.role],
                   isSelectionMode ? "select-none" : "select-text",
                   isSelectionMode && selectedIDs.includes(message.id)
@@ -828,7 +836,7 @@ export function ItemPaneSection({
                     className="absolute right-2 top-2 h-4 w-4 accent-[var(--accent-blue)]"
                   />
                 ) : null}
-                <div className="mb-1 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-[color-mix(in_srgb,var(--fill-primary)_48%,transparent)]">
+                <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-[color-mix(in_srgb,var(--fill-primary)_48%,transparent)]">
                   <span>{ROLE_LABEL[message.role]}</span>
                   {message.meta ? (
                     <span className="text-[color-mix(in_srgb,var(--fill-primary)_36%,transparent)]">
