@@ -1,10 +1,13 @@
 import { config } from "../../package.json";
 import { isPanelShown, togglePanel } from "./sidebarPanel";
 
+const TOOLBAR_BUTTON_ID = `${config.addonRef}-toolbar-button`;
+
 export function registerToolbarButton(): void {
   const doc = Zotero.getMainWindow().document;
 
-  if (doc.getElementById(`${config.addonRef}-toolbar-button`)) {
+  if (doc.getElementById(TOOLBAR_BUTTON_ID)) {
+    ztoolkit.log("Toolbar button already exists");
     return;
   }
 
@@ -20,7 +23,7 @@ export function registerToolbarButton(): void {
     {
       tag: "div",
       namespace: "html",
-      id: `${config.addonRef}-toolbar-button`,
+      id: TOOLBAR_BUTTON_ID,
       attributes: {
         title: "MarginMind",
       },
@@ -65,14 +68,16 @@ export function registerToolbarButton(): void {
     anchor.nextElementSibling as Element,
   ) as HTMLElement;
 
-  // Register global tab notifier for sidebar sync across tabs
-  //   registerGlobalTabNotifier();
-
-  // Initialize guide prefs and show guide if needed
-  //   Guide.initPrefs();
-  //   setTimeout(() => {
-  //     Guide.showToolbarGuideIfNeed(Zotero.getMainWindow());
-  //   }, 500);
-
   ztoolkit.log("Toolbar button registered", button);
+}
+
+export function unregisterToolbarButton(): void {
+  const doc = Zotero.getMainWindow()?.document;
+  if (!doc) return;
+
+  const button = doc.getElementById(TOOLBAR_BUTTON_ID);
+  if (button) {
+    button.remove();
+    ztoolkit.log("Toolbar button unregistered");
+  }
 }

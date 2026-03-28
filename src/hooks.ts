@@ -10,8 +10,13 @@ import {
   registerReaderItemPaneSection,
   registerReaderSelectionListener,
   unregisterReaderSelectionListener,
+  unregisterItemPaneSection,
+  unregisterReaderItemPaneSection,
 } from "./modules/itemPane";
-import { registerToolbarButton } from "./modules/toolbarButton";
+import {
+  registerToolbarButton,
+  unregisterToolbarButton,
+} from "./modules/toolbarButton";
 import {
   registerSidebarPanel,
   unregisterAllSidebarPanels,
@@ -46,9 +51,9 @@ async function onStartup() {
 
   // UIExampleFactory.registerReaderItemPaneSection();
 
-  registerItemPaneSection();
-  registerReaderItemPaneSection();
-  registerReaderSelectionListener();
+  // registerItemPaneSection();
+  // registerReaderItemPaneSection();
+  // registerReaderSelectionListener();
 
   await Promise.all(
     Zotero.getMainWindows().map((win) => onMainWindowLoad(win)),
@@ -106,13 +111,18 @@ async function onMainWindowLoad(win: _ZoteroTypes.MainWindow): Promise<void> {
 
 async function onMainWindowUnload(win: Window): Promise<void> {
   unregisterSidebarPanel(win);
+  unregisterToolbarButton();
   ztoolkit.unregisterAll();
   addon.data.dialog?.window?.close();
 }
 
 function onShutdown(): void {
   unregisterReaderSelectionListener();
+  unregisterItemPaneSection();
+  unregisterReaderItemPaneSection();
   unregisterAllSidebarPanels();
+  // BasicExampleFactory.unregisterNotifier();
+  // BasicExampleFactory.unregisterPrefs();
   ztoolkit.unregisterAll();
   addon.data.dialog?.window?.close();
   // Remove addon object

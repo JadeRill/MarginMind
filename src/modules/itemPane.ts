@@ -5,6 +5,8 @@ import { config } from "../../package.json";
 const READER_SELECTION_LISTENER_ID = `${config.addonRef}-reader-selection`;
 const ITEM_PANE_MOUNT_ID = `${config.addonRef}-item-pane-root`;
 const READER_PANE_MOUNT_ID = `${config.addonRef}-reader-item-pane-root`;
+const ITEM_PANE_ID = `${config.addonRef}-item-pane`;
+const READER_PANE_ID = `${config.addonRef}-reader-item-pane`;
 const REACT_WINDOW_SCRIPT_URL = `${rootURI}content/scripts/ui.js`;
 const REACT_STYLE_URL = `${rootURI}content/styles/ui.css`;
 const REACT_ASSET_VERSION =
@@ -255,9 +257,29 @@ function formatCreators(item: Zotero.Item) {
   return creators.length ? creators.join("; ") : "Unknown";
 }
 
+function unregisterItemPaneSection() {
+  try {
+    Zotero.ItemPaneManager.unregisterSection(ITEM_PANE_ID);
+    ztoolkit.log("Item pane section unregistered");
+  } catch (error) {
+    ztoolkit.log("Failed to unregister item pane section", error);
+  }
+}
+
+function unregisterReaderItemPaneSection() {
+  try {
+    Zotero.ItemPaneManager.unregisterSection(READER_PANE_ID);
+    ztoolkit.log("Reader item pane section unregistered");
+  } catch (error) {
+    ztoolkit.log("Failed to unregister reader item pane section", error);
+  }
+}
+
 export {
   registerItemPaneSection,
   registerReaderItemPaneSection,
   registerReaderSelectionListener,
   unregisterReaderSelectionListener,
+  unregisterItemPaneSection,
+  unregisterReaderItemPaneSection,
 };
