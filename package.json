@@ -5,7 +5,7 @@
   "description": "AI chat in Zotero sidebar. Discuss papers, generate summaries, and brainstorm ideas without leaving your research workflow.",
   "config": {
     "addonName": "MarginMind",
-    "addonID": "marginmind@euclpts.com",
+    "addonID": "marginmind@github.vastrong.com",
     "addonRef": "marginmind",
     "addonInstance": "MarginMind",
     "prefsPrefix": "extensions.zotero.marginmind"
