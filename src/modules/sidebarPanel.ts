@@ -144,7 +144,7 @@ function syncPanelWidth(panel: HTMLDivElement, doc: Document, win: Window) {
 
   const container = doc.getElementById(targetId) as HTMLElement | null;
   if (container && container.clientWidth > 0) {
-    ztoolkit.log("syncPanelWidth", container.clientWidth);
+    // ztoolkit.log("syncPanelWidth", container.clientWidth);
     // 4px 是为了给拖拽把手留出空间，防止溢出
     panel.style.width = `${container.clientWidth - 4}px`;
   }

@@ -385,7 +385,7 @@ export function SidebarPanel({
         messages: [...base, { id: uid("user"), role: "user" as const, text }],
       };
     }
-    const merged = `${text}\n[Selected text from paper]\n${base[previewIndex].text}`;
+    const merged = `${text}\n\n[Selected text from paper]\n${base[previewIndex].text}`;
     const next = [...base];
     next[previewIndex] = { id: uid("user"), role: "user", text: merged };
     return { text: merged, messages: next };
