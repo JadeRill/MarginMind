@@ -728,7 +728,8 @@ export function SidebarPanel({
   return (
     <aside
       ref={asideRef}
-      className="flex h-full min-h-0 w-full flex-col overflow-hidden border border-solid border-[color-mix(in_srgb,var(--accent-blue)_40%,var(--fill-primary)_12%)] bg-[var(--material-sidepane)] text-[var(--fill-primary)]"
+      // className="flex h-full min-h-0 w-full flex-col overflow-hidden border border-solid border-[color-mix(in_srgb,var(--accent-blue)_40%,var(--fill-primary)_12%)] bg-[var(--material-sidepane)] text-[var(--fill-primary)]"
+      className="flex h-full min-h-0 w-full flex-col overflow-hidden bg-[var(--material-sidepane)] text-[var(--fill-primary)]"
     >
       <section className="space-y-2 p-2.5">
         <div className="flex items-center justify-between gap-1.5">
@@ -875,7 +876,7 @@ export function SidebarPanel({
             size="icon"
             // variant="outline"
             onClick={jumpToLatest}
-            className="sticky bottom-0 mx-auto rounded-full border-[1px] border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_72%,var(--fill-primary)_16%)] p-3 text-[color-mix(in_srgb,var(--fill-primary)_84%,transparent)]"
+            className="sticky bottom-0 right-2 ml-auto rounded-full border-[1px] border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_72%,var(--fill-primary)_16%)] p-3 text-[color-mix(in_srgb,var(--fill-primary)_84%,transparent)]"
           >
             <ChevronDown />
           </Button>
