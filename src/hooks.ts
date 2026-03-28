@@ -117,9 +117,9 @@ async function onMainWindowUnload(win: Window): Promise<void> {
 }
 
 function onShutdown(): void {
-  unregisterReaderSelectionListener();
-  unregisterItemPaneSection();
-  unregisterReaderItemPaneSection();
+  // unregisterReaderSelectionListener();
+  // unregisterItemPaneSection();
+  // unregisterReaderItemPaneSection();
   unregisterAllSidebarPanels();
   // BasicExampleFactory.unregisterNotifier();
   // BasicExampleFactory.unregisterPrefs();
