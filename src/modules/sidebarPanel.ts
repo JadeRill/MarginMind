@@ -3,7 +3,6 @@ import { config } from "../../package.json";
 
 const PANEL_ID = `${config.addonRef}-react-sidebar-panel`;
 const PANEL_ROOT_ID = `${config.addonRef}-react-sidebar-panel-root`;
-const ITEM_CONTAINER_ID = "zotero-view-item-container";
 const SIDEBAR_READER_SELECTION_LISTENER_ID = `${config.addonRef}-sidebar-reader-selection`;
 const REACT_WINDOW_SCRIPT_URL = `${rootURI}content/scripts/ui.js`;
 const REACT_STYLE_URL = `${rootURI}content/styles/ui.css`;
@@ -112,9 +111,9 @@ function createSidebarState(win: Window): SidebarState {
   root.style.cssText = "width:100%;height:100%;";
   panel.appendChild(root);
   doc.documentElement?.appendChild(panel);
-  syncPanelWidth(panel, doc);
+  syncPanelWidth(panel, doc, win);
 
-  const resizeHandler = () => syncPanelWidth(panel, doc);
+  const resizeHandler = () => syncPanelWidth(panel, doc, win);
   win.addEventListener("resize", resizeHandler);
 
   const state: SidebarState = {
@@ -126,22 +125,29 @@ function createSidebarState(win: Window): SidebarState {
       if (!latest?.visible) return;
       renderPanel(win, latest);
     }, 900),
-    widthSyncID: win.setInterval(() => syncPanelWidth(panel, doc), 450),
+    widthSyncID: win.setInterval(() => syncPanelWidth(panel, doc, win), 450),
     resizeHandler,
     lastKey: "",
   };
   return state;
 }
 
-function syncPanelWidth(panel: HTMLDivElement, doc: Document) {
-  const itemContainer = doc.getElementById(
-    ITEM_CONTAINER_ID,
-  ) as HTMLElement | null;
-  if (!itemContainer) return;
+function syncPanelWidth(panel: HTMLDivElement, doc: Document, win: Window) {
+  const selectedType = win.Zotero_Tabs?.selectedType;
+  let targetId = "";
+  if (selectedType === "reader") {
+    targetId = "zotero-context-pane-inner";
+  } else if (selectedType === "library") {
+    targetId = "zotero-item-pane-content";
+  }
+  if (!targetId) return;
 
-  // 4px for the splitter
-  const nextWidth = itemContainer.clientWidth - 4;
-  panel.style.width = `${nextWidth}px`;
+  const container = doc.getElementById(targetId) as HTMLElement | null;
+  if (container && container.clientWidth > 0) {
+    ztoolkit.log("syncPanelWidth", container.clientWidth);
+    // 4px 是为了给拖拽把手留出空间，防止溢出
+    panel.style.width = `${container.clientWidth - 4}px`;
+  }
 }
 
 function renderPanel(win: Window, state: SidebarState, force = false) {
