@@ -265,6 +265,7 @@ export function SidebarPanel({
   const asideRef = useRef<HTMLElement | null>(null);
   const messageRef = useRef<HTMLDivElement | null>(null);
   const autoScrollRef = useRef(true);
+  const forceScrollRef = useRef(false);
   const errorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -394,6 +395,7 @@ export function SidebarPanel({
     if (!activeSession || isSending) return;
     const norm = normalizePrompt(prompt, activeSession.messages);
     if (!norm) return;
+    forceScrollRef.current = true;
 
     const sessionID = activeSession.id;
     patchSession(sessionID, (s) => ({
@@ -611,7 +613,17 @@ export function SidebarPanel({
 
   useEffect(() => {
     const list = messageRef.current;
-    if (list && autoScrollRef.current) list.scrollTop = list.scrollHeight;
+    if (!list) return;
+
+    if (forceScrollRef.current) {
+      list.scrollTop = list.scrollHeight;
+      forceScrollRef.current = false;
+      return;
+    }
+
+    if (autoScrollRef.current) {
+      list.scrollTop = list.scrollHeight;
+    }
   }, [messages, isSending]);
 
   useEffect(() => {

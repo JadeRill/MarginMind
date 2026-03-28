@@ -92,7 +92,7 @@ function createSidebarState(win: Window): SidebarState {
     "position: fixed",
     "top: 71px",
     "right: 37px",
-    "width: 660px",
+    // "width: 660px",
     "height: calc(100vh - 71px)",
     "min-height: 320px",
     "z-index: 9999",
