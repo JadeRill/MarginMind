@@ -73,6 +73,13 @@ const ROLE_BUBBLE: Record<ChatRole, string> = {
     "w-full border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] border-solid bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[var(--fill-primary)] text-[20px] leading-[32px]",
   user: "max-w-[80%] border-[color-mix(in_srgb,var(--accent-blue)_45%,transparent)] border-solid bg-[color-mix(in_srgb,var(--accent-blue)_20%,transparent)] text-[var(--fill-primary)] text-[20px] leading-[32px]",
 };
+
+const top_btn_style =
+  " border-[1px] border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_88%,var(--fill-primary)_8%)] px-2 text-[12px] text-[color-mix(in_srgb,var(--fill-primary)_78%,transparent)]";
+
+const quick_btn_style =
+  "rounded-full border-[1px] border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_88%,var(--fill-primary)_8%)] px-2 text-[12px] text-[color-mix(in_srgb,var(--fill-primary)_78%,transparent)]";
+
 const PROMPTS_EN = {
   summarizeFullText:
     "Summarize the core problem this paper addresses, its main methodology and thesis, and the key findings. Emphasize the unique contribution to the field and specify the research gap the authors aim to fill.",
@@ -715,7 +722,7 @@ export function SidebarPanel({
             size="xs"
             variant="outline"
             onClick={() => setIsHistoryOpen((v) => !v)}
-            className="h-7 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] px-2 text-[12px] text-[var(--fill-primary)]"
+            className={top_btn_style}
           >
             {isHistoryOpen ? "Hide history" : "Show history"}
           </Button>
@@ -724,7 +731,7 @@ export function SidebarPanel({
             variant="outline"
             onClick={createNewSession}
             disabled={isSending}
-            className="h-7 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] px-2 text-[12px] text-[var(--fill-primary)]"
+            className={top_btn_style}
           >
             New chat
           </Button>
@@ -868,7 +875,7 @@ export function SidebarPanel({
             variant="outline"
             onClick={() => send(PROMPTS.summarizeFullText)}
             disabled={isSending || isSelectionMode}
-            className="rounded-full border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_88%,var(--fill-primary)_8%)] px-2 text-[12px] text-[color-mix(in_srgb,var(--fill-primary)_78%,transparent)]"
+            className={quick_btn_style}
           >
             Summarize
           </Button>
@@ -879,7 +886,7 @@ export function SidebarPanel({
               variant="outline"
               onClick={a.onClick}
               disabled={isSending || isSelectionMode || !queuedSelection.trim()}
-              className="rounded-full border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_88%,var(--fill-primary)_8%)] px-2 text-[12px] text-[color-mix(in_srgb,var(--fill-primary)_78%,transparent)]"
+              className={quick_btn_style}
             >
               {a.label}
             </Button>
