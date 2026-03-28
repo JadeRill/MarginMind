@@ -48,6 +48,16 @@ function registerItemPaneSection() {
         mountId: ITEM_PANE_MOUNT_ID,
         showSelectedText: false,
       }),
+    sectionButtons: [
+      {
+        type: "test",
+        icon: "chrome://zotero/skin/16/universal/note.svg",
+        l10nID: getLocaleID("item-section-example2-button-tooltip"),
+        onClick: ({ item }) => {
+          ztoolkit.log("Section clicked!", item?.id);
+        },
+      },
+    ],
   });
 }
 
