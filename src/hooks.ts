@@ -18,6 +18,10 @@ import {
   unregisterToolbarButton,
 } from "./modules/toolbarButton";
 import {
+  registerSelectionTools,
+  unregisterSelectionTools,
+} from "./modules/selectionTools";
+import {
   registerSidebarPanel,
   unregisterAllSidebarPanels,
   unregisterSidebarPanel,
@@ -105,6 +109,7 @@ async function onMainWindowLoad(win: _ZoteroTypes.MainWindow): Promise<void> {
 
   registerToolbarButton();
   registerSidebarPanel(win);
+  registerSelectionTools();
 
   await Zotero.Promise.delay(100);
 }
@@ -112,6 +117,7 @@ async function onMainWindowLoad(win: _ZoteroTypes.MainWindow): Promise<void> {
 async function onMainWindowUnload(win: Window): Promise<void> {
   unregisterSidebarPanel(win);
   unregisterToolbarButton();
+  unregisterSelectionTools();
   ztoolkit.unregisterAll();
   addon.data.dialog?.window?.close();
 }
@@ -121,6 +127,7 @@ function onShutdown(): void {
   // unregisterItemPaneSection();
   // unregisterReaderItemPaneSection();
   unregisterAllSidebarPanels();
+  unregisterSelectionTools();
   // BasicExampleFactory.unregisterNotifier();
   // BasicExampleFactory.unregisterPrefs();
   ztoolkit.unregisterAll();
