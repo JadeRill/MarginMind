@@ -30,7 +30,11 @@ class Addon {
       ztoolkit: createZToolkit(),
     };
     this.hooks = hooks;
-    this.api = {};
+    this.api = {
+      apiTest: () => {
+        ztoolkit.log("addon api test");
+      },
+    };
   }
 }
 

@@ -210,54 +210,51 @@ const handleInternalJump = async (href: string) => {
   if (!href || !href.startsWith("zotero://")) return;
 
   try {
-    const library = Zotero.Libraries.get(1);
-    if (library && typeof library.waitForDataLoad === "function") {
-      await library.waitForDataLoad();
-    }
-
     const url = new URL(href);
-    // 提取 Item Key (例如从 /library/items/T6SA2S7P 提取 T6SA2S7P)
     const itemKey = url.pathname.split("/").pop();
     const pageStr = url.searchParams.get("page");
-    const region = url.searchParams.get("region");
+    const regionStr = url.searchParams.get("region");
+    const region: number[] = regionStr?.split(",").map(Number) ?? [];
+    const regionArr: Array<number[]> = [region];
+    // const regionArr: Array<number[]> = [
+    //   [48, 368.569, 299.997, 378.069],
+    //   [48, 357.029, 299.997, 366.529],
+    //   [48, 345.489, 299.997, 354.989],
+    //   [48, 333.949, 255.356, 343.449],
+    // ]; // 测试用
 
-    // 1. 获取对应的 Item 对象
-    const item: any = await Zotero.Items.getByLibraryAndKey(
+    /*
+    [x1, y1, x2, y2]
+    x1: 矩形左边界的坐标。
+    y1: 矩形底边界（或顶边界，取决于坐标系）的坐标。
+    x2: 矩形右边界的坐标。
+    y2: 矩形顶边界（或底边界）的坐标。
+    */
+
+    const annotationKey = url.searchParams.get("annotation");
+
+    const item: any = Zotero.Items.getByLibraryAndKey(
       Zotero.Libraries.userLibraryID,
       itemKey as string,
     );
-    if (!item) throw new Error("Item not found");
+    if (!item) throw new Error(`Item not found: ${itemKey}`);
 
-    // 2. 调用真正的 PDF Reader 接口 (此接口不会产生 about:blank)
     // pageIndex 是从 0 开始的，所以需要 -1
-    const openOptions = {
-      pageIndex: pageStr ? parseInt(pageStr) - 1 : 0,
+    const pageIndex = pageStr ? parseInt(pageStr, 10) - 1 : 0;
+    const location: _ZoteroTypes.Reader.Location = {
+      // pageIndex,
+      position: { rects: regionArr, pageIndex: pageIndex },
     };
 
-    try {
-      Zotero.Reader.open(item, openOptions);
-    } catch (err) {
-      console.error("Zotero Internal Jump Error:", err);
-      // 如果原生方法失败，作为保底再使用 launchURL，但这样会有系统弹窗
-      // Zotero.launchURL(href);
-    }
-    // const reader = await Zotero.Reader.open(item, openOptions);
-    console.log(1323213);
-    // 3. 处理 region 高亮跳转 (如果 Reader 已打开)
-    if (region && reader) {
-      // 解析 region: "left,bottom,right,top"
-      const [l, b, r, t] = region.split(",").map(Number);
-      console.log(4566666666666);
+    const reader = await Zotero.Reader.open(item.id);
+    // const reader = await Zotero.Reader.open(item.id, location); // 也可以这样
 
-      // 在 Zotero 7 中，你可以使用内部视图对象进行精细滚动
-      // 这里提供一个通用的平滑滚动尝试
-      reader.navigate({
-        pageIndex: openOptions.pageIndex,
-        rect: [l, t, r, b], // 注意 Zotero 内部 API 坐标顺序可能略有不同
-      });
-    }
+    // await reader._initPromise;  // 等待 reader 初始化，好像不是必要的
+
+    reader?.navigate(location);
+    // }
   } catch (err) {
-    console.error("Zotero Internal Jump Error:", err);
+    ztoolkit.log("Internal jump failed, falling back to launchURL", err);
     // 如果原生方法失败，作为保底再使用 launchURL，但这样会有系统弹窗
     Zotero.launchURL(href);
   }
@@ -287,24 +284,18 @@ function MessageContent({ message }: { message: ChatMessage }) {
           a: ({ href, ...props }) => (
             <a
               {...props}
-              href={href} // 可以直接内部跳转，也没有blank弹窗，但是不够强大
+              // href={href} // 可以直接内部跳转，也没有blank弹窗，但是不够强大
               // target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => {
-                console.log(4546);
-                if (!href?.startsWith("zotero://")) {
-                  e.preventDefault();
+                e.preventDefault();
+                if (!href) return;
+                if (href.startsWith("zotero://")) {
+                  handleInternalJump(href);
+                  // Zotero.openInViewer(href); // 可以内部跳转，但是有blank弹窗，且无法高亮
+                } else {
                   Zotero.launchURL(href);
                 }
-
-                // e.preventDefault();  // 似乎不能用到e，否则
-                // if (href?.startsWith("zotero://")) {
-                // Zotero.openInViewer(href); // 内部跳转，但是有blank弹窗，而且不够强大（平滑、高亮等）
-                // handleInternalJump(href);
-                // }
-                // else {
-                // Zotero.launchURL(href);
-                // }
               }}
             />
           ),
