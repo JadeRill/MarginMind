@@ -66,7 +66,7 @@ function CustomDropdown<T extends string>(props: {
       </button>
       {open && (
         <div
-          className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-md border border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[var(--material-sidepane)] shadow-lg"
+          className="absolute left-0 right-0 top-full z-50 mt-1 max-h-60 overflow-hidden overflow-y-auto rounded-md border border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[var(--material-sidepane)] shadow-lg"
           onMouseDown={(e) => e.preventDefault()}
         >
           {options.map((o) => (
