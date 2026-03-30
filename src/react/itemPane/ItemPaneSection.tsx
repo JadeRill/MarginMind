@@ -218,8 +218,17 @@ function MessageContent({ message }: { message: ChatMessage }) {
         remarkPlugins={[remarkGfm, remarkMath]}
         rehypePlugins={[rehypeKatex, rehypeHighlight]}
         components={{
-          a: ({ ...props }) => (
-            <a {...props} target="_blank" rel="noopener noreferrer" />
+          a: ({ href, ...props }) => (
+            <a
+              {...props}
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => {
+                e.preventDefault();
+                if (href) Zotero.launchURL(href);
+              }}
+            />
           ),
           pre: ({ ...props }) => (
             <pre
