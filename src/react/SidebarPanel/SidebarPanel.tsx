@@ -72,8 +72,8 @@ const ROLE_BUBBLE: Record<ChatRole, string> = {
   system:
     "w-full border-[color-mix(in_srgb,var(--accent-blue)_35%,transparent)] border-solid bg-[color-mix(in_srgb,var(--accent-blue)_16%,transparent)] text-[13px] text-[color-mix(in_srgb,var(--fill-primary)_88%,transparent)]",
   assistant:
-    "w-full border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] border-solid bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[var(--fill-primary)] text-[20px] leading-[32px]",
-  user: "max-w-[80%] border-[color-mix(in_srgb,var(--accent-blue)_45%,transparent)] border-solid bg-[color-mix(in_srgb,var(--accent-blue)_20%,transparent)] text-[var(--fill-primary)] text-[20px] leading-[32px]",
+    "w-full border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] border-solid bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[var(--fill-primary)] text-[14px] leading-[22px]",
+  user: "max-w-[80%] border-[color-mix(in_srgb,var(--accent-blue)_45%,transparent)] border-solid bg-[color-mix(in_srgb,var(--accent-blue)_20%,transparent)] text-[var(--fill-primary)] text-[14px] leading-[22px]",
 };
 
 const top_btn_style =
