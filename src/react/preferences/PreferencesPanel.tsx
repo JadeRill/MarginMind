@@ -39,6 +39,8 @@ export function PreferencesPanel() {
   const [aiSettings, setAISettings] = useState<AISettings>(AI_DEFAULTS);
   const [status, setStatus] = useState<"idle" | "saved">("idle");
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [providerOpen, setProviderOpen] = useState(false);
+  const providerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     setBaseSettings({
@@ -55,6 +57,20 @@ export function PreferencesPanel() {
     },
     [],
   );
+
+  useEffect(() => {
+    if (!providerOpen) return;
+    function handleClick(e: MouseEvent) {
+      if (
+        providerRef.current &&
+        !providerRef.current.contains(e.target as Node)
+      ) {
+        setProviderOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick, true);
+    return () => document.removeEventListener("mousedown", handleClick, true);
+  }, [providerOpen]);
 
   function markSaved() {
     setStatus("saved");
@@ -184,19 +200,59 @@ export function PreferencesPanel() {
               <span className="text-[12px] font-bold uppercase tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
                 Provider
               </span>
-              <select
-                value={aiSettings.provider}
-                onChange={(event) =>
-                  changeProvider(event.target.value as AIProvider)
-                }
-                className="h-9 w-full rounded-md border border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] px-3 text-[14px] outline-none transition focus:border-[var(--accent-blue)]"
-              >
-                {AI_PROVIDER_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+              <div ref={providerRef} className="relative">
+                <button
+                  type="button"
+                  onClick={() => setProviderOpen((v) => !v)}
+                  className="flex h-9 w-full items-center justify-between rounded-md border border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] px-3 text-left text-[14px] outline-none transition focus:border-[var(--accent-blue)]"
+                >
+                  <span>
+                    {AI_PROVIDER_OPTIONS.find(
+                      (o) => o.value === aiSettings.provider,
+                    )?.label ?? aiSettings.provider}
+                  </span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="12"
+                    height="12"
+                    viewBox="0 0 12 12"
+                    fill="none"
+                    className={`transition-transform ${providerOpen ? "rotate-180" : ""}`}
+                  >
+                    <path
+                      d="M3 4.5L6 7.5L9 4.5"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+                {providerOpen && (
+                  <div
+                    className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-md border border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[var(--material-sidepane)] shadow-lg"
+                    onMouseDown={(e) => e.preventDefault()}
+                  >
+                    {AI_PROVIDER_OPTIONS.map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => {
+                          changeProvider(option.value);
+                          setProviderOpen(false);
+                        }}
+                        className={`flex w-full items-center px-3 py-2 text-left text-[13px] transition-colors hover:bg-[color-mix(in_srgb,var(--accent-blue)_15%,transparent)] ${
+                          option.value === aiSettings.provider
+                            ? "bg-[color-mix(in_srgb,var(--accent-blue)_10%,transparent)] font-medium"
+                            : ""
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             <Separator className="bg-[color-mix(in_srgb,var(--fill-primary)_14%,transparent)]" />
