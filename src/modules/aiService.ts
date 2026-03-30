@@ -1,5 +1,6 @@
 import { streamText, type ModelMessage } from "ai";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+import OpenAI from "openai";
 import type { AIProvider, AISettings } from "../utils/aiPrefs";
 
 export type AIChatMessage = {
@@ -18,6 +19,26 @@ export async function* streamAIReply(args: {
     throw new Error("API key is missing. Set it in Preferences.");
   }
 
+  if (settings.provider === "volcengine") {
+    yield* streamVolcengine({ settings, messages, abortSignal, apiKey });
+    return;
+  }
+
+  if (settings.provider === "openaiCompatible") {
+    yield* streamOpenAICompatible({ settings, messages, abortSignal, apiKey });
+    return;
+  }
+
+  yield* streamOpenRouter({ settings, messages, abortSignal, apiKey });
+}
+
+async function* streamOpenRouter(args: {
+  settings: AISettings;
+  messages: AIChatMessage[];
+  abortSignal?: AbortSignal;
+  apiKey: string;
+}) {
+  const { settings, messages, abortSignal, apiKey } = args;
   const openrouter = createOpenRouter({
     apiKey,
     baseURL: settings.baseURL.trim() || "https://openrouter.ai/api/v1",
@@ -41,6 +62,78 @@ export async function* streamAIReply(args: {
     }
     if (part.type === "text-delta" && part.text) {
       yield part.text;
+    }
+  }
+}
+
+async function* streamVolcengine(args: {
+  settings: AISettings;
+  messages: AIChatMessage[];
+  abortSignal?: AbortSignal;
+  apiKey: string;
+}) {
+  const { settings, messages, abortSignal, apiKey } = args;
+  const baseURL =
+    settings.baseURL.trim() || "https://ark.cn-beijing.volces.com/api/v3";
+
+  const client = new OpenAI({
+    apiKey,
+    baseURL,
+    dangerouslyAllowBrowser: true,
+  });
+
+  const stream = await client.chat.completions.create(
+    {
+      model: settings.model,
+      messages: messages.map((m) => ({ role: m.role, content: m.content })),
+      temperature: clamp(settings.temperature, 0, 2),
+      max_tokens: Math.max(1, Math.floor(settings.maxTokens)),
+      stream: true,
+    },
+    { signal: abortSignal },
+  );
+
+  for await (const chunk of stream) {
+    const delta = chunk.choices?.[0]?.delta?.content;
+    if (delta) {
+      yield delta;
+    }
+  }
+}
+
+async function* streamOpenAICompatible(args: {
+  settings: AISettings;
+  messages: AIChatMessage[];
+  abortSignal?: AbortSignal;
+  apiKey: string;
+}) {
+  const { settings, messages, abortSignal, apiKey } = args;
+  const baseURL = settings.baseURL.trim();
+  if (!baseURL) {
+    throw new Error("Base URL is required for OpenAI Compatible provider.");
+  }
+
+  const client = new OpenAI({
+    apiKey,
+    baseURL,
+    dangerouslyAllowBrowser: true,
+  });
+
+  const stream = await client.chat.completions.create(
+    {
+      model: settings.model,
+      messages: messages.map((m) => ({ role: m.role, content: m.content })),
+      temperature: clamp(settings.temperature, 0, 2),
+      max_tokens: Math.max(1, Math.floor(settings.maxTokens)),
+      stream: true,
+    },
+    { signal: abortSignal },
+  );
+
+  for await (const chunk of stream) {
+    const delta = chunk.choices?.[0]?.delta?.content;
+    if (delta) {
+      yield delta;
     }
   }
 }
@@ -82,7 +175,6 @@ function getOpenRouterProviderConstraint(provider: AIProvider) {
     case "anthropic":
       return { only: ["anthropic"] };
     case "openrouter":
-    case "openaiCompatible":
       return undefined;
     default:
       return undefined;

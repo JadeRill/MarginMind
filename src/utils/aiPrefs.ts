@@ -6,7 +6,8 @@ export type AIProvider =
   | "openai"
   | "anthropic"
   | "openrouter"
-  | "openaiCompatible";
+  | "openaiCompatible"
+  | "volcengine";
 
 export type AISettings = {
   provider: AIProvider;
@@ -24,6 +25,7 @@ export const AI_PROVIDER_OPTIONS: Array<{ value: AIProvider; label: string }> =
     { value: "openai", label: "OpenRouter -> OpenAI" },
     { value: "anthropic", label: "OpenRouter -> Anthropic" },
     { value: "openaiCompatible", label: "OpenAI Compatible" },
+    { value: "volcengine", label: "Volcengine (Ark)" },
   ];
 
 export const AI_DEFAULTS: AISettings = {
@@ -47,6 +49,8 @@ export function getDefaultBaseURL(provider: AIProvider) {
       return "https://openrouter.ai/api/v1";
     case "openaiCompatible":
       return "";
+    case "volcengine":
+      return "https://ark.cn-beijing.volces.com/api/v3";
     default:
       return "";
   }
@@ -62,6 +66,8 @@ export function getDefaultModel(provider: AIProvider) {
       return "stepfun/step-3.5-flash:free";
     case "openaiCompatible":
       return "gpt-4.1-mini";
+    case "volcengine":
+      return "doubao-seed-1.6-flash";
     default:
       return AI_DEFAULTS.model;
   }
@@ -99,7 +105,8 @@ function isAIProvider(value: unknown): value is AIProvider {
     value === "openai" ||
     value === "anthropic" ||
     value === "openrouter" ||
-    value === "openaiCompatible"
+    value === "openaiCompatible" ||
+    value === "volcengine"
   );
 }
 
