@@ -28,7 +28,6 @@ import { ChevronDown } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { log } from "console";
 
 type SidebarPanelProps = {
   data: SidebarPanelData | null;
@@ -276,10 +275,8 @@ function MessageContent({ message }: { message: ChatMessage }) {
       <Markdown
         remarkPlugins={[remarkGfm, remarkMath]}
         rehypePlugins={[rehypeKatex, rehypeHighlight]}
-        // 关键修复 1：允许 zotero 协议
-        urlTransform={(value) =>
-          value.startsWith("zotero://") ? value : value
-        }
+        // 关键修复：放行 zotero 协议，防止被react-markdown过滤
+        urlTransform={(uri) => (uri.startsWith("zotero://") ? uri : uri)}
         components={{
           a: ({ href, ...props }) => (
             <a
