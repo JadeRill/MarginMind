@@ -249,12 +249,11 @@ const handleInternalJump = async (href: string) => {
       position: { rects: regionArr, pageIndex: pageIndex },
     };
 
-    const reader = await Zotero.Reader.open(item.id);
-    // const reader = await Zotero.Reader.open(item.id, location); // 也可以这样
+    const reader = await Zotero.Reader.open(item.id, location);
 
-    // await reader._initPromise;  // 等待 reader 初始化，好像不是必要的
-
-    reader?.navigate(location);
+    // await reader?._initPromise;
+    // await reader?.navigate(location);
+    reader?.navigate(location); // 好像这样本身就能延迟跳转，不用上面两行
     // }
   } catch (err) {
     ztoolkit.log("Internal jump failed, falling back to launchURL", err);
