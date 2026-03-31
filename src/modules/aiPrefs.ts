@@ -74,7 +74,7 @@ export const AI_PROVIDER_OPTIONS: Array<{ value: AIProvider; label: string }> =
 const BASE_URL_MAP: Record<AIProvider, string> = {
   openai: "https://api.openai.com/v1",
   anthropic: "https://api.anthropic.com/v1",
-  google: "https://generativelanguage.googleapis.com/v1beta",
+  google: "https://generativelanguage.googleapis.com/v1beta/openai/",
   deepseek: "https://api.deepseek.com",
   moonshot: "https://api.moonshot.cn/v1",
   zai: "https://open.bigmodel.cn/api/paas/v4",
