@@ -454,11 +454,11 @@ export function PreferencesPanel() {
             <Separator className="bg-[color-mix(in_srgb,var(--fill-primary)_14%,transparent)]" />
 
             {/* ── System Prompt ────────────────────────────────────── */}
-            <div className="overflow-hidden">
+            <div className="flex flex-col">
               <span className="text-[12px] font-bold uppercase tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
                 System Prompt
               </span>
-              <Textarea
+              <textarea
                 rows={4}
                 value={aiSettings.systemPrompt}
                 onChange={(e) =>
