@@ -24,6 +24,7 @@ export type AIProvider =
   | "mistral" // Mistral AI (法国): 欧洲最强 AI 公司，Mistral Large/Medium
   | "cohere" // Cohere (加拿大): 专注于企业级 RAG 和搜索增强的模型
   | "perplexity" // Perplexity: 搜索增强大模型接口，专门用于实时联网查询
+  | "siliconflow" // 硅基流动：模型聚合平台
 
   // --- 协议兼容性 ---
   | "openaiCompatible"; // 自定义兼容协议: 用于本地 Ollama, One-API, New-API 等私有部署
@@ -40,10 +41,12 @@ export type AISettings = {
 
 export const AI_PROVIDER_OPTIONS: Array<{ value: AIProvider; label: string }> =
   [
-    { value: "openrouter", label: "OpenRouter (全球模型聚合平台)" },
+    // --- 国际顶级大厂 (Tier 1) ---
     { value: "openai", label: "OpenAI (GPT系列)" },
     { value: "anthropic", label: "Anthropic (Claude系列)" },
     { value: "google", label: "Google (谷歌, Gemini系列)" },
+
+    // --- 国内大模型 (国产之光) ---
     { value: "deepseek", label: "DeepSeek (深度求索)" },
     { value: "moonshot", label: "Moonshot AI (月之暗面, Kimi系列)" },
     { value: "zhipu", label: "Z.ai (智谱清言, GLM系列)" },
@@ -51,11 +54,17 @@ export const AI_PROVIDER_OPTIONS: Array<{ value: AIProvider; label: string }> =
     { value: "volcengine", label: "Volcengine (火山引擎, Doubao系列)" },
     { value: "minimax", label: "MiniMax (稀宇科技, MiniMax系列)" },
     { value: "longcat", label: "LongCat AI (美团, LongCat系列)" },
+
+    // --- 模型聚合与托管平台 (Aggregators) ---
+    { value: "openrouter", label: "OpenRouter (全球模型聚合平台)" },
     { value: "groq", label: "Groq (极速推理, 开源模型托管)" },
+    { value: "together", label: "Together AI (开源模型聚合推理平台)" },
     { value: "mistral", label: "Mistral AI (欧洲开源大模型)" },
     { value: "cohere", label: "Cohere (企业级RAG, 多语言模型)" },
     { value: "perplexity", label: "Perplexity (搜索增强, 联网生成)" },
-    { value: "together", label: "Together AI (开源模型聚合推理平台)" },
+    { value: "siliconflow", label: "SiliconFlow (硅基流动, 模型聚合平台)" },
+
+    // --- 协议兼容性 ---
     {
       value: "openaiCompatible",
       label: "Custom OpenAI (自定义兼容协议, 本地/私有部署)",
@@ -63,7 +72,6 @@ export const AI_PROVIDER_OPTIONS: Array<{ value: AIProvider; label: string }> =
   ];
 
 const BASE_URL_MAP: Record<AIProvider, string> = {
-  openrouter: "https://openrouter.ai/api/v1",
   openai: "https://api.openai.com/v1",
   anthropic: "https://api.anthropic.com/v1",
   google: "https://generativelanguage.googleapis.com/v1beta",
@@ -74,16 +82,17 @@ const BASE_URL_MAP: Record<AIProvider, string> = {
   volcengine: "https://ark.cn-beijing.volces.com/api/v3",
   minimax: "https://api.minimax.chat/v1",
   longcat: "https://api.longcat.chat/openai/v1",
+  openrouter: "https://openrouter.ai/api/v1",
   groq: "https://api.groq.com/openai/v1",
+  together: "https://api.together.xyz/v1",
   mistral: "https://api.mistral.ai/v1",
   cohere: "https://api.cohere.ai/v1",
   perplexity: "https://api.perplexity.ai",
-  together: "https://api.together.xyz/v1",
+  siliconflow: "https://api.siliconflow.cn/v1",
   openaiCompatible: "",
 };
 
 const DEFAULT_MODEL_MAP: Record<AIProvider, string> = {
-  openrouter: "stepfun/step-3.5-flash:free",
   openai: "gpt-5.4-mini",
   anthropic: "claude-4-sonnet-20260301",
   google: "gemini-3.1-flash",
@@ -94,11 +103,13 @@ const DEFAULT_MODEL_MAP: Record<AIProvider, string> = {
   volcengine: "doubao-seed-1-8-251228",
   minimax: "hailuo-ai-m2.7-flash",
   longcat: "LongCat-Flash-Thinking-2601",
+  openrouter: "stepfun/step-3.5-flash:free",
   groq: "llama-4-70b-instruct",
+  together: "meta-llama/Llama-4-70B-Instruct",
   mistral: "mistral-large-2506",
   cohere: "command-r2-plus",
   perplexity: "sonar-pro",
-  together: "meta-llama/Llama-4-70B-Instruct",
+  siliconflow: "",
   openaiCompatible: "",
 };
 
