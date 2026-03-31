@@ -1180,7 +1180,7 @@ export function SidebarPanel({
                   disabled={isSending}
                   className="flex w-full cursor-pointer items-center gap-1 bg-transparent px-0 py-0 text-left text-[12px] text-[color-mix(in_srgb,var(--fill-primary)_68%,transparent)] transition hover:text-[color-mix(in_srgb,var(--fill-primary)_90%,transparent)]"
                 >
-                  <span className="line-clamp-1">
+                  <span className="line-clamp-1 pl-3">
                     {activePreset
                       ? activePreset.name
                       : `${settings.provider} / ${settings.model}`}
