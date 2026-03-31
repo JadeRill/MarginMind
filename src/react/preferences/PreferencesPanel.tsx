@@ -312,7 +312,7 @@ export function PreferencesPanel() {
                         if (e.key === "Enter") handleSavePreset();
                         if (e.key === "Escape") setShowSaveInput(false);
                       }}
-                      className="h-9 w-36 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)]"
+                      className="h-6 w-48 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)]"
                     />
                     <Button
                       variant="outline"

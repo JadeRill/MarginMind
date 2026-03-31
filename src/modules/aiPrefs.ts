@@ -11,7 +11,7 @@ export type AIProvider =
   // --- 国内大模型 (国产之光) ---
   | "deepseek" // DeepSeek (深度求索 - 杭州): 目前国产最强、性价比极高的模型
   | "moonshot" // Moonshot AI (月之暗面 - 北京): Kimi, 擅长超长上下文处理
-  | "zhipu" // 智谱 AI (清华系 - 北京): ChatGLM/GLM-4, 国内学术与工程平衡较好的模型
+  | "zai" // 智谱 AI (清华系 - 北京): ChatGLM/GLM-4, 国内学术与工程平衡较好的模型
   | "aliyun" // 阿里云 (阿里巴巴): 通义千问 Qwen 系列, 开源与闭源结合最好
   | "volcengine" // 火山引擎 (字节跳动): 豆包 Doubao, 算力储备极其雄厚
   | "minimax" // MiniMax (稀宇科技 - 上海): 海螺 AI, 擅长角色扮演与情感交互
@@ -49,7 +49,7 @@ export const AI_PROVIDER_OPTIONS: Array<{ value: AIProvider; label: string }> =
     // --- 国内大模型 (国产之光) ---
     { value: "deepseek", label: "DeepSeek (深度求索)" },
     { value: "moonshot", label: "Moonshot AI (月之暗面, Kimi系列)" },
-    { value: "zhipu", label: "Z.ai (智谱清言, GLM系列)" },
+    { value: "zai", label: "Z.ai (智谱清言, GLM系列)" },
     { value: "aliyun", label: "Qwen (通义千问, Qwen系列)" },
     { value: "volcengine", label: "Volcengine (火山引擎, Doubao系列)" },
     { value: "minimax", label: "MiniMax (稀宇科技, MiniMax系列)" },
@@ -77,7 +77,7 @@ const BASE_URL_MAP: Record<AIProvider, string> = {
   google: "https://generativelanguage.googleapis.com/v1beta",
   deepseek: "https://api.deepseek.com",
   moonshot: "https://api.moonshot.cn/v1",
-  zhipu: "https://open.bigmodel.cn/api/paas/v4",
+  zai: "https://open.bigmodel.cn/api/paas/v4",
   aliyun: "https://dashscope.aliyuncs.com/compatible-mode/v1",
   volcengine: "https://ark.cn-beijing.volces.com/api/v3",
   minimax: "https://api.minimax.chat/v1",
@@ -98,7 +98,7 @@ const DEFAULT_MODEL_MAP: Record<AIProvider, string> = {
   google: "gemini-3.1-flash",
   deepseek: "deepseek-v4-chat",
   moonshot: "kimi-k2.5-128k",
-  zhipu: "glm-5-flash",
+  zai: "glm-5-flash",
   aliyun: "qwen-3.5-omni-flash",
   volcengine: "doubao-seed-1-8-251228",
   minimax: "hailuo-ai-m2.7-flash",
