@@ -49,8 +49,8 @@ export function registerToolbarButton(): void {
               hidePanel(win);
             } else {
               // 激活逻辑：显示面板并强制打开侧边栏
-              showPanel(win);
               forceOpenSidebar(win);
+              showPanel(win);
             }
           },
         },
