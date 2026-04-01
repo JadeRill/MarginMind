@@ -80,10 +80,10 @@ const ROLE_LABEL: Record<ChatRole, string> = {
 };
 const ROLE_BUBBLE: Record<ChatRole, string> = {
   system:
-    "w-full border-[color-mix(in_srgb,var(--accent-blue)_35%,transparent)] border-solid bg-[color-mix(in_srgb,var(--accent-blue)_16%,transparent)] text-[13px] text-[color-mix(in_srgb,var(--fill-primary)_88%,transparent)]",
+    "w-full border-[color-mix(in_srgb,var(--accent-blue)_35%,transparent)] border-solid bg-[color-mix(in_srgb,var(--accent-blue)_16%,transparent)] text-[color-mix(in_srgb,var(--fill-primary)_88%,transparent)]",
   assistant:
-    "w-full border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] border-solid bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[var(--fill-primary)] text-[18px] leading-[30px]",
-  user: "max-w-[80%] border-[color-mix(in_srgb,var(--accent-blue)_45%,transparent)] border-solid bg-[color-mix(in_srgb,var(--accent-blue)_20%,transparent)] text-[var(--fill-primary)] text-[18px] leading-[30px]",
+    "w-full border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] border-solid bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[var(--fill-primary)]",
+  user: "max-w-[80%] border-[color-mix(in_srgb,var(--accent-blue)_45%,transparent)] border-solid bg-[color-mix(in_srgb,var(--accent-blue)_20%,transparent)] text-[var(--fill-primary)]",
 };
 
 const top_btn_style =
@@ -280,6 +280,161 @@ const handleInternalJump = async (href: string) => {
   }
 };
 
+const mdComponents: React.ComponentProps<typeof Markdown>["components"] = {
+  a: ({ href, ...props }) => (
+    <a
+      {...props}
+      // href={href} // 可以直接内部跳转，也没有blank弹窗，但是不够强大
+      // target="_blank"
+      rel="noopener noreferrer"
+      onClick={(e) => {
+        e.preventDefault();
+        if (!href) return;
+        if (href.startsWith("zotero://")) {
+          handleInternalJump(href);
+          // Zotero.openInViewer(href); // 可以内部跳转，但是有blank弹窗，且无法高亮
+        } else {
+          Zotero.launchURL(href);
+        }
+      }}
+    />
+  ),
+  pre: ({ ...props }) => (
+    <pre
+      {...props}
+      className={cn(
+        "overflow-x-auto rounded-md bg-[color-mix(in_srgb,var(--fill-primary)_6%,transparent)] p-2 text-[13px]",
+        props.className,
+      )}
+    />
+  ),
+  code: ({ children, className, ...props }) => {
+    const isBlock = className?.includes("language-");
+    if (isBlock) {
+      return (
+        <code {...props} className={cn("block text-[13px]", className)}>
+          {children}
+        </code>
+      );
+    }
+    return (
+      <code
+        {...props}
+        className={cn(
+          "rounded bg-[color-mix(in_srgb,var(--fill-primary)_8%,transparent)] px-[0.3em] py-[0.1em] text-[13px] before:content-[''] after:content-['']",
+          className,
+        )}
+      >
+        {children}
+      </code>
+    );
+  },
+  ul: ({ ...props }) => (
+    <ul
+      {...props}
+      className={cn(
+        "my-1 list-disc pl-5 [&_ol]:my-0.5 [&_ol]:pl-4 [&_ul]:my-0.5 [&_ul]:pl-4",
+        props.className,
+      )}
+    />
+  ),
+  ol: ({ ...props }) => (
+    <ol
+      {...props}
+      className={cn(
+        "my-1 list-decimal pl-5 [&_ol]:my-0.5 [&_ol]:pl-4 [&_ul]:my-0.5 [&_ul]:pl-4",
+        props.className,
+      )}
+    />
+  ),
+  li: ({ ...props }) => (
+    <li {...props} className={cn("my-0.5 pl-0.5", props.className)} />
+  ),
+  blockquote: ({ ...props }) => (
+    <blockquote
+      {...props}
+      className={cn(
+        "border-l-3 my-1.5 border-y-0 border-r-0 border-solid border-[color-mix(in_srgb,var(--accent-blue)_50%,transparent)] bg-[color-mix(in_srgb,var(--accent-blue)_8%,transparent)] py-1.5 pl-3 text-[color-mix(in_srgb,var(--fill-primary)_80%,transparent)]",
+        props.className,
+      )}
+    />
+  ),
+  table: ({ ...props }) => (
+    <div className="my-2 overflow-x-auto">
+      <table
+        {...props}
+        className={cn(
+          "w-full border-collapse border border-[color-mix(in_srgb,var(--fill-primary)_20%,transparent)] text-[13px]",
+          props.className,
+        )}
+      />
+    </div>
+  ),
+  thead: ({ ...props }) => (
+    <thead
+      {...props}
+      className={cn(
+        "bg-[color-mix(in_srgb,var(--fill-primary)_6%,transparent)]",
+        props.className,
+      )}
+    />
+  ),
+  th: ({ ...props }) => (
+    <th
+      {...props}
+      className={cn(
+        "border border-[color-mix(in_srgb,var(--fill-primary)_20%,transparent)] px-2 py-1.5 text-left font-semibold text-[color-mix(in_srgb,var(--fill-primary)_88%,transparent)]",
+        props.className,
+      )}
+    />
+  ),
+  td: ({ ...props }) => (
+    <td
+      {...props}
+      className={cn(
+        "border border-[color-mix(in_srgb,var(--fill-primary)_20%,transparent)] px-2 py-1.5",
+        props.className,
+      )}
+    />
+  ),
+  // hr: ({ ...props }) => (
+  //   <hr
+  //     {...props}
+  //     className={cn(
+  //       "my-3 border-t border-[color-mix(in_srgb,var(--fill-primary)_14%,transparent)]",
+  //       props.className,
+  //     )}
+  //   />
+  // ),
+  // p: ({ ...props }) => (
+  //   <p {...props} className={cn("my-1.5 leading-relaxed", props.className)} />
+  // ),
+  // h1: ({ ...props }) => (
+  //   <h1
+  //     {...props}
+  //     className={cn("mb-1 mt-3 text-[18px] font-bold", props.className)}
+  //   />
+  // ),
+  // h2: ({ ...props }) => (
+  //   <h2
+  //     {...props}
+  //     className={cn("mb-1 mt-2.5 text-[16px] font-bold", props.className)}
+  //   />
+  // ),
+  // h3: ({ ...props }) => (
+  //   <h3
+  //     {...props}
+  //     className={cn("mb-0.5 mt-2 text-[14px] font-semibold", props.className)}
+  //   />
+  // ),
+  img: ({ ...props }) => (
+    <img
+      {...props}
+      className={cn("my-2 max-w-full rounded", props.className)}
+    />
+  ),
+};
+
 function MessageContent({ message }: { message: ChatMessage }) {
   if (message.role !== "assistant") {
     return (
@@ -306,14 +461,7 @@ function MessageContent({ message }: { message: ChatMessage }) {
                 urlTransform={(uri) =>
                   uri.startsWith("zotero://") ? uri : uri
                 }
-                components={{
-                  pre: ({ ...props }) => (
-                    <pre
-                      {...props}
-                      className={cn("whitespace-pre-wrap", props.className)}
-                    />
-                  ),
-                }}
+                components={mdComponents}
               >
                 {message.thinking}
               </Markdown>
@@ -329,32 +477,7 @@ function MessageContent({ message }: { message: ChatMessage }) {
           rehypePlugins={[rehypeKatex, rehypeHighlight]}
           // 关键修复：放行 zotero 协议，防止被react-markdown过滤
           urlTransform={(uri) => (uri.startsWith("zotero://") ? uri : uri)}
-          components={{
-            a: ({ href, ...props }) => (
-              <a
-                {...props}
-                // href={href} // 可以直接内部跳转，也没有blank弹窗，但是不够强大
-                // target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => {
-                  e.preventDefault();
-                  if (!href) return;
-                  if (href.startsWith("zotero://")) {
-                    handleInternalJump(href);
-                    // Zotero.openInViewer(href); // 可以内部跳转，但是有blank弹窗，且无法高亮
-                  } else {
-                    Zotero.launchURL(href);
-                  }
-                }}
-              />
-            ),
-            pre: ({ ...props }) => (
-              <pre
-                {...props}
-                className={cn("whitespace-pre-wrap", props.className)}
-              />
-            ),
-          }}
+          components={mdComponents}
         >
           {message.text}
         </Markdown>
@@ -397,6 +520,7 @@ export function SidebarPanel({
   const thinkingStartRef = useRef<number | null>(null);
 
   const settings = loadAISettings();
+  const markdownFontSize = getPref("markdownFontSize") || "text-[18px]";
   const presets = loadPresets();
   const activePreset = useMemo(
     () =>
@@ -1004,6 +1128,8 @@ export function SidebarPanel({
               <Card
                 className={cn(
                   "relative rounded-2xl px-3 py-2",
+                  `${markdownFontSize}`,
+                  "leading-[1.6667]",
                   ROLE_BUBBLE[message.role],
                   isSelectionMode ? "select-none" : "select-text",
                   isSelectionMode && selectedIDs.includes(message.id)

@@ -16,6 +16,7 @@ declare namespace _ZoteroTypes {
       "annotationColor": string;
       "aiSystemPrompt": string;
       "aiPresets": string;
+      "markdownFontSize": string;
     };
   }
 }

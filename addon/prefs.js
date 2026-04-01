@@ -11,3 +11,4 @@ pref(
   "",
 );
 pref("aiPresets", "[]");
+pref("markdownFontSize", "text-[18px]");

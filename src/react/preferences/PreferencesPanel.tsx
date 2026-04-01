@@ -25,10 +25,22 @@ import { Textarea } from "@/components/ui/textarea";
 
 type BaseSettings = {
   annotationColor: string;
+  markdownFontSize: string;
 };
+
+const FONT_SIZE_OPTIONS = [
+  { value: "text-[12px]", label: "12px" },
+  { value: "text-[14px]", label: "14px" },
+  { value: "text-[16px]", label: "16px" },
+  { value: "text-[18px]", label: "18px (Default)" },
+  { value: "text-[20px]", label: "20px" },
+  { value: "text-[22px]", label: "22px" },
+  { value: "text-[24px]", label: "24px" },
+];
 
 const DEFAULT_BASE_SETTINGS: BaseSettings = {
   annotationColor: "#8000ff",
+  markdownFontSize: "text-[18px]",
 };
 
 /* ── Reusable custom dropdown ─────────────────────────────────────────── */
@@ -133,6 +145,7 @@ export function PreferencesPanel() {
   useEffect(() => {
     setBaseSettings({
       annotationColor: getPref("annotationColor") || "#8000ff",
+      markdownFontSize: getPref("markdownFontSize") || "text-[18px]",
     });
     setAISettings(loadAISettings());
     setPresets(loadPresets());
@@ -157,7 +170,7 @@ export function PreferencesPanel() {
     value: BaseSettings[K],
   ) {
     setBaseSettings((c) => ({ ...c, [key]: value }));
-    if (key === "annotationColor") setPref("annotationColor", value as string);
+    setPref(key, value as string);
     markSaved();
   }
 
@@ -255,27 +268,41 @@ export function PreferencesPanel() {
             <CardTitle className="text-[16px]">General</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col justify-between gap-4 p-0">
-            <div>
-              <span className="text-[12px] font-bold uppercase tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
-                Annotation Color
-              </span>
-              <div className="flex items-center gap-2">
-                <input
-                  type="color"
-                  value={baseSettings.annotationColor}
-                  onChange={(e) =>
-                    updateBaseSetting("annotationColor", e.target.value)
-                  }
-                  className="w-18 h-9 cursor-pointer rounded border border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-transparent p-1"
-                />
-                <input
-                  type="text"
-                  value={baseSettings.annotationColor}
-                  onChange={(e) =>
-                    updateBaseSetting("annotationColor", e.target.value)
-                  }
-                  className="h-9 flex-1 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] font-mono text-[var(--fill-primary)]"
-                />
+            <div className="flex w-full items-center gap-2">
+              <div className="flex flex-1 flex-col">
+                <span className="text-[12px] font-bold uppercase tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
+                  Annotation Color
+                </span>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={baseSettings.annotationColor}
+                    onChange={(e) =>
+                      updateBaseSetting("annotationColor", e.target.value)
+                    }
+                    className="w-18 h-9 cursor-pointer rounded border border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-transparent p-1"
+                  />
+                  <input
+                    type="text"
+                    value={baseSettings.annotationColor}
+                    onChange={(e) =>
+                      updateBaseSetting("annotationColor", e.target.value)
+                    }
+                    className="h-9 flex-1 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] font-mono text-[var(--fill-primary)]"
+                  />
+                </div>
+              </div>
+              <div className="flex flex-1 flex-col">
+                <span className="text-[12px] font-bold uppercase tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
+                  Markdown Font Size
+                </span>
+                <div className="flex-1 items-center gap-2">
+                  <CustomDropdown
+                    value={baseSettings.markdownFontSize}
+                    options={FONT_SIZE_OPTIONS}
+                    onChange={(v) => updateBaseSetting("markdownFontSize", v)}
+                  />
+                </div>
               </div>
             </div>
             <Separator className="bg-[color-mix(in_srgb,var(--fill-primary)_14%,transparent)]" />
