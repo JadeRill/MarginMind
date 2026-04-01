@@ -792,15 +792,15 @@ export function SidebarPanel({
       showError(msg);
       patchSession(sessionID, (s) => ({
         ...s,
-        messages: [
-          ...s.messages,
-          {
-            id: uid("assistant-error"),
-            role: "assistant",
-            text: `Request failed: ${msg}`,
-            meta: "Error",
-          },
-        ],
+        messages: s.messages.map((m) =>
+          m.id === assistantID
+            ? {
+                ...m,
+                text: `Request failed: ${msg}`,
+                meta: "Error",
+              }
+            : m,
+        ),
       }));
     } finally {
       abortControllerRef.current = null;
