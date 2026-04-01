@@ -958,7 +958,7 @@ export function SidebarPanel({
     if (!list) return;
     const onScroll = () => {
       const nearBottom =
-        list.scrollHeight - list.scrollTop - list.clientHeight <= 128;
+        list.scrollHeight - list.scrollTop - list.clientHeight <= 300;
       autoScrollRef.current = nearBottom;
       setShowJump(!nearBottom);
     };
@@ -1291,7 +1291,7 @@ export function SidebarPanel({
                   disabled={!canDeleteSelected}
                   className="h-7 border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] bg-transparent px-2 text-[12px] text-[color-mix(in_srgb,var(--fill-primary)_82%,transparent)]"
                 >
-                  Delete selected
+                  Delete
                 </Button>
                 <Button
                   type="button"
