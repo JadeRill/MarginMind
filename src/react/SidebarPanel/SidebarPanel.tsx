@@ -841,7 +841,7 @@ export function SidebarPanel({
         throw new Error("Attachment not found for annotation.");
       const comment = messages
         .filter((m) => selectedIDs.includes(m.id))
-        .map((m) => `━━━━━━━━━━ ${m.role.toUpperCase()} ━━━━━━━━━━\n${m.text}`)
+        .map((m) => `# ${m.role.toUpperCase()}\n${m.text}`)
         .join("\n\n");
 
       const annotation = new Zotero.Item("annotation") as any;
