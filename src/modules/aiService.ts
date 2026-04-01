@@ -1,5 +1,3 @@
-import { streamText, type ModelMessage } from "ai";
-import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import OpenAI from "openai";
 import type { AISettings } from "./aiPrefs";
 
@@ -11,6 +9,20 @@ export type AIChatMessage = {
 export type StreamChunk =
   | { type: "text"; content: string }
   | { type: "thinking"; content: string };
+
+/** Return the provider's raw error response. */
+export function formatAIError(error: unknown): string {
+  if (error instanceof OpenAI.APIError) {
+    const status = error.status ? `HTTP ${error.status}\n` : "";
+    const body = error.error
+      ? JSON.stringify(error.error, null, 2)
+      : error.message;
+    return `${status}${body}`;
+  }
+
+  if (error instanceof Error) return error.message;
+  return String(error);
+}
 
 export async function* streamAIReply(args: {
   settings: AISettings;

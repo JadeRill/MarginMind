@@ -10,7 +10,11 @@ import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeHighlight from "rehype-highlight";
 import rehypeKatex from "rehype-katex";
-import { streamAIReply, type AIChatMessage } from "../../modules/aiService";
+import {
+  streamAIReply,
+  formatAIError,
+  type AIChatMessage,
+} from "../../modules/aiService";
 import { getPref } from "../../utils/prefs";
 import {
   loadAISettings,
@@ -788,7 +792,7 @@ export function SidebarPanel({
       }
     } catch (error) {
       if (isAbortError(error)) return;
-      const msg = error instanceof Error ? error.message : "Request failed.";
+      const msg = formatAIError(error);
       showError(msg);
       patchSession(sessionID, (s) => ({
         ...s,
@@ -1281,7 +1285,7 @@ export function SidebarPanel({
                       : "Select text in reader first"
                   }
                 >
-                  {isSavingAnnotation ? "Saving..." : "Save to annotation"}
+                  {isSavingAnnotation ? "Saving..." : "Save to selection"}
                 </Button>
                 <Button
                   type="button"
