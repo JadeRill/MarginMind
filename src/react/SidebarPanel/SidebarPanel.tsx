@@ -303,7 +303,7 @@ const mdComponents: React.ComponentProps<typeof Markdown>["components"] = {
     <pre
       {...props}
       className={cn(
-        "overflow-x-auto rounded-md bg-[color-mix(in_srgb,var(--fill-primary)_6%,transparent)] p-2 text-[13px]",
+        "overflow-x-auto rounded-md bg-[color-mix(in_srgb,var(--fill-primary)_6%,transparent)] p-2 text-[0.85em]",
         props.className,
       )}
     />
@@ -312,7 +312,7 @@ const mdComponents: React.ComponentProps<typeof Markdown>["components"] = {
     const isBlock = className?.includes("language-");
     if (isBlock) {
       return (
-        <code {...props} className={cn("block text-[13px]", className)}>
+        <code {...props} className={cn("block", "font-mono", className)}>
           {children}
         </code>
       );
@@ -321,7 +321,7 @@ const mdComponents: React.ComponentProps<typeof Markdown>["components"] = {
       <code
         {...props}
         className={cn(
-          "rounded bg-[color-mix(in_srgb,var(--fill-primary)_8%,transparent)] px-[0.3em] py-[0.1em] text-[13px] before:content-[''] after:content-['']",
+          "rounded bg-[color-mix(in_srgb,var(--fill-primary)_8%,transparent)] px-[0.3em] py-[0.1em] font-mono before:content-[''] after:content-['']",
           className,
         )}
       >
@@ -333,7 +333,7 @@ const mdComponents: React.ComponentProps<typeof Markdown>["components"] = {
     <ul
       {...props}
       className={cn(
-        "my-1 list-disc pl-5 [&_ol]:my-0.5 [&_ol]:pl-4 [&_ul]:my-0.5 [&_ul]:pl-4",
+        "my-1 list-disc pl-5 [&_ol]:my-0.5 [&_ol]:pl-5 [&_ul]:my-0.5 [&_ul]:pl-5",
         props.className,
       )}
     />
@@ -342,7 +342,7 @@ const mdComponents: React.ComponentProps<typeof Markdown>["components"] = {
     <ol
       {...props}
       className={cn(
-        "my-1 list-decimal pl-5 [&_ol]:my-0.5 [&_ol]:pl-4 [&_ul]:my-0.5 [&_ul]:pl-4",
+        "my-1 list-decimal pl-5 [&_ol]:my-0.5 [&_ol]:pl-5 [&_ul]:my-0.5 [&_ul]:pl-5",
         props.className,
       )}
     />
@@ -409,24 +409,54 @@ const mdComponents: React.ComponentProps<typeof Markdown>["components"] = {
   // p: ({ ...props }) => (
   //   <p {...props} className={cn("my-1.5 leading-relaxed", props.className)} />
   // ),
-  // h1: ({ ...props }) => (
-  //   <h1
-  //     {...props}
-  //     className={cn("mb-1 mt-3 text-[18px] font-bold", props.className)}
-  //   />
-  // ),
-  // h2: ({ ...props }) => (
-  //   <h2
-  //     {...props}
-  //     className={cn("mb-1 mt-2.5 text-[16px] font-bold", props.className)}
-  //   />
-  // ),
-  // h3: ({ ...props }) => (
-  //   <h3
-  //     {...props}
-  //     className={cn("mb-0.5 mt-2 text-[14px] font-semibold", props.className)}
-  //   />
-  // ),
+  // h1: 1em * 1.2^5 ≈ 2.5em
+  h1: ({ ...props }) => (
+    <h1
+      {...props}
+      className={cn(
+        "mb-4 mt-8 text-[1.8em] font-extrabold tracking-tight",
+        props.className,
+      )}
+    />
+  ),
+  // h2: 1em * 1.2^4 ≈ 2.07em
+  h2: ({ ...props }) => (
+    <h2
+      {...props}
+      className={cn(
+        "mb-3 mt-6 text-[1.6em] font-bold tracking-tight",
+        props.className,
+      )}
+    />
+  ),
+  // h3: 1em * 1.2^3 ≈ 1.73em
+  h3: ({ ...props }) => (
+    <h3
+      {...props}
+      className={cn("mb-3 mt-5 text-[1.4em] font-bold", props.className)}
+    />
+  ),
+  // h4: 1em * 1.2^2 ≈ 1.44em
+  h4: ({ ...props }) => (
+    <h4
+      {...props}
+      className={cn("mb-2 mt-4 text-[1.2em] font-semibold", props.className)}
+    />
+  ),
+  // h5: 1em * 1.2^1 = 1.2em
+  h5: ({ ...props }) => (
+    <h5
+      {...props}
+      className={cn("mb-2 mt-3 text-[1.1em] font-semibold", props.className)}
+    />
+  ),
+  // h6: 基准 = 1em
+  h6: ({ ...props }) => (
+    <h6
+      {...props}
+      className={cn("mb-1 mt-2 text-[1em] font-bold", props.className)}
+    />
+  ),
   img: ({ ...props }) => (
     <img
       {...props}
