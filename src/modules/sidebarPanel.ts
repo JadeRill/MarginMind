@@ -17,6 +17,7 @@ type SidebarState = {
   widthSyncID: number;
   resizeHandler: () => void;
   lastKey: string;
+  sidebarCheckID: number;
 };
 
 const windowStates = new WeakMap<Window, SidebarState>();
@@ -40,6 +41,7 @@ export function unregisterSidebarPanel(win: Window) {
   if (!state) return;
   win.clearInterval(state.tickerID);
   win.clearInterval(state.widthSyncID);
+  win.clearInterval(state.sidebarCheckID);
   win.removeEventListener("resize", state.resizeHandler);
   unregisterSidebarButtonListeners(win);
   state.panel.remove();
@@ -130,6 +132,15 @@ function createSidebarState(win: Window): SidebarState {
     widthSyncID: win.setInterval(() => syncPanelWidth(panel, doc, win), 450),
     resizeHandler,
     lastKey: "",
+    sidebarCheckID: win.setInterval(() => {
+      // 定期检查侧边栏状态，若已关闭则强制关闭插件面板
+      const latest = windowStates.get(win);
+      if (!latest?.visible) return;
+      if (!isSidebarOpen(win)) {
+        hidePanel(win);
+        ztoolkit.log("Auto-hid panel because sidebar was closed");
+      }
+    }, 300),
   };
   return state;
 }
@@ -364,4 +375,29 @@ function unregisterSidebarButtonListeners(win: Window) {
   }
 
   sidebarButtonStates.delete(win);
+}
+
+/**
+ * 检测Zotero侧边栏是否打开
+ * 通过检查splitter的state属性判断
+ */
+function isSidebarOpen(win: Window): boolean {
+  const doc = win.document;
+  const selectedType = (win as { Zotero_Tabs?: { selectedType?: string } })
+    .Zotero_Tabs?.selectedType;
+
+  let splitterId = "";
+  if (selectedType === "reader") {
+    splitterId = "splitter#zotero-context-splitter";
+  } else if (selectedType === "library") {
+    splitterId = "splitter#zotero-items-splitter";
+  }
+
+  if (!splitterId) return false;
+
+  const splitter = doc.querySelector(splitterId);
+  if (!splitter) return false;
+
+  const state = splitter.getAttribute("state");
+  return state !== "collapsed";
 }
