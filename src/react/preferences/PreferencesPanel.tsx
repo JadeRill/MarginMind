@@ -568,7 +568,9 @@ export function PreferencesPanel() {
         {/* MinerU Card */}
         <Card className="border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_90%,var(--fill-primary)_8%)] p-4 text-[var(--fill-primary)]">
           <CardHeader className="p-0 pb-4">
-            <CardTitle className="text-[16px]">MinerU Configuration</CardTitle>
+            <CardTitle className="text-[16px]">
+              MinerU Configuration (Optional)
+            </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col justify-between gap-4 p-0">
             <div className="flex w-full flex-col">
