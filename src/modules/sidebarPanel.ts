@@ -1,10 +1,7 @@
 import type { MarginMindReactWindow, SidebarPanelData } from "../react/bridge";
 import { config } from "../../package.json";
 import { hasCache, readCacheSync } from "./markdownCache";
-import {
-  latestSelectionAnnotation,
-  unregisterPopupSelectionListener,
-} from "./PopupButtons";
+import { latestSelectionAnnotation } from "./PopupButtons";
 
 const PANEL_ID = `${config.addonRef}-react-sidebar-panel`;
 const PANEL_ROOT_ID = `${config.addonRef}-react-sidebar-panel-root`;
@@ -49,7 +46,6 @@ export function unregisterAllSidebarPanels() {
   for (const win of Zotero.getMainWindows()) {
     unregisterSidebarPanel(win);
   }
-  unregisterPopupSelectionListener();
 }
 
 export function isPanelShown(win: Window = Zotero.getMainWindow()) {

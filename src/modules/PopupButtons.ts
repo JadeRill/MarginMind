@@ -2,10 +2,8 @@ import { config } from "../../package.json";
 
 const GROUP_ID = `${config.addonRef}-text-selection-popup-btn-group`;
 const LISTENER_ID = `${config.addonRef}-text-selection-popup-listener`;
-const SELECTION_LISTENER_ID = `${config.addonRef}-popup-selection-listener`;
 
 let listenerRegistered = false;
-let selectionListenerRegistered = false;
 
 const observedDocs = new Set<Document>();
 const observers: MutationObserver[] = [];
@@ -27,46 +25,6 @@ const PROMPTS = {
 export let latestSelectionText = "";
 export let latestSelectionAnnotation: _ZoteroTypes.Annotations.AnnotationJson | null =
   null;
-
-const PopupSelectionHandler: _ZoteroTypes.Reader.EventHandler<
-  "renderTextSelectionPopup"
-> = (event) => {
-  const annotation = event.params.annotation;
-  const text = annotation.text?.trim();
-  if (!text) return;
-  const page = annotation.position.pageIndex + 1;
-  latestSelectionText = `${text} (page ${page})`;
-  latestSelectionAnnotation = annotation;
-  // ztoolkit.log("PopupSelectionHandler", latestSelectionText);
-};
-
-function registerPopupSelectionListener(): void {
-  if (selectionListenerRegistered) return;
-  try {
-    Zotero.Reader.unregisterEventListener(
-      "renderTextSelectionPopup",
-      PopupSelectionHandler,
-    );
-  } catch (_error) {}
-
-  Zotero.Reader.registerEventListener(
-    "renderTextSelectionPopup",
-    PopupSelectionHandler,
-    SELECTION_LISTENER_ID,
-  );
-  selectionListenerRegistered = true;
-}
-
-export function unregisterPopupSelectionListener(): void {
-  if (!selectionListenerRegistered) return;
-  try {
-    Zotero.Reader.unregisterEventListener(
-      "renderTextSelectionPopup",
-      PopupSelectionHandler,
-    );
-  } catch (_error) {}
-  selectionListenerRegistered = false;
-}
 
 // ── Popup action callback (SidebarPanel registers its send handler) ──────────
 
@@ -182,9 +140,21 @@ function observeDoc(doc: Document): void {
   observers.push(observer);
 }
 
-const SelectionPopupHandler: _ZoteroTypes.Reader.EventHandler<
+// ── Single handler: capture selection + inject buttons ───────────────────────
+
+const PopupHandler: _ZoteroTypes.Reader.EventHandler<
   "renderTextSelectionPopup"
 > = (event) => {
+  // Capture selection text
+  const annotation = event.params.annotation;
+  const text = annotation.text?.trim();
+  if (text) {
+    const page = annotation.position.pageIndex + 1;
+    latestSelectionText = `${text} (page ${page})`;
+    latestSelectionAnnotation = annotation;
+  }
+
+  // Inject buttons into popup
   const doc = event.reader._iframeWindow?.document;
   if (doc) observeDoc(doc);
 };
@@ -192,29 +162,25 @@ const SelectionPopupHandler: _ZoteroTypes.Reader.EventHandler<
 // ── Register / Unregister ────────────────────────────────────────────────────
 
 export function registerTextSelectionPopupButtons(): void {
-  if (!listenerRegistered) {
-    Zotero.Reader.registerEventListener(
-      "renderTextSelectionPopup",
-      SelectionPopupHandler,
-      LISTENER_ID,
-    );
-    listenerRegistered = true;
-    ztoolkit.log("Popup buttons registered");
-  }
+  if (listenerRegistered) return;
 
-  registerPopupSelectionListener();
+  Zotero.Reader.registerEventListener(
+    "renderTextSelectionPopup",
+    PopupHandler,
+    LISTENER_ID,
+  );
+  listenerRegistered = true;
+  ztoolkit.log("Popup buttons registered");
 }
 
 export function unregisterTextSelectionPopupButtons(): void {
-  if (listenerRegistered) {
-    Zotero.Reader.unregisterEventListener(
-      "renderTextSelectionPopup",
-      SelectionPopupHandler,
-    );
-    listenerRegistered = false;
-  }
+  if (!listenerRegistered) return;
 
-  unregisterPopupSelectionListener();
+  Zotero.Reader.unregisterEventListener(
+    "renderTextSelectionPopup",
+    PopupHandler,
+  );
+  listenerRegistered = false;
 
   observers.forEach((observer) => observer.disconnect());
   observers.length = 0;
