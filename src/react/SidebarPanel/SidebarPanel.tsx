@@ -248,13 +248,12 @@ const handleInternalJump = async (href: string) => {
     //   [48, 333.949, 255.356, 343.449],
     // ]; // 测试用
 
-    /*
-    [x1, y1, x2, y2]
-    x1: 矩形左边界的坐标。
-    y1: 矩形底边界（或顶边界，取决于坐标系）的坐标。
-    x2: 矩形右边界的坐标。
-    y2: 矩形顶边界（或底边界）的坐标。
-    */
+    // 左下角为坐标原点
+    // [xmin, ymin, xmax, ymax]
+    // xmin: 矩形左边界距离左侧的距离。
+    // ymin: 矩形下边界距离底部的距离。
+    // xmax: 矩形右边界距离左侧的距离。
+    // ymax: 矩形上边界距离底部的距离。
 
     const annotationKey = url.searchParams.get("annotation");
 
