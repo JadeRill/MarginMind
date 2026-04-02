@@ -37,6 +37,8 @@ export type SidebarPanelRenderPayload = {
   showSelectedText: boolean;
   selectedText: string;
   selectedAnnotation: _ZoteroTypes.Annotations.AnnotationJson | null;
+  markdownStatus: "none" | "cached" | "parsing" | "error";
+  markdownContent: string | null;
 };
 
 export type MarginMindReactBridge = {

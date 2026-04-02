@@ -17,6 +17,8 @@ export function mountSidebarPanel({
   showSelectedText,
   selectedText,
   selectedAnnotation,
+  markdownStatus,
+  markdownContent,
 }: SidebarPanelRenderPayload) {
   let root = roots.get(container);
   if (!root) {
@@ -30,6 +32,8 @@ export function mountSidebarPanel({
       showSelectedText={showSelectedText}
       selectedText={selectedText}
       selectedAnnotation={selectedAnnotation}
+      markdownStatus={markdownStatus}
+      markdownContent={markdownContent}
     />,
   );
 }

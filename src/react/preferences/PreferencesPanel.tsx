@@ -16,6 +16,11 @@ import {
   type AIProvider,
   type AISettings,
 } from "../../modules/aiPrefs";
+import {
+  listCacheFiles,
+  deleteCaches,
+  clearAllCache,
+} from "../../modules/markdownCache";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -141,6 +146,13 @@ export function PreferencesPanel() {
   const [saveName, setSaveName] = useState("");
   const [showSaveInput, setShowSaveInput] = useState(false);
 
+  // MinerU state
+  const [mineruApiKey, setMineruApiKey] = useState("");
+  const [cacheFiles, setCacheFiles] = useState<
+    Array<{ id: string; name: string; size: number; modified: Date }>
+  >([]);
+  const [selectedCacheIds, setSelectedCacheIds] = useState<string[]>([]);
+
   // ── Load on mount ──────────────────────────────────────────────────
   useEffect(() => {
     setBaseSettings({
@@ -149,6 +161,8 @@ export function PreferencesPanel() {
     });
     setAISettings(loadAISettings());
     setPresets(loadPresets());
+    setMineruApiKey(getPref("mineruApiKey") || "");
+    loadCacheFiles();
   }, []);
 
   useEffect(
@@ -164,6 +178,48 @@ export function PreferencesPanel() {
     if (timerRef.current) globalThis.clearTimeout(timerRef.current);
     timerRef.current = globalThis.setTimeout(() => setStatus("idle"), 1000);
   }, []);
+
+  // ── MinerU functions ───────────────────────────────────────────────
+  function updateMinerUApiKey(value: string) {
+    setMineruApiKey(value);
+    setPref("mineruApiKey", value);
+    markSaved();
+  }
+
+  async function loadCacheFiles() {
+    const files = await listCacheFiles();
+    console.log("files", files);
+    setCacheFiles(files);
+    setSelectedCacheIds([]);
+  }
+
+  async function handleDeleteSelected() {
+    const ids = selectedCacheIds.map((id) => parseInt(id, 10));
+    await deleteCaches(ids);
+    await loadCacheFiles();
+    markSaved();
+  }
+
+  async function handleClearAllCache() {
+    await clearAllCache();
+    await loadCacheFiles();
+    markSaved();
+  }
+
+  function formatSize(bytes: number): string {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  function formatDate(date: Date): string {
+    return date.toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
 
   function updateBaseSetting<K extends keyof BaseSettings>(
     key: K,
@@ -521,7 +577,10 @@ export function PreferencesPanel() {
                 <span className="lowercase">
                   {" "}
                   (apply from{" "}
-                  <a href="https://mineru.net/apiManage/token">
+                  <a
+                    href="https://mineru.net/apiManage/token"
+                    className="text-[var(--accent-blue)] hover:underline"
+                  >
                     https://mineru.net/apiManage/token
                   </a>
                   )
@@ -530,11 +589,122 @@ export function PreferencesPanel() {
 
               <input
                 type="password"
-                // value={}
-                onChange={() => {}}
+                value={mineruApiKey}
+                onChange={(e) => updateMinerUApiKey(e.target.value)}
                 placeholder="Paste your MinerU API key here"
                 className="h-9 border-[1px] border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)]"
               />
+            </div>
+
+            <Separator className="bg-[color-mix(in_srgb,var(--fill-primary)_14%,transparent)]" />
+
+            {/* Cache Management */}
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[12px] font-bold uppercase tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
+                  Markdown Cache ({cacheFiles.length} files)
+                </span>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={loadCacheFiles}
+                    className="h-7 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[11px]"
+                  >
+                    Refresh
+                  </Button>
+                  {selectedCacheIds.length > 0 && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleDeleteSelected}
+                      className="h-7 border-[color-mix(in_srgb,_rgb(220_38_38)_30%,transparent)] text-[11px] text-red-500 hover:text-red-400"
+                    >
+                      Delete ({selectedCacheIds.length})
+                    </Button>
+                  )}
+                  {cacheFiles.length > 0 && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleClearAllCache}
+                      className="h-7 border-[color-mix(in_srgb,_rgb(220_38_38)_30%,transparent)] text-[11px] text-red-500 hover:text-red-400"
+                    >
+                      Clear All
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {cacheFiles.length > 0 && (
+                <div className="max-h-48 overflow-y-auto rounded-md border border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)]">
+                  <table className="w-full text-[12px]">
+                    <thead className="sticky top-0 bg-[color-mix(in_srgb,var(--material-sidepane)_95%,var(--fill-primary)_5%)]">
+                      <tr>
+                        <th className="w-8 p-2">
+                          <input
+                            type="checkbox"
+                            checked={
+                              selectedCacheIds.length === cacheFiles.length
+                            }
+                            onChange={(e) =>
+                              setSelectedCacheIds(
+                                e.target.checked
+                                  ? cacheFiles.map((f) => f.id)
+                                  : [],
+                              )
+                            }
+                            className="cursor-pointer"
+                          />
+                        </th>
+                        <th className="p-2 text-left">Name</th>
+                        <th className="w-20 p-2 text-right">Size</th>
+                        <th className="w-32 p-2 text-right">Modified</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {cacheFiles.map((file) => (
+                        <tr
+                          key={file.id}
+                          className="border-t border-[color-mix(in_srgb,var(--fill-primary)_10%,transparent)]"
+                        >
+                          <td className="p-2">
+                            <input
+                              type="checkbox"
+                              checked={selectedCacheIds.includes(file.id)}
+                              onChange={(e) =>
+                                setSelectedCacheIds((prev) =>
+                                  e.target.checked
+                                    ? [...prev, file.id]
+                                    : prev.filter((id) => id !== file.id),
+                                )
+                              }
+                              className="cursor-pointer"
+                            />
+                          </td>
+                          <td className="truncate p-2" title={file.name}>
+                            {file.name.length > 30
+                              ? `${file.name.slice(0, 30)}...`
+                              : file.name}
+                          </td>
+                          <td className="p-2 text-right text-[color-mix(in_srgb,var(--fill-primary)_60%,transparent)]">
+                            {formatSize(file.size)}
+                          </td>
+                          <td className="p-2 text-right text-[color-mix(in_srgb,var(--fill-primary)_60%,transparent)]">
+                            {formatDate(file.modified)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {cacheFiles.length === 0 && (
+                <div className="rounded-md border border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] p-4 text-center text-[12px] text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
+                  No cached markdown files
+                </div>
+              )}
             </div>
 
             <Separator className="bg-[color-mix(in_srgb,var(--fill-primary)_14%,transparent)]" />

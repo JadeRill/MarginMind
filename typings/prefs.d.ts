@@ -17,6 +17,7 @@ declare namespace _ZoteroTypes {
       "aiSystemPrompt": string;
       "aiPresets": string;
       "markdownFontSize": string;
+      "mineruApiKey": string;
     };
   }
 }

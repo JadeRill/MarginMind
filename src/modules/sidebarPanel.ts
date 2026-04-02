@@ -1,5 +1,6 @@
 import type { MarginMindReactWindow, SidebarPanelData } from "../react/bridge";
 import { config } from "../../package.json";
+import { hasCache, readCacheSync } from "./markdownCache";
 
 const PANEL_ID = `${config.addonRef}-react-sidebar-panel`;
 const PANEL_ROOT_ID = `${config.addonRef}-react-sidebar-panel-root`;
@@ -168,16 +169,31 @@ function renderPanel(win: Window, state: SidebarState, force = false) {
   if (!force && state.lastKey === key) return;
   state.lastKey = key;
 
+  const data = item ? serializeItem(item) : null;
+
+  // 检查 markdown 缓存状态
+  let markdownStatus: "none" | "cached" | "parsing" | "error" = "none";
+  let markdownContent: string | null = null;
+
+  if (data?.attachmentItemID) {
+    if (hasCache(data.attachmentItemID)) {
+      markdownStatus = "cached";
+      markdownContent = readCacheSync(data.attachmentItemID);
+    }
+  }
+
   const reactWin = win as MarginMindReactWindow;
   ensureReactBridge(reactWin);
   reactWin.__marginmindReact?.renderSidebarPanel({
     container: state.root,
-    data: item ? serializeItem(item) : null,
+    data,
     showSelectedText: isReaderTabActive(win),
     selectedText: latestReaderSelectionText,
     selectedAnnotation: isReaderTabActive(win)
       ? latestReaderSelectionAnnotation
       : null,
+    markdownStatus,
+    markdownContent,
   });
 }
 

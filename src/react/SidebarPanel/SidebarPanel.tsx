@@ -3,6 +3,7 @@ import {
   useMemo,
   useRef,
   useState,
+  useCallback,
   type KeyboardEvent,
 } from "react";
 import Markdown from "react-markdown";
@@ -21,6 +22,12 @@ import {
   loadPresets,
   applyPreset,
 } from "../../modules/aiPrefs";
+import { parsePDFWithMinerU, getMinerUApiKey } from "../../modules/mineru";
+import {
+  hasCache,
+  readCacheSync,
+  writeCache,
+} from "../../modules/markdownCache";
 import type { SidebarPanelData } from "../bridge";
 import { Button } from "@/components/ui/button";
 import {
@@ -41,6 +48,8 @@ type SidebarPanelProps = {
   showSelectedText?: boolean;
   selectedText: string;
   selectedAnnotation: _ZoteroTypes.Annotations.AnnotationJson | null;
+  markdownStatus: "none" | "cached" | "parsing" | "error";
+  markdownContent: string | null;
 };
 type ChatRole = "assistant" | "user" | "system";
 type ChatMessage = {
@@ -215,6 +224,7 @@ const seedState = (data: SidebarPanelData | null): PersistedState => {
 const buildSystemPrompt = (
   ctx: SidebarPanelData | null,
   systemPrompt: string,
+  markdownContent: string | null,
 ) => {
   const lines = [
     "Paper context:",
@@ -224,6 +234,13 @@ const buildSystemPrompt = (
     `Key: ${ctx?.keyText ?? "(none)"}`,
     `Abstract: ${ctx?.abstractPreview ?? "(none)"}`,
   ];
+
+  if (markdownContent) {
+    lines.push("");
+    lines.push("Full paper content (parsed from PDF):");
+    lines.push(markdownContent);
+  }
+
   return `${systemPrompt}\n\n${lines.join("\n")}`;
 };
 
@@ -277,7 +294,7 @@ const handleInternalJump = async (href: string) => {
     reader?.navigate(location); // 好像这样本身就能延迟跳转，不用上面两行
     // }
   } catch (err) {
-    ztoolkit.log("Internal jump failed, falling back to launchURL", err);
+    console.log("Internal jump failed, falling back to launchURL", err);
     // 如果原生方法失败，作为保底再使用 launchURL，但这样会有系统弹窗
     Zotero.launchURL(href);
   }
@@ -524,6 +541,8 @@ export function SidebarPanel({
   showSelectedText = false,
   selectedText,
   selectedAnnotation,
+  markdownStatus: initialMarkdownStatus,
+  markdownContent: initialMarkdownContent,
 }: SidebarPanelProps) {
   const seeded = useMemo(() => seedState(data), []);
   const [sessions, setSessions] = useState<ChatSession[]>(seeded.sessions);
@@ -542,6 +561,15 @@ export function SidebarPanel({
   const [isSavingAnnotation, setIsSavingAnnotation] = useState(false);
   const [isPresetOpen, setIsPresetOpen] = useState(false);
   const [presetPos, setPresetPos] = useState({ left: 0, bottom: 0 });
+
+  // Markdown cache state
+  const [markdownStatus, setMarkdownStatus] = useState<
+    "none" | "cached" | "parsing" | "error"
+  >(initialMarkdownStatus);
+  const [markdownContent, setMarkdownContent] = useState<string | null>(
+    initialMarkdownContent,
+  );
+  const [parseProgress, setParseProgress] = useState("");
 
   const selectionSigRef = useRef("");
   const messageRef = useRef<HTMLDivElement | null>(null);
@@ -643,6 +671,71 @@ export function SidebarPanel({
   const stopSending = () => {
     abortControllerRef.current?.abort();
   };
+
+  // Auto-parse PDF with MinerU
+  const triggerParse = useCallback(async () => {
+    if (!data?.attachmentItemID) return;
+
+    // Check if already has cache
+    if (hasCache(data.attachmentItemID)) {
+      const cached = readCacheSync(data.attachmentItemID);
+      if (cached) {
+        setMarkdownStatus("cached");
+        setMarkdownContent(cached);
+        return;
+      }
+    }
+
+    // Check if MinerU API key is configured
+    const apiKey = getMinerUApiKey();
+    if (!apiKey) {
+      setMarkdownStatus("error");
+      setParseProgress("MinerU API key not configured");
+      return;
+    }
+
+    // Get PDF file path
+    const attachment = Zotero.Items.get(data.attachmentItemID) as
+      | Zotero.Item
+      | undefined;
+    if (!attachment || !attachment.isAttachment()) {
+      setMarkdownStatus("error");
+      setParseProgress("Attachment not found");
+      return;
+    }
+
+    const filePath = attachment.getFilePath();
+    if (!filePath) {
+      setMarkdownStatus("error");
+      setParseProgress("File path not available");
+      return;
+    }
+
+    // Start parsing
+    setMarkdownStatus("parsing");
+    setParseProgress("Starting...");
+
+    try {
+      const markdown = await parsePDFWithMinerU(filePath, (msg) => {
+        setParseProgress(msg);
+      });
+      // Save to cache
+      writeCache(data.attachmentItemID, markdown);
+
+      setMarkdownStatus("cached");
+      setMarkdownContent(markdown);
+      setParseProgress("");
+    } catch (error) {
+      setMarkdownStatus("error");
+      setParseProgress(error instanceof Error ? error.message : "Parse failed");
+    }
+  }, [data?.attachmentItemID]);
+
+  // Effect to update markdown status when props change
+  useEffect(() => {
+    setMarkdownStatus(initialMarkdownStatus);
+    setMarkdownContent(initialMarkdownContent);
+  }, [initialMarkdownStatus, initialMarkdownContent]);
   const createNewSession = () => {
     const n = createSession();
     setSessions((curr) => [n, ...curr]);
@@ -725,7 +818,11 @@ export function SidebarPanel({
       const apiMessages: AIChatMessage[] = [
         {
           role: "system",
-          content: buildSystemPrompt(activeContext, settings.systemPrompt),
+          content: buildSystemPrompt(
+            activeContext,
+            settings.systemPrompt,
+            markdownContent,
+          ),
         },
         ...norm.messages
           .filter(
@@ -1129,7 +1226,48 @@ export function SidebarPanel({
             CONTEXT
           </span>
           {/* <span className="min-w-0 truncate">{contextSummary}</span> */}
-          <span className="line-clamp-1 min-w-0">{contextSummary}</span>
+          <span className="line-clamp-1 min-w-0 flex-1">{contextSummary}</span>
+
+          {/* Markdown cache status indicator */}
+          {data?.attachmentItemID ? (
+            <button
+              type="button"
+              onClick={triggerParse}
+              disabled={markdownStatus === "parsing"}
+              title={
+                markdownStatus === "cached"
+                  ? "PDF parsed to markdown (click to re-parse)"
+                  : markdownStatus === "parsing"
+                    ? parseProgress || "Parsing..."
+                    : markdownStatus === "error"
+                      ? `${parseProgress || "Parse failed"} (click to retry)`
+                      : "No cached markdown (click to parse)"
+              }
+              className="flex shrink-0 items-center gap-1 rounded px-1.5 py-0.5 text-[11px] transition hover:bg-[color-mix(in_srgb,var(--fill-primary)_10%,transparent)]"
+            >
+              <div
+                className={cn(
+                  "h-2 w-2 rounded-full",
+                  markdownStatus === "cached"
+                    ? "bg-green-500"
+                    : markdownStatus === "parsing"
+                      ? "animate-pulse bg-yellow-500"
+                      : markdownStatus === "error"
+                        ? "bg-red-500"
+                        : "bg-gray-400",
+                )}
+              />
+              <span>
+                {markdownStatus === "cached"
+                  ? "MD"
+                  : markdownStatus === "parsing"
+                    ? "..."
+                    : markdownStatus === "error"
+                      ? "!"
+                      : "MD?"}
+              </span>
+            </button>
+          ) : null}
         </div>
       </section>
 
