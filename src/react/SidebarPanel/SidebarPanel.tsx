@@ -348,11 +348,12 @@ const mdComponents: React.ComponentProps<typeof Markdown>["components"] = {
       </code>
     );
   },
+
   ul: ({ ...props }) => (
     <ul
       {...props}
       className={cn(
-        "my-1 list-disc pl-5 [&_ol]:my-0.5 [&_ol]:pl-5 [&_ul]:my-0.5 [&_ul]:pl-5",
+        "pl-[30px] [&_ol]:pl-4 [&_ul]:pl-4", // 只控制左边距
         props.className,
       )}
     />
@@ -361,18 +362,18 @@ const mdComponents: React.ComponentProps<typeof Markdown>["components"] = {
     <ol
       {...props}
       className={cn(
-        "my-1 list-decimal pl-5 [&_ol]:my-0.5 [&_ol]:pl-5 [&_ul]:my-0.5 [&_ul]:pl-5",
+        "pl-[30px] [&_ol]:pl-4 [&_ul]:pl-4", // 只控制左边距
         props.className,
       )}
     />
   ),
-  li: ({ ...props }) => (
-    <li {...props} className={cn("my-0.5 pl-0.5", props.className)} />
-  ),
+  li: ({ ...props }) => <li {...props} className={cn("", props.className)} />,
+
   blockquote: ({ ...props }) => (
     <blockquote
       {...props}
       className={cn(
+        "ml-[20px] mr-[20px]",
         "border-l-3 my-1.5 border-y-0 border-r-0 border-solid border-[color-mix(in_srgb,var(--accent-blue)_50%,transparent)] bg-[color-mix(in_srgb,var(--accent-blue)_8%,transparent)] py-1.5 pl-3 text-[color-mix(in_srgb,var(--fill-primary)_80%,transparent)]",
         props.className,
       )}
