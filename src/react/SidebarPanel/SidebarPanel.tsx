@@ -246,8 +246,8 @@ const buildUserPrompt = (
   lines.push(userPrompt);
 
   return {
-    fullText: lines.join("\n"),
-    contextText: contextLines.join("\n"),
+    fullText: lines.join("\n"), // 包含上下文和用户请求
+    contextText: contextLines.join("\n"), // 只包含上下文
   };
 };
 
@@ -493,18 +493,31 @@ const mdComponents: React.ComponentProps<typeof Markdown>["components"] = {
   ),
 };
 
+function truncateMiddle(
+  text: string,
+  headLength: number,
+  tailLength: number,
+): string {
+  if (text.length <= headLength + tailLength) return text;
+
+  const head = text.slice(0, headLength);
+  const tail = text.slice(-tailLength);
+  const omittedCount = text.length - head.length - tail.length;
+
+  return `${head}\n\n... *✂️ [${omittedCount.toLocaleString()} characters omitted] ✂️* ...\n\n${tail}`;
+}
+
 function MessageContent({ message }: { message: ChatMessage }) {
   if (message.role !== "assistant") {
-    const showText = message.displayText ?? message.text;
     const contextPart = message.contextText || "";
-    const userPart = showText;
+    const userPart = message.displayText ?? message.text;
 
     return (
-      <div data-render-mode="plain" className="whitespace-pre-wrap">
+      <div data-render-mode="plain" className="mt-2 whitespace-pre-wrap">
         {contextPart && (
           <CollapsibleDetails
             title="[Context]"
-            content={contextPart}
+            content={truncateMiddle(contextPart, 2000, 2000)}
             defaultOpen={false}
             components={{
               a: mdComponents?.a,
@@ -557,41 +570,40 @@ function MessageContent({ message }: { message: ChatMessage }) {
         {userPart && <div>{userPart}</div>}
       </div>
     );
-  }
-
-  return (
-    <div>
-      {message.thinking ? (
-        <div data-thinking-section>
-          <CollapsibleDetails
-            title={
-              message.thoughtDuration != null
-                ? `Thought for ${message.thoughtDuration} second${message.thoughtDuration === 1 ? "" : "s"}`
-                : "Thinking"
-            }
-            content={message.thinking}
-            defaultOpen={true}
+  } else {
+    return (
+      <div>
+        {message.thinking ? (
+          <div data-thinking-section className="mt-2">
+            <CollapsibleDetails
+              title={
+                message.thoughtDuration != null
+                  ? `Thought for ${message.thoughtDuration} second${message.thoughtDuration === 1 ? "" : "s"}`
+                  : "Thinking"
+              }
+              content={message.thinking}
+              defaultOpen={true}
+              components={mdComponents}
+            />
+          </div>
+        ) : null}
+        {/* <div className="select-text text-[20px] leading-[32px]"> */}
+        {/* 解决markdown首末边距过大的问题 */}
+        <div className="[&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+          <Markdown
+            remarkPlugins={[remarkGfm, remarkMath]}
+            rehypePlugins={[rehypeKatex, rehypeHighlight]}
+            // 关键修复：放行 zotero 协议，防止被react-markdown过滤
+            urlTransform={(uri) => (uri.startsWith("zotero://") ? uri : uri)}
             components={mdComponents}
-          />
+          >
+            {message.text}
+          </Markdown>
         </div>
-      ) : null}
-      {/* <div className="select-text text-[20px] leading-[32px]"> */}
-      {/* 解决markdown首末边距过大的问题 */}
-      <div className="[&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
-        <Markdown
-          remarkPlugins={[remarkGfm, remarkMath]}
-          rehypePlugins={[rehypeKatex, rehypeHighlight]}
-          // 关键修复：放行 zotero 协议，防止被react-markdown过滤
-          urlTransform={(uri) => (uri.startsWith("zotero://") ? uri : uri)}
-          components={mdComponents}
-        >
-          {message.text}
-        </Markdown>
       </div>
-    </div>
-  );
+    );
+  }
 }
-
 export function SidebarPanel({
   data,
   selectedAnnotation,
@@ -813,9 +825,9 @@ export function SidebarPanel({
         {
           id: uid("user"),
           role: "user" as const,
-          text: fullText,
-          displayText: text,
-          contextText: contextText,
+          text: fullText, // 这是要发送给 AI 的内容
+          displayText: text, // 这是以正常字号显示的内容
+          contextText: contextText, // 这是放在CollapsibleDetails中的内容
         },
       ],
     };
@@ -862,7 +874,7 @@ export function SidebarPanel({
         })),
         { role: "user", content: norm.text },
       ];
-      console.log("apiMessages", apiMessages);
+      // console.log("apiMessages", apiMessages);
       let full = "";
       let thinking = "";
       let streamError: unknown = null;
@@ -1110,7 +1122,7 @@ export function SidebarPanel({
     if (!list) return;
     const onScroll = () => {
       const nearBottom =
-        list.scrollHeight - list.scrollTop - list.clientHeight <= 300;
+        list.scrollHeight - list.scrollTop - list.clientHeight <= 120;
       autoScrollRef.current = nearBottom;
       setShowJump(!nearBottom);
     };
