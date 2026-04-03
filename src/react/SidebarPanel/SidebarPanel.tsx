@@ -31,7 +31,7 @@ import {
 import {
   registerPopupActionCallback,
   unregisterPopupActionCallback,
-} from "../../modules/PopupButtons";
+} from "../../modules/popupButtons";
 import type { SidebarPanelData } from "../bridge";
 import { Button } from "@/components/ui/button";
 import {

@@ -1,7 +1,7 @@
 import type { MarginMindReactWindow, SidebarPanelData } from "../react/bridge";
 import { config } from "../../package.json";
 import { hasCache, readCacheSync } from "./markdownCache";
-import { latestSelectionAnnotation } from "./PopupButtons";
+import { latestSelectionAnnotation } from "./popupButtons";
 
 const PANEL_ID = `${config.addonRef}-react-sidebar-panel`;
 const PANEL_ROOT_ID = `${config.addonRef}-react-sidebar-panel-root`;

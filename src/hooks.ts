@@ -20,7 +20,7 @@ import {
 import {
   registerTextSelectionPopupButtons,
   unregisterTextSelectionPopupButtons,
-} from "./modules/PopupButtons";
+} from "./modules/popupButtons";
 import {
   registerSidebarPanel,
   unregisterAllSidebarPanels,
