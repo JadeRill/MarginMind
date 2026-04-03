@@ -6,6 +6,7 @@ import {
   useCallback,
   type KeyboardEvent,
 } from "react";
+import { encodingForModel } from "js-tiktoken";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
@@ -599,6 +600,25 @@ export function SidebarPanel({
   );
   const messages = activeSession?.messages ?? [];
   const draft = activeSession?.draft ?? "";
+  const [totalTokens, setTotalTokens] = useState(0);
+
+  useEffect(() => {
+    if (isSending) return;
+    try {
+      const enc = encodingForModel("gpt-5");
+      let tokens = 0;
+      for (const msg of messages) {
+        tokens += enc.encode(msg.text).length;
+      }
+      if (markdownContent) {
+        tokens += enc.encode(markdownContent).length;
+      }
+      setTotalTokens(tokens);
+    } catch {
+      setTotalTokens(0);
+    }
+  }, [isSending, messages, markdownContent]);
+
   useEffect(() => {
     draftRef.current = draft;
   }, [draft]);
@@ -1241,6 +1261,11 @@ export function SidebarPanel({
               Summarize
             </Button>
           </div>
+          {totalTokens > 0 && (
+            <div className="ml-auto border-[1px] border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_86%,var(--fill-primary)_8%)] px-1 py-2 text-[11px] text-[color-mix(in_srgb,var(--fill-primary)_58%,transparent)]">
+              {totalTokens.toLocaleString()} tokens
+            </div>
+          )}
         </div>
 
         {isSelectionMode ? (
