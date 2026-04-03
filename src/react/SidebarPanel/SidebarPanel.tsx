@@ -541,38 +541,6 @@ function MessageContent({ message }: { message: ChatMessage }) {
               img: mdComponents?.img,
             }}
           />
-          // <details className="mb-2">
-          //   <summary className="cursor-pointer select-none text-[12px] font-medium tracking-wide text-[color-mix(in_srgb,var(--fill-primary)_42%,transparent)] hover:text-[color-mix(in_srgb,var(--fill-primary)_60%,transparent)]">
-          //     [Context]
-          //   </summary>
-          //   <div className="mt-1 border-y-0 border-l-2 border-r-0 border-solid border-[color-mix(in_srgb,var(--fill-primary)_14%,transparent)] pl-3 text-[14px] leading-[24px] text-[color-mix(in_srgb,var(--fill-primary)_52%,transparent)] [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
-          //     {/* <div className="mt-1 rounded bg-[color-mix(in_srgb,var(--fill-primary)_8%,transparent)] p-2 text-[12px] text-[color-mix(in_srgb,var(--fill-primary)_52%,transparent)]"> */}
-          //     <Markdown
-          //       remarkPlugins={[remarkGfm, remarkMath]}
-          //       rehypePlugins={[rehypeKatex, rehypeHighlight]}
-          //       // 关键修复：放行 zotero 协议，防止被react-markdown过滤
-          //       urlTransform={(uri) =>
-          //         uri.startsWith("zotero://") ? uri : uri
-          //       }
-          //       components={{
-          //         a: mdComponents?.a,
-          //         pre: mdComponents?.pre,
-          //         code: mdComponents?.code,
-          //         table: mdComponents?.table,
-          //         ul: mdComponents?.ul,
-          //         ol: mdComponents?.ol,
-          //         li: mdComponents?.li,
-          //         thead: mdComponents?.thead,
-          //         th: mdComponents?.th,
-          //         tr: mdComponents?.tr,
-          //         td: mdComponents?.td,
-          //         img: mdComponents?.img,
-          //       }}
-          //     >
-          //       {contextPart}
-          //     </Markdown>
-          //   </div>
-          // </details>
         )}
         {userPart && <div>{userPart}</div>}
       </div>
