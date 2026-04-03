@@ -54,7 +54,7 @@ type SidebarPanelProps = {
   markdownStatus: "none" | "cached" | "parsing" | "error";
   markdownContent: string | null;
 };
-type ChatRole = "assistant" | "user" | "system";
+type ChatRole = "assistant" | "user";
 type ChatMessage = {
   id: string;
   role: ChatRole;
@@ -90,11 +90,8 @@ const EMPTY_TITLE = "New chat";
 const ROLE_LABEL: Record<ChatRole, string> = {
   assistant: "MarginMind",
   user: "You",
-  system: "Selection",
 };
 const ROLE_BUBBLE: Record<ChatRole, string> = {
-  system:
-    "w-full border-[color-mix(in_srgb,var(--accent-blue)_35%,transparent)] border-solid bg-[color-mix(in_srgb,var(--accent-blue)_16%,transparent)] text-[color-mix(in_srgb,var(--fill-primary)_88%,transparent)]",
   assistant:
     "w-full overflow-hidden border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] border-solid bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[var(--fill-primary)]",
   user: "max-w-[80%] border-[color-mix(in_srgb,var(--accent-blue)_45%,transparent)] border-solid bg-[color-mix(in_srgb,var(--accent-blue)_20%,transparent)] text-[var(--fill-primary)]",
@@ -163,14 +160,7 @@ const PROMPTS = {
 //   "Translate the selected text to Chinese. Keep the terminology accurate and output only the translation.";
 
 const uid = (p: string) => `${p}-${Date.now()}`;
-const initialMessages = (): ChatMessage[] => [
-  {
-    id: "assistant-greeting",
-    role: "assistant",
-    text: "Your AI assistant is ready. Ask for summary, critique, extraction, or translation.",
-    meta: "Ready",
-  },
-];
+const initialMessages = (): ChatMessage[] => [];
 const createSession = (partial?: Partial<ChatSession>): ChatSession => ({
   id: partial?.id ?? uid("session"),
   title: partial?.title ?? EMPTY_TITLE,
@@ -221,28 +211,35 @@ const seedState = (data: SidebarPanelData | null): PersistedState => {
     activeContext: saved.activeContext ?? data,
   };
 };
-const buildSystemPrompt = (
+const buildUserPrompt = (
+  userPrompt: string,
   ctx: SidebarPanelData | null,
   systemPrompt: string,
   markdownContent: string | null,
   isFirstRound: boolean = false,
 ) => {
-  const lines = [
-    "Paper context:",
-    `Title: ${ctx?.title ?? "(none)"}`,
-    `Creators: ${ctx?.creators ?? "(none)"}`,
-    `Year: ${ctx?.year ?? "(none)"}`,
-    `Key: ${ctx?.keyText ?? "(none)"}`,
-    `Abstract: ${ctx?.abstractPreview ?? "(none)"}`,
-  ];
+  const lines: string[] = [];
 
   if (isFirstRound && markdownContent) {
-    lines.push("");
     lines.push("Full paper content (parsed from PDF):");
     lines.push(markdownContent);
+    lines.push("");
   }
 
-  return `${systemPrompt}\n\n${lines.join("\n")}`;
+  lines.push("Paper context:");
+  lines.push(`Title: ${ctx?.title ?? "(none)"}`);
+  lines.push(`Creators: ${ctx?.creators ?? "(none)"}`);
+  lines.push(`Year: ${ctx?.year ?? "(none)"}`);
+  lines.push(`Key: ${ctx?.keyText ?? "(none)"}`);
+  lines.push(`Abstract: ${ctx?.abstractPreview ?? "(none)"}`);
+  lines.push("");
+  lines.push("System prompt:");
+  lines.push(systemPrompt);
+  lines.push("");
+  lines.push("User request:");
+  lines.push(userPrompt);
+
+  return lines.join("\n");
 };
 
 const handleInternalJump = async (href: string) => {
@@ -785,25 +782,18 @@ export function SidebarPanel({
     }));
 
     try {
-      const isFirstRound = !activeSession.messages.some(
-        (m) => m.role === "user",
-      );
+      const isFirstRound = messages.length === 0;
       const apiMessages: AIChatMessage[] = [
         {
-          role: "system",
-          content: buildSystemPrompt(
+          role: "user",
+          content: buildUserPrompt(
+            norm.text,
             activeContext,
             settings.systemPrompt,
             markdownContent,
             isFirstRound,
           ),
         },
-        ...norm.messages
-          .filter(
-            (m): m is ChatMessage & { role: "assistant" | "user" } =>
-              m.role !== "system",
-          )
-          .map((m) => ({ role: m.role, content: m.text })),
       ];
       let full = "";
       let thinking = "";
@@ -1263,14 +1253,18 @@ export function SidebarPanel({
               variant="outline"
               onClick={() => {
                 try {
-                  const enc = encodingForModel("gpt-4o");
+                  const enc = encodingForModel("gpt-5");
                   let tokens = 0;
+
                   for (const msg of messages) {
                     tokens += enc.encode(msg.text).length;
                   }
-                  if (markdownContent) {
+
+                  const isFirstRound = messages.length === 0;
+                  if (!isFirstRound && markdownContent) {
                     tokens += enc.encode(markdownContent).length;
                   }
+
                   setTotalTokens(tokens);
                 } catch {
                   setTotalTokens(0);
@@ -1282,7 +1276,7 @@ export function SidebarPanel({
             >
               {totalTokens > 0
                 ? `~${totalTokens.toLocaleString()} tokens`
-                : "tokens"}
+                : "0 tokens"}
             </Button>
           </div>
         </div>
