@@ -225,6 +225,7 @@ const buildSystemPrompt = (
   ctx: SidebarPanelData | null,
   systemPrompt: string,
   markdownContent: string | null,
+  isFirstRound: boolean = false,
 ) => {
   const lines = [
     "Paper context:",
@@ -235,7 +236,7 @@ const buildSystemPrompt = (
     `Abstract: ${ctx?.abstractPreview ?? "(none)"}`,
   ];
 
-  if (markdownContent) {
+  if (isFirstRound && markdownContent) {
     lines.push("");
     lines.push("Full paper content (parsed from PDF):");
     lines.push(markdownContent);
@@ -784,6 +785,9 @@ export function SidebarPanel({
     }));
 
     try {
+      const isFirstRound = !activeSession.messages.some(
+        (m) => m.role === "user",
+      );
       const apiMessages: AIChatMessage[] = [
         {
           role: "system",
@@ -791,6 +795,7 @@ export function SidebarPanel({
             activeContext,
             settings.systemPrompt,
             markdownContent,
+            isFirstRound,
           ),
         },
         ...norm.messages
