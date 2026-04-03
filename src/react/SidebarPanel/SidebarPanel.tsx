@@ -59,6 +59,8 @@ type ChatMessage = {
   id: string;
   role: ChatRole;
   text: string;
+  displayText?: string;
+  contextText?: string;
   meta?: string;
   thinking?: string;
   thoughtDuration?: number;
@@ -216,30 +218,36 @@ const buildUserPrompt = (
   ctx: SidebarPanelData | null,
   systemPrompt: string,
   markdownContent: string | null,
-  isFirstRound: boolean = false,
+  isFirstRound: boolean,
 ) => {
+  const contextLines: string[] = [];
   const lines: string[] = [];
 
   if (isFirstRound && markdownContent) {
-    lines.push("Full paper content (parsed from PDF):");
-    lines.push(markdownContent);
-    lines.push("");
+    contextLines.push("Full paper content (parsed from PDF):");
+    contextLines.push(markdownContent);
+    contextLines.push("");
   }
 
-  lines.push("Paper context:");
-  lines.push(`Title: ${ctx?.title ?? "(none)"}`);
-  lines.push(`Creators: ${ctx?.creators ?? "(none)"}`);
-  lines.push(`Year: ${ctx?.year ?? "(none)"}`);
-  lines.push(`Key: ${ctx?.keyText ?? "(none)"}`);
-  lines.push(`Abstract: ${ctx?.abstractPreview ?? "(none)"}`);
-  lines.push("");
-  lines.push("System prompt:");
-  lines.push(systemPrompt);
+  contextLines.push("Paper context:");
+  contextLines.push(`Title: ${ctx?.title ?? "(none)"}`);
+  contextLines.push(`Creators: ${ctx?.creators ?? "(none)"}`);
+  contextLines.push(`Year: ${ctx?.year ?? "(none)"}`);
+  contextLines.push(`Key: ${ctx?.keyText ?? "(none)"}`);
+  contextLines.push(`Abstract: ${ctx?.abstractPreview ?? "(none)"}`);
+  contextLines.push("");
+  contextLines.push("System prompt:");
+  contextLines.push(systemPrompt);
+
+  lines.push(...contextLines);
   lines.push("");
   lines.push("User request:");
   lines.push(userPrompt);
 
-  return lines.join("\n");
+  return {
+    fullText: lines.join("\n"),
+    contextText: contextLines.join("\n"),
+  };
 };
 
 const handleInternalJump = async (href: string) => {
@@ -486,9 +494,23 @@ const mdComponents: React.ComponentProps<typeof Markdown>["components"] = {
 
 function MessageContent({ message }: { message: ChatMessage }) {
   if (message.role !== "assistant") {
+    const showText = message.displayText ?? message.text;
+    const contextPart = message.contextText || "";
+    const userPart = showText;
+
     return (
       <div data-render-mode="plain" className="whitespace-pre-wrap">
-        {message.text}
+        {contextPart && (
+          <details className="mb-2">
+            <summary className="cursor-pointer select-none text-[11px] text-[color-mix(in_srgb,var(--fill-primary)_42%,transparent)]">
+              [Context]
+            </summary>
+            <div className="mt-1 rounded bg-[color-mix(in_srgb,var(--fill-primary)_8%,transparent)] p-2 text-[12px] text-[color-mix(in_srgb,var(--fill-primary)_52%,transparent)]">
+              {contextPart}
+            </div>
+          </details>
+        )}
+        {userPart && <div>{userPart}</div>}
       </div>
     );
   }
@@ -741,9 +763,26 @@ export function SidebarPanel({
   const normalizePrompt = (input: string, base: ChatMessage[]) => {
     const text = input.trim();
     if (!text) return null;
-    return {
+    const isFirstRound = base.length === 0;
+    const { fullText, contextText } = buildUserPrompt(
       text,
-      messages: [...base, { id: uid("user"), role: "user" as const, text }],
+      activeContext,
+      settings.systemPrompt,
+      markdownContent,
+      isFirstRound,
+    );
+    return {
+      text: fullText,
+      messages: [
+        ...base,
+        {
+          id: uid("user"),
+          role: "user" as const,
+          text: fullText,
+          displayText: text,
+          contextText: contextText,
+        },
+      ],
     };
   };
 
@@ -759,7 +798,6 @@ export function SidebarPanel({
       title: s.title === EMPTY_TITLE ? trimTitle(norm.text) : s.title,
       messages: norm.messages,
       draft: "",
-      queuedSelection: "",
     }));
 
     setIsSending(true);
@@ -782,19 +820,14 @@ export function SidebarPanel({
     }));
 
     try {
-      const isFirstRound = messages.length === 0;
       const apiMessages: AIChatMessage[] = [
-        {
-          role: "user",
-          content: buildUserPrompt(
-            norm.text,
-            activeContext,
-            settings.systemPrompt,
-            markdownContent,
-            isFirstRound,
-          ),
-        },
+        ...messages.map((m) => ({
+          role: m.role as "user" | "assistant",
+          content: m.text,
+        })),
+        { role: "user", content: norm.text },
       ];
+      console.log("apiMessages", apiMessages);
       let full = "";
       let thinking = "";
       let streamError: unknown = null;
@@ -1253,7 +1286,7 @@ export function SidebarPanel({
               variant="outline"
               onClick={() => {
                 try {
-                  const enc = encodingForModel("gpt-5");
+                  const enc = encodingForModel("gpt-4o");
                   let tokens = 0;
 
                   for (const msg of messages) {
@@ -1261,7 +1294,7 @@ export function SidebarPanel({
                   }
 
                   const isFirstRound = messages.length === 0;
-                  if (!isFirstRound && markdownContent) {
+                  if (isFirstRound && markdownContent) {
                     tokens += enc.encode(markdownContent).length;
                   }
 
