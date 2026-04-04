@@ -100,7 +100,11 @@ function handleAction(action: PopupAction, prompt?: string): void {
 
 function tryInject(doc: Document): void {
   const popup = doc.querySelector(".view-popup") as HTMLElement | null;
-  if (!popup || doc.getElementById(GROUP_ID)) return;
+  if (!popup) {
+    latestSelectionAnnotation = null;
+    return;
+  }
+  if (doc.getElementById(GROUP_ID)) return;
 
   const toolToggle = popup.querySelector(".tool-toggle");
   if (!toolToggle) return;
@@ -195,10 +199,7 @@ const PopupHandler: _ZoteroTypes.Reader.EventHandler<
   "renderTextSelectionPopup"
 > = (event) => {
   // Capture selection text
-  const annotation = event.params.annotation;
-  if (annotation) {
-    latestSelectionAnnotation = annotation;
-  }
+  latestSelectionAnnotation = event.params.annotation ?? null;
 
   // Inject buttons into popup
   const doc = event.reader._iframeWindow?.document;
@@ -227,6 +228,7 @@ export function unregisterTextSelectionPopupButtons(): void {
     PopupHandler,
   );
   listenerRegistered = false;
+  latestSelectionAnnotation = null;
 
   for (const observer of docObservers.values()) {
     observer.disconnect();
