@@ -45,8 +45,8 @@ export const truncateMiddle = (
 
   const result = `${head}
 
-> *✂️ [${omittedCount.toLocaleString()} characters omitted from preview] ✂️*
 > *🤖 Full text has been passed to AI 🤖*
+> *✂️ [${omittedCount.toLocaleString()} characters omitted from preview] ✂️*
 
 ${tail}`;
 

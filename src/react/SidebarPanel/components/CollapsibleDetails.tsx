@@ -2,7 +2,7 @@ import Markdown from "react-markdown";
 import {
   MARKDOWN_REHYPE_PLUGINS,
   MARKDOWN_REMARK_PLUGINS,
-} from "../markdown";
+} from "./MarkdownRenderer";
 
 interface DetailsProps {
   /** 标题内容 */

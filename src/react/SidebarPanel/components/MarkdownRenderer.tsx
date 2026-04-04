@@ -203,7 +203,11 @@ const handleInternalJump = async (href: string) => {
   }
 };
 
-export const renderMarkdown = (content: string) => (
+interface MarkdownRendererProps {
+  content: string;
+}
+
+export const MarkdownRenderer = ({ content }: MarkdownRendererProps) => (
   <Markdown
     remarkPlugins={MARKDOWN_REMARK_PLUGINS}
     rehypePlugins={MARKDOWN_REHYPE_PLUGINS}
