@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { Card, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { getPref } from "../../utils/prefs";
@@ -226,6 +226,7 @@ export function SidebarPanel({
     selectedIDs.length > 0 &&
     !isSavingAnnotation;
   const canDeleteSelected = selectedIDs.length > 0 && !isSending;
+  const selectedIDSet = useMemo(() => new Set(selectedIDs), [selectedIDs]);
 
   if (!activeContext && !messages.length) {
     return (
@@ -278,7 +279,7 @@ export function SidebarPanel({
             key={message.id}
             message={message}
             isSelectionMode={isSelectionMode}
-            selectedIDs={selectedIDs}
+            isSelected={selectedIDSet.has(message.id)}
             onToggleSelect={toggleSelected}
             onContextMenu={toggleSelectionWithAnyClick}
             markdownFontSize={markdownFontSize}

@@ -176,8 +176,17 @@ export const useChatSession = (
   }, []);
 
   const updateDraft = useCallback(
-    (next: string) => patchActive((s) => ({ ...s, draft: next })),
-    [patchActive],
+    (next: string) =>
+      setSessions((curr) =>
+        curr.map((s) =>
+          s.id !== activeSessionID
+            ? s
+            : s.draft === next
+              ? s
+              : { ...s, draft: next },
+        ),
+      ),
+    [activeSessionID],
   );
   const clearDraft = useCallback(() => updateDraft(""), [updateDraft]);
   const stopSending = useCallback(() => {

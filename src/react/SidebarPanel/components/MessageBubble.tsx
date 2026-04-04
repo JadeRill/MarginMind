@@ -1,5 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { memo } from "react";
 import type { ChatMessage } from "../hooks/useChatSession";
 import { ROLE_LABEL } from "../utils";
 import { renderMarkdown, mdComponents } from "../markdown";
@@ -9,22 +10,20 @@ import { truncateMiddle } from "../utils";
 interface MessageBubbleProps {
   message: ChatMessage;
   isSelectionMode: boolean;
-  selectedIDs: string[];
+  isSelected: boolean;
   onToggleSelect: (id: string) => void;
   onContextMenu: (id: string) => void;
   markdownFontSize?: string;
 }
 
-export function MessageBubble({
+function MessageBubbleInner({
   message,
   isSelectionMode,
-  selectedIDs,
+  isSelected,
   onToggleSelect,
   onContextMenu,
   markdownFontSize = "text-[18px]",
 }: MessageBubbleProps) {
-  const isSelected = selectedIDs.includes(message.id);
-
   return (
     <div
       className={cn(
@@ -80,6 +79,17 @@ export function MessageBubble({
     </div>
   );
 }
+
+export const MessageBubble = memo(
+  MessageBubbleInner,
+  (prev, next) =>
+    prev.message === next.message &&
+    prev.isSelectionMode === next.isSelectionMode &&
+    prev.isSelected === next.isSelected &&
+    prev.onToggleSelect === next.onToggleSelect &&
+    prev.onContextMenu === next.onContextMenu &&
+    prev.markdownFontSize === next.markdownFontSize,
+);
 
 function MessageContent({ message }: { message: ChatMessage }) {
   if (message.role !== "assistant") {

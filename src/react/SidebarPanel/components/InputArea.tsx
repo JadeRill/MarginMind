@@ -8,10 +8,9 @@ import {
   applyPreset,
   loadAISettings,
 } from "../../../modules/aiPrefs";
-import { getPref } from "../../../utils/prefs";
 import { PROMPTS } from "../utils";
 import { MarkdownParseButton } from "./markdown-parse-button";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { encodingForModel } from "js-tiktoken";
 
 interface InputAreaProps {
@@ -62,19 +61,22 @@ export function InputArea({
   canDelete,
   onCancel,
 }: InputAreaProps) {
-  const presets = loadPresets();
-  const settings = loadAISettings();
   const [isPresetOpen, setIsPresetOpen] = useState(false);
   const [presetPos, setPresetPos] = useState({ left: 0, bottom: 0 });
   const presetDropdownRef = useRef<HTMLDivElement>(null);
-  const annotationColor = getPref("annotationColor");
+  const presets = useMemo(() => loadPresets(), [isPresetOpen]);
+  const settings = useMemo(() => loadAISettings(), [isPresetOpen]);
 
-  const activePreset = presets.find(
-    (p) =>
-      p.settings.provider === settings.provider &&
-      p.settings.apiKey === settings.apiKey &&
-      p.settings.baseURL === settings.baseURL &&
-      p.settings.model === settings.model,
+  const activePreset = useMemo(
+    () =>
+      presets.find(
+        (p) =>
+          p.settings.provider === settings.provider &&
+          p.settings.apiKey === settings.apiKey &&
+          p.settings.baseURL === settings.baseURL &&
+          p.settings.model === settings.model,
+      ),
+    [presets, settings],
   );
 
   useEffect(() => {
