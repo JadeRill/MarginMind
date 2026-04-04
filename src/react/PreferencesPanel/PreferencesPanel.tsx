@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { getPref, setPref } from "../../utils/prefs";
 import {
   AI_DEFAULTS,
-  AI_PROVIDER_OPTIONS,
   getDefaultBaseURL,
   getDefaultModel,
   loadAISettings,
@@ -19,118 +18,17 @@ import {
 import {
   listCacheFiles,
   deleteCaches,
-  clearAllCache,
 } from "../../modules/markdownCache";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
-
-type BaseSettings = {
-  annotationColor: string;
-  markdownFontSize: string;
-};
-
-const FONT_SIZE_OPTIONS = [
-  { value: "text-[12px]", label: "12px" },
-  { value: "text-[14px]", label: "14px" },
-  { value: "text-[16px]", label: "16px" },
-  { value: "text-[18px]", label: "18px (Default)" },
-  { value: "text-[20px]", label: "20px" },
-  { value: "text-[22px]", label: "22px" },
-  { value: "text-[24px]", label: "24px" },
-];
-
-const DEFAULT_BASE_SETTINGS: BaseSettings = {
-  annotationColor: "#8000ff",
-  markdownFontSize: "text-[18px]",
-};
-
-/* ── Reusable custom dropdown ─────────────────────────────────────────── */
-
-function CustomDropdown<T extends string>(props: {
-  value: T;
-  options: Array<{ value: T; label: string }>;
-  onChange: (v: T) => void;
-}) {
-  const { value, options, onChange } = props;
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    function handle(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node))
-        setOpen(false);
-    }
-    document.addEventListener("mousedown", handle, true);
-    return () => document.removeEventListener("mousedown", handle, true);
-  }, [open]);
-
-  const current = options.find((o) => o.value === value);
-
-  return (
-    <div ref={ref} className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="flex h-9 w-full items-center justify-between rounded-md border border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] px-3 text-left text-[14px] outline-none transition focus:border-[var(--accent-blue)]"
-      >
-        <span>{current?.label ?? value}</span>
-        <Chevron open={open} />
-      </button>
-      {open && (
-        <div
-          className="absolute left-0 right-0 top-full z-50 mt-1 max-h-60 overflow-hidden overflow-y-auto rounded-md border border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[var(--material-sidepane)] shadow-lg"
-          onMouseDown={(e) => e.preventDefault()}
-        >
-          {options.map((o) => (
-            <button
-              key={o.value}
-              type="button"
-              onClick={() => {
-                onChange(o.value);
-                setOpen(false);
-              }}
-              className={`flex w-full items-center justify-start px-3 py-2 text-left text-[13px] transition-colors hover:bg-[color-mix(in_srgb,var(--accent-blue)_15%,transparent)] ${
-                o.value === value
-                  ? "bg-[color-mix(in_srgb,var(--accent-blue)_10%,transparent)] font-medium"
-                  : ""
-              }`}
-            >
-              {o.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function Chevron({ open }: { open: boolean }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="12"
-      height="12"
-      viewBox="0 0 12 12"
-      fill="none"
-      className={`shrink-0 transition-transform ${open ? "rotate-180" : ""}`}
-    >
-      <path
-        d="M3 4.5L6 7.5L9 4.5"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-/* ── Main panel ───────────────────────────────────────────────────────── */
+import { GeneralSettingsCard } from "./components/GeneralSettingsCard";
+import { AIConfigurationCard } from "./components/AIConfigurationCard";
+import { MinerUConfigurationCard } from "./components/MinerUConfigurationCard";
+import {
+  DEFAULT_BASE_SETTINGS,
+  FONT_SIZE_OPTIONS,
+  type BaseSettings,
+  type CacheFileItem,
+} from "./types";
 
 export function PreferencesPanel() {
   const [baseSettings, setBaseSettings] = useState<BaseSettings>(
@@ -148,12 +46,10 @@ export function PreferencesPanel() {
 
   // MinerU state
   const [mineruApiKey, setMineruApiKey] = useState("");
-  const [cacheFiles, setCacheFiles] = useState<
-    Array<{ id: string; name: string; size: number; modified: Date }>
-  >([]);
+  const [cacheFiles, setCacheFiles] = useState<CacheFileItem[]>([]);
   const [selectedCacheIds, setSelectedCacheIds] = useState<string[]>([]);
 
-  // ── Load on mount ──────────────────────────────────────────────────
+  // Load on mount
   useEffect(() => {
     setBaseSettings({
       annotationColor: getPref("annotationColor") || "#8000ff",
@@ -162,7 +58,7 @@ export function PreferencesPanel() {
     setAISettings(loadAISettings());
     setPresets(loadPresets());
     setMineruApiKey(getPref("mineruApiKey") || "");
-    loadCacheFiles();
+    void loadCacheFiles();
   }, []);
 
   useEffect(
@@ -172,109 +68,93 @@ export function PreferencesPanel() {
     [],
   );
 
-  // ── Helpers ────────────────────────────────────────────────────────
   const markSaved = useCallback(() => {
     setStatus("saved");
     if (timerRef.current) globalThis.clearTimeout(timerRef.current);
     timerRef.current = globalThis.setTimeout(() => setStatus("idle"), 1000);
   }, []);
 
-  // ── MinerU functions ───────────────────────────────────────────────
-  function updateMinerUApiKey(value: string) {
-    setMineruApiKey(value);
-    setPref("mineruApiKey", value);
-    markSaved();
-  }
-
-  async function loadCacheFiles() {
+  const loadCacheFiles = useCallback(async () => {
     const files = await listCacheFiles();
-    console.log("files", files);
     setCacheFiles(files);
     setSelectedCacheIds([]);
-  }
+  }, []);
 
-  async function handleDeleteSelected() {
+  const handleDeleteSelected = useCallback(async () => {
     const ids = selectedCacheIds.map((id) => parseInt(id, 10));
     await deleteCaches(ids);
     await loadCacheFiles();
     markSaved();
-  }
+  }, [selectedCacheIds, loadCacheFiles, markSaved]);
 
-  async function handleClearAllCache() {
-    await clearAllCache();
-    await loadCacheFiles();
-    markSaved();
-  }
+  const updateMinerUApiKey = useCallback(
+    (value: string) => {
+      setMineruApiKey(value);
+      setPref("mineruApiKey", value);
+      markSaved();
+    },
+    [markSaved],
+  );
 
-  function formatSize(bytes: number): string {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  }
+  const updateBaseSetting = useCallback(
+    <K extends keyof BaseSettings>(key: K, value: BaseSettings[K]) => {
+      setBaseSettings((c) => ({ ...c, [key]: value }));
+      setPref(key, value as string);
+      markSaved();
+    },
+    [markSaved],
+  );
 
-  function formatDate(date: Date): string {
-    return date.toLocaleDateString(undefined, {
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  }
+  const updateAISetting = useCallback(
+    <K extends keyof AISettings>(key: K, value: AISettings[K]) => {
+      setAISettings((c) => ({ ...c, [key]: value }));
+      saveAISetting(key, value);
+      setActivePreset("");
+      markSaved();
+    },
+    [markSaved],
+  );
 
-  function updateBaseSetting<K extends keyof BaseSettings>(
-    key: K,
-    value: BaseSettings[K],
-  ) {
-    setBaseSettings((c) => ({ ...c, [key]: value }));
-    setPref(key, value as string);
-    markSaved();
-  }
+  const changeProvider = useCallback(
+    (provider: AIProvider) => {
+      const nextBaseURL = getDefaultBaseURL(provider);
+      const nextModel = getDefaultModel(provider);
+      const next: AISettings = {
+        ...aiSettings,
+        provider,
+        baseURL: nextBaseURL,
+        model: nextModel,
+      };
+      setAISettings(next);
+      saveAISetting("provider", provider);
+      saveAISetting("baseURL", nextBaseURL);
+      saveAISetting("model", nextModel);
+      setActivePreset("");
+      markSaved();
+    },
+    [aiSettings, markSaved],
+  );
 
-  function updateAISetting<K extends keyof AISettings>(
-    key: K,
-    value: AISettings[K],
-  ) {
-    setAISettings((c) => ({ ...c, [key]: value }));
-    saveAISetting(key, value);
-    setActivePreset("");
-    markSaved();
-  }
-
-  function changeProvider(provider: AIProvider) {
-    const nextBaseURL = getDefaultBaseURL(provider);
-    const nextModel = getDefaultModel(provider);
-    const next: AISettings = {
-      ...aiSettings,
-      provider,
-      baseURL: nextBaseURL,
-      model: nextModel,
-    };
-    setAISettings(next);
-    saveAISetting("provider", provider);
-    saveAISetting("baseURL", nextBaseURL);
-    saveAISetting("model", nextModel);
-    setActivePreset("");
-    markSaved();
-  }
-
-  function resetAll() {
+  const resetAll = useCallback(() => {
     resetAISettings();
     setAISettings(loadAISettings());
     setActivePreset("");
     markSaved();
-  }
+  }, [markSaved]);
 
-  // ── Preset actions ─────────────────────────────────────────────────
-  function handleApplyPreset(name: string) {
-    setActivePreset(name);
-    const preset = presets.find((p) => p.name === name);
-    if (!preset) return;
-    applyPreset(preset);
-    setAISettings(loadAISettings());
-    markSaved();
-  }
+  const handleApplyPreset = useCallback(
+    (name: string) => {
+      setActivePreset(name);
+      const preset = presets.find((p) => p.name === name);
+      if (!preset) return;
+      applyPreset(preset);
+      setAISettings(loadAISettings());
+      markSaved();
+    },
+    [presets, markSaved],
+  );
 
-  function handleSavePreset() {
+  const handleSavePreset = useCallback(() => {
     const name = saveName.trim();
     if (!name) return;
     savePreset(name, aiSettings);
@@ -283,27 +163,36 @@ export function PreferencesPanel() {
     setSaveName("");
     setShowSaveInput(false);
     markSaved();
-  }
+  }, [saveName, aiSettings, markSaved]);
 
-  function handleDeletePreset() {
+  const handleDeletePreset = useCallback(() => {
     if (!activePreset) return;
     deletePreset(activePreset);
     setPresets(loadPresets());
     setActivePreset("");
     markSaved();
-  }
+  }, [activePreset, markSaved]);
 
-  const presetOptions = [
-    { value: "", label: "-- No Preset --" },
-    ...presets.map((p) => ({ value: p.name, label: p.name })),
-  ];
+  const formatSize = useCallback((bytes: number): string => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }, []);
+
+  const formatDate = useCallback((date: Date): string => {
+    return date.toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }, []);
 
   return (
     <section className="relative min-h-[320px] rounded-xl border border-[color-mix(in_srgb,var(--accent-blue)_30%,transparent)] bg-[linear-gradient(145deg,color-mix(in_srgb,var(--material-sidepane)_88%,var(--accent-blue)_12%),var(--material-sidepane))] p-5 text-[var(--fill-primary)]">
       <div className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-[color-mix(in_srgb,var(--accent-blue)_20%,transparent)] blur-3xl" />
 
       <div className="flex flex-col gap-5">
-        {/* Header */}
         <header className="space-y-2">
           <div className="flex items-center justify-between">
             <h2 className="text-[22px] font-semibold tracking-tight">
@@ -318,392 +207,51 @@ export function PreferencesPanel() {
           </div>
         </header>
 
-        {/* General Card */}
-        <Card className="border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_90%,var(--fill-primary)_8%)] p-4 text-[var(--fill-primary)]">
-          <CardHeader className="p-0 pb-4">
-            <CardTitle className="text-[16px]">General</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col justify-between gap-4 p-0">
-            <div className="flex w-full items-center gap-2">
-              <div className="flex flex-1 flex-col">
-                <span className="text-[12px] font-bold uppercase tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
-                  Annotation Color
-                </span>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="color"
-                    value={baseSettings.annotationColor}
-                    onChange={(e) =>
-                      updateBaseSetting("annotationColor", e.target.value)
-                    }
-                    className="w-18 h-9 cursor-pointer rounded border border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-transparent p-1"
-                  />
-                  <input
-                    type="text"
-                    value={baseSettings.annotationColor}
-                    onChange={(e) =>
-                      updateBaseSetting("annotationColor", e.target.value)
-                    }
-                    className="h-9 flex-1 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] font-mono text-[var(--fill-primary)]"
-                  />
-                </div>
-              </div>
-              <div className="flex flex-1 flex-col">
-                <span className="text-[12px] font-bold uppercase tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
-                  Markdown Font Size
-                </span>
-                <div className="flex-1 items-center gap-2">
-                  <CustomDropdown
-                    value={baseSettings.markdownFontSize}
-                    options={FONT_SIZE_OPTIONS}
-                    onChange={(v) => updateBaseSetting("markdownFontSize", v)}
-                  />
-                </div>
-              </div>
-            </div>
-            <Separator className="bg-[color-mix(in_srgb,var(--fill-primary)_14%,transparent)]" />
-          </CardContent>
-        </Card>
+        <GeneralSettingsCard
+          baseSettings={baseSettings}
+          fontSizeOptions={FONT_SIZE_OPTIONS}
+          onChangeBaseSetting={updateBaseSetting}
+        />
 
-        {/* AI API Configuration Card */}
-        <Card className="border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_90%,var(--fill-primary)_8%)] p-4 text-[var(--fill-primary)]">
-          <CardHeader className="flex flex-row items-center justify-between p-0 pb-4">
-            <CardTitle className="text-[16px]">AI API Configuration</CardTitle>
-            <Button
-              variant="outline"
-              onClick={resetAll}
-              className="h-8 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] px-4 text-[12px] font-medium transition-colors hover:bg-[color-mix(in_srgb,var(--fill-primary)_10%,transparent)]"
-            >
-              Reset AI defaults
-            </Button>
-          </CardHeader>
+        <AIConfigurationCard
+          aiSettings={aiSettings}
+          presets={presets}
+          activePreset={activePreset}
+          showSaveInput={showSaveInput}
+          saveName={saveName}
+          onReset={resetAll}
+          onApplyPreset={handleApplyPreset}
+          onStartSavePreset={() => {
+            setSaveName(activePreset || "");
+            setShowSaveInput(true);
+          }}
+          onSavePreset={handleSavePreset}
+          onDeletePreset={handleDeletePreset}
+          onChangeSaveName={setSaveName}
+          onCancelSaveInput={() => setShowSaveInput(false)}
+          onChangeProvider={changeProvider}
+          onChangeAISetting={updateAISetting}
+        />
 
-          <CardContent className="flex flex-col justify-between gap-4 p-0">
-            {/* ── Preset selector ──────────────────────────────────── */}
-            <div>
-              <span className="text-[12px] font-bold uppercase tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
-                Preset
-              </span>
-              <div className="flex items-center gap-2">
-                <div className="flex-1">
-                  <CustomDropdown
-                    value={activePreset}
-                    options={presetOptions}
-                    onChange={handleApplyPreset}
-                  />
-                </div>
-                {showSaveInput ? (
-                  <>
-                    <Input
-                      value={saveName}
-                      onChange={(e) => setSaveName(e.target.value)}
-                      placeholder="Preset name"
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") handleSavePreset();
-                        if (e.key === "Escape") setShowSaveInput(false);
-                      }}
-                      className="h-6 w-48 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)]"
-                    />
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleSavePreset}
-                      className="h-8 shrink-0 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[12px]"
-                    >
-                      Save
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setSaveName(activePreset || "");
-                        setShowSaveInput(true);
-                      }}
-                      className="h-8 shrink-0 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[12px]"
-                    >
-                      Save
-                    </Button>
-                    {activePreset && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleDeletePreset}
-                        className="h-8 shrink-0 border-[color-mix(in_srgb,_rgb(220_38_38)_30%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[12px] text-red-500 hover:text-red-400"
-                      >
-                        Delete
-                      </Button>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
+        <MinerUConfigurationCard
+          mineruApiKey={mineruApiKey}
+          cacheFiles={cacheFiles}
+          selectedCacheIds={selectedCacheIds}
+          onChangeApiKey={updateMinerUApiKey}
+          onRefresh={loadCacheFiles}
+          onDeleteSelected={handleDeleteSelected}
+          onSelectAll={(checked) => {
+            setSelectedCacheIds(checked ? cacheFiles.map((f) => f.id) : []);
+          }}
+          onSelectOne={(id, checked) => {
+            setSelectedCacheIds((prev) =>
+              checked ? [...prev, id] : prev.filter((x) => x !== id),
+            );
+          }}
+          formatSize={formatSize}
+          formatDate={formatDate}
+        />
 
-            <Separator className="bg-[color-mix(in_srgb,var(--fill-primary)_14%,transparent)]" />
-
-            {/* ── Provider ─────────────────────────────────────────── */}
-            <div>
-              <span className="text-[12px] font-bold uppercase tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
-                Provider
-              </span>
-              <CustomDropdown
-                value={aiSettings.provider}
-                options={AI_PROVIDER_OPTIONS.map((o) => ({
-                  value: o.value,
-                  label: o.label,
-                }))}
-                onChange={changeProvider}
-              />
-            </div>
-
-            <Separator className="bg-[color-mix(in_srgb,var(--fill-primary)_14%,transparent)]" />
-
-            {/* ── Base URL ─────────────────────────────────────────── */}
-            <div className="flex w-full flex-col">
-              <span className="text-[12px] font-bold uppercase tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
-                Base URL
-              </span>
-              <input
-                value={aiSettings.baseURL}
-                onChange={(e) => updateAISetting("baseURL", e.target.value)}
-                placeholder={getDefaultBaseURL(aiSettings.provider)}
-                className="h-9 border-[1px] border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)]"
-              />
-            </div>
-
-            <Separator className="bg-[color-mix(in_srgb,var(--fill-primary)_14%,transparent)]" />
-
-            {/* ── API Key ──────────────────────────────────────────── */}
-            <div className="flex w-full flex-col">
-              <span className="text-[12px] font-bold uppercase tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
-                API Key
-              </span>
-              <input
-                type="password"
-                value={aiSettings.apiKey}
-                onChange={(e) => updateAISetting("apiKey", e.target.value)}
-                placeholder="API key"
-                className="h-9 border-[1px] border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)]"
-              />
-            </div>
-
-            <Separator className="bg-[color-mix(in_srgb,var(--fill-primary)_14%,transparent)]" />
-
-            {/* ── Model ────────────────────────────────────────────── */}
-            <div className="flex w-full flex-col">
-              <span className="text-[12px] font-bold uppercase tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
-                Model
-              </span>
-              <input
-                value={aiSettings.model}
-                onChange={(e) => updateAISetting("model", e.target.value)}
-                placeholder={getDefaultModel(aiSettings.provider)}
-                className="h-9 border-[1px] border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)]"
-              />
-            </div>
-
-            <Separator className="bg-[color-mix(in_srgb,var(--fill-primary)_14%,transparent)]" />
-
-            {/* ── Temperature / Max Tokens ─────────────────────────── */}
-            <div className="flex w-full items-center gap-2">
-              <div className="flex flex-1 flex-col">
-                <span className="text-[12px] font-bold uppercase tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
-                  Temperature
-                </span>
-                <input
-                  type="number"
-                  value={aiSettings.temperature}
-                  min={0}
-                  max={2}
-                  step={0.1}
-                  onChange={(e) =>
-                    updateAISetting(
-                      "temperature",
-                      parseFloat(e.target.value || "0"),
-                    )
-                  }
-                  className="h-9 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] font-mono text-[var(--fill-primary)]"
-                />
-              </div>
-
-              <div className="flex flex-1 flex-col">
-                <span className="text-[12px] font-bold uppercase tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
-                  Max Tokens
-                </span>
-                <input
-                  type="number"
-                  value={aiSettings.maxTokens}
-                  onChange={(e) =>
-                    updateAISetting(
-                      "maxTokens",
-                      parseInt(e.target.value || "1", 10),
-                    )
-                  }
-                  className="h-9 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] font-mono text-[var(--fill-primary)]"
-                />
-              </div>
-            </div>
-
-            <Separator className="bg-[color-mix(in_srgb,var(--fill-primary)_14%,transparent)]" />
-
-            {/* ── System Prompt ────────────────────────────────────── */}
-            <div className="flex flex-col">
-              <span className="text-[12px] font-bold uppercase tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
-                System Prompt
-              </span>
-              <textarea
-                rows={4}
-                value={aiSettings.systemPrompt}
-                onChange={(e) =>
-                  updateAISetting("systemPrompt", e.target.value)
-                }
-                className="resize-none border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] p-3"
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* MinerU Card */}
-        <Card className="border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_90%,var(--fill-primary)_8%)] p-4 text-[var(--fill-primary)]">
-          <CardHeader className="p-0 pb-4">
-            <CardTitle className="text-[16px]">
-              MinerU Configuration (Optional)
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col justify-between gap-4 p-0">
-            <div className="flex w-full flex-col">
-              <span className="text-[12px] font-bold uppercase tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
-                API Key{" "}
-                <span className="lowercase">
-                  {" "}
-                  (apply from{" "}
-                  <a
-                    href="https://mineru.net/apiManage/token"
-                    className="text-[var(--accent-blue)] hover:underline"
-                  >
-                    https://mineru.net/apiManage/token
-                  </a>
-                  )
-                </span>
-              </span>
-
-              <input
-                type="password"
-                value={mineruApiKey}
-                onChange={(e) => updateMinerUApiKey(e.target.value)}
-                placeholder="Paste your MinerU API key here"
-                className="h-9 border-[1px] border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)]"
-              />
-            </div>
-
-            <Separator className="bg-[color-mix(in_srgb,var(--fill-primary)_14%,transparent)]" />
-
-            {/* Cache Management */}
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center justify-between">
-                <span className="text-[12px] font-bold uppercase tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
-                  Markdown Cache ({cacheFiles.length} files)
-                </span>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={loadCacheFiles}
-                    className="h-7 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[11px]"
-                  >
-                    Refresh
-                  </Button>
-                  {selectedCacheIds.length > 0 && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleDeleteSelected}
-                      className="h-7 border-[color-mix(in_srgb,_rgb(220_38_38)_30%,transparent)] text-[11px] text-red-500 hover:text-red-400"
-                    >
-                      Delete ({selectedCacheIds.length})
-                    </Button>
-                  )}
-                </div>
-              </div>
-
-              {cacheFiles.length > 0 && (
-                <div className="max-h-48 overflow-y-auto rounded-md border border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)]">
-                  <table className="w-full text-[12px]">
-                    <thead className="sticky top-0 bg-[color-mix(in_srgb,var(--material-sidepane)_95%,var(--fill-primary)_5%)]">
-                      <tr>
-                        <th className="w-8 p-2">
-                          <input
-                            type="checkbox"
-                            checked={
-                              selectedCacheIds.length === cacheFiles.length
-                            }
-                            onChange={(e) =>
-                              setSelectedCacheIds(
-                                e.target.checked
-                                  ? cacheFiles.map((f) => f.id)
-                                  : [],
-                              )
-                            }
-                            className="cursor-pointer"
-                          />
-                        </th>
-                        <th className="p-2 text-left">Name</th>
-                        <th className="w-20 p-2 text-right">Size</th>
-                        <th className="w-32 p-2 text-right">Modified</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {cacheFiles.map((file) => (
-                        <tr
-                          key={file.id}
-                          className="border-t border-[color-mix(in_srgb,var(--fill-primary)_10%,transparent)]"
-                        >
-                          <td className="p-2">
-                            <input
-                              type="checkbox"
-                              checked={selectedCacheIds.includes(file.id)}
-                              onChange={(e) =>
-                                setSelectedCacheIds((prev) =>
-                                  e.target.checked
-                                    ? [...prev, file.id]
-                                    : prev.filter((id) => id !== file.id),
-                                )
-                              }
-                              className="cursor-pointer"
-                            />
-                          </td>
-                          <td className="truncate p-2" title={file.name}>
-                            {file.name.length > 30
-                              ? `${file.name.slice(0, 30)}...`
-                              : file.name}
-                          </td>
-                          <td className="p-2 text-right text-[color-mix(in_srgb,var(--fill-primary)_60%,transparent)]">
-                            {formatSize(file.size)}
-                          </td>
-                          <td className="p-2 text-right text-[color-mix(in_srgb,var(--fill-primary)_60%,transparent)]">
-                            {formatDate(file.modified)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-
-              {cacheFiles.length === 0 && (
-                <div className="rounded-md border border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] p-4 text-center text-[12px] text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
-                  No cached markdown files
-                </div>
-              )}
-            </div>
-
-            <Separator className="bg-[color-mix(in_srgb,var(--fill-primary)_14%,transparent)]" />
-          </CardContent>
-        </Card>
-
-        {/* Footer */}
         <footer className="flex items-center justify-between pt-2">
           <div className="flex items-center gap-2">
             <div
