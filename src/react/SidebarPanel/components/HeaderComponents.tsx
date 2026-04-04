@@ -4,7 +4,7 @@ import { ChevronDown, History, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ChatSession } from "../hooks/useChatSession";
 import { toTime } from "../utils";
-import type { SidebarPanelData } from "../bridge";
+import type { SidebarPanelData } from "../../bridge";
 
 interface HistoryPanelProps {
   sessions: ChatSession[];

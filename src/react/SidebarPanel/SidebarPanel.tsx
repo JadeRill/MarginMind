@@ -4,7 +4,6 @@ import { getPref } from "../../utils/prefs";
 import {
   registerPopupActionCallback,
   unregisterPopupActionCallback,
-  latestSelectionAnnotation,
 } from "../../modules/popupButtons";
 import type { SidebarPanelData } from "../bridge";
 import { useChatSession } from "./hooks/useChatSession";
@@ -161,14 +160,13 @@ export function SidebarPanel({
   );
 
   const handleSaveAnnotation = useCallback(async () => {
-    if (!latestSelectionAnnotation || !activeContext?.attachmentItemID || !data)
-      return;
+    if (!selectedAnnotation || !activeContext?.attachmentItemID) return;
     setIsSavingAnnotation(true);
     try {
       await saveSelectionAsAnnotation(
         selectedIDs,
         messages,
-        latestSelectionAnnotation,
+        selectedAnnotation,
         activeContext.attachmentItemID,
         annotationColor,
       );
@@ -188,7 +186,7 @@ export function SidebarPanel({
     annotationColor,
     clearSelectionMode,
     showError,
-    data,
+    selectedAnnotation,
   ]);
 
   const handleDeleteMessages = useCallback(() => {
@@ -202,7 +200,7 @@ export function SidebarPanel({
   }, [activeSession, selectedIDs, patchSession, clearSelectionMode]);
 
   const canSaveToAnnotation =
-    latestSelectionAnnotation != null &&
+    selectedAnnotation != null &&
     !!activeContext?.attachmentItemID &&
     selectedIDs.length > 0 &&
     !isSavingAnnotation;

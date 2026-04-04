@@ -159,7 +159,13 @@ function syncPanelWidth(panel: HTMLDivElement, doc: Document, win: Window) {
 
 function renderPanel(win: Window, state: SidebarState, force = false) {
   const item = getCurrentItem(win);
-  const key = `${item?.id ?? "none"}:${item?.dateModified ?? ""}`;
+  const selectedAnnotation = isReaderTabActive(win)
+    ? latestSelectionAnnotation
+    : null;
+  const annotationKey = selectedAnnotation
+    ? `${selectedAnnotation.key ?? ""}:${selectedAnnotation.pageLabel ?? ""}:${selectedAnnotation.sortIndex ?? ""}:${selectedAnnotation.text ?? ""}`
+    : "none";
+  const key = `${item?.id ?? "none"}:${item?.dateModified ?? ""}:${annotationKey}`;
   if (!force && state.lastKey === key) return;
   state.lastKey = key;
 
@@ -181,9 +187,7 @@ function renderPanel(win: Window, state: SidebarState, force = false) {
   reactWin.__marginmindReact?.renderSidebarPanel({
     container: state.root,
     data,
-    selectedAnnotation: isReaderTabActive(win)
-      ? latestSelectionAnnotation
-      : null,
+    selectedAnnotation,
     markdownStatus,
     markdownContent,
   });
