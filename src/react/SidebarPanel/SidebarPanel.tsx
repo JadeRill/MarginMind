@@ -157,7 +157,7 @@ export function SidebarPanel({
     if (!el) return;
     autoScrollRef.current = true;
     setShowJump(false);
-    el.scrollTop = el.scrollHeight;
+    el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
   }, []);
 
   const handleSelectSession = useCallback(
