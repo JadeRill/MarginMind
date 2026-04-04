@@ -1,4 +1,11 @@
-import { useEffect, useRef, useState, useCallback, useMemo } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+  useMemo,
+  useLayoutEffect,
+} from "react";
 import { Card, CardTitle, CardDescription } from "@/components/ui/card";
 import { getPref } from "../../utils/prefs";
 import {
@@ -34,7 +41,7 @@ export function SidebarPanel({
 }: SidebarPanelProps) {
   const messageRef = useRef<HTMLDivElement>(null);
   const autoScrollRef = useRef(true);
-  const forceScrollRef = useRef(false);
+  const prevHeightRef = useRef(0);
   const draftRef = useRef("");
   const sendRef = useRef<((prompt: string) => Promise<void>) | null>(null);
   const [showJump, setShowJump] = useState(false);
@@ -104,19 +111,20 @@ export function SidebarPanel({
     return () => unregisterPopupActionCallback();
   }, [updateDraft]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const list = messageRef.current;
     if (!list) return;
 
-    if (forceScrollRef.current) {
-      list.scrollTop = list.scrollHeight;
-      forceScrollRef.current = false;
+    const newHeight = list.scrollHeight;
+    const heightAdded = newHeight - prevHeightRef.current;
+    prevHeightRef.current = newHeight;
+
+    if (autoScrollRef.current && isSending && heightAdded > 0) {
+      list.scrollTop += heightAdded;
       return;
     }
 
-    if (autoScrollRef.current) {
-      list.scrollTop = list.scrollHeight;
-    }
+    list.scrollTop = list.scrollHeight;
   }, [messages, isSending]);
 
   useEffect(() => {
