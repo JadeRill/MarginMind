@@ -1,11 +1,4 @@
-import {
-  useEffect,
-  useRef,
-  useState,
-  useCallback,
-  useMemo,
-  useLayoutEffect,
-} from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { Card, CardTitle, CardDescription } from "@/components/ui/card";
 import { getPref } from "../../utils/prefs";
 import {
@@ -41,7 +34,7 @@ export function SidebarPanel({
 }: SidebarPanelProps) {
   const messageRef = useRef<HTMLDivElement>(null);
   const autoScrollRef = useRef(true);
-  const prevHeightRef = useRef(0);
+  const prevMsgCountRef = useRef(0);
   const draftRef = useRef("");
   const sendRef = useRef<((prompt: string) => Promise<void>) | null>(null);
   const [showJump, setShowJump] = useState(false);
@@ -111,21 +104,46 @@ export function SidebarPanel({
     return () => unregisterPopupActionCallback();
   }, [updateDraft]);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const list = messageRef.current;
     if (!list) return;
 
-    const newHeight = list.scrollHeight;
-    const heightAdded = newHeight - prevHeightRef.current;
-    prevHeightRef.current = newHeight;
+    const msgCount = messages.length;
+    const isNewMessage = msgCount > prevMsgCountRef.current;
+    prevMsgCountRef.current = msgCount;
 
-    if (autoScrollRef.current && isSending && heightAdded > 0) {
-      list.scrollTop += heightAdded;
+    if (isNewMessage) {
+      autoScrollRef.current = true;
+      requestAnimationFrame(() => {
+        list.scrollTo({
+          top: list.scrollHeight,
+          behavior: "smooth",
+        });
+      });
       return;
     }
 
-    list.scrollTop = list.scrollHeight;
+    if (autoScrollRef.current && isSending) {
+      list.scrollTo({
+        top: list.scrollHeight,
+        // behavior: "smooth",
+      });
+    }
   }, [messages, isSending]);
+
+  useEffect(() => {
+    const list = messageRef.current;
+    if (!list) return;
+    const onScroll = () => {
+      const nearBottom =
+        list.scrollHeight - list.scrollTop - list.clientHeight <= 300;
+      autoScrollRef.current = nearBottom;
+      setShowJump(!nearBottom);
+    };
+    onScroll();
+    list.addEventListener("scroll", onScroll, { passive: true });
+    return () => list.removeEventListener("scroll", onScroll);
+  }, []);
 
   useEffect(() => {
     if (isSending) return;
@@ -137,20 +155,6 @@ export function SidebarPanel({
       )
       .forEach((el) => (el.open = false));
   }, [isSending]);
-
-  useEffect(() => {
-    const list = messageRef.current;
-    if (!list) return;
-    const onScroll = () => {
-      const nearBottom =
-        list.scrollHeight - list.scrollTop - list.clientHeight <= 120;
-      autoScrollRef.current = nearBottom;
-      setShowJump(!nearBottom);
-    };
-    onScroll();
-    list.addEventListener("scroll", onScroll, { passive: true });
-    return () => list.removeEventListener("scroll", onScroll);
-  }, []);
 
   const jumpToLatest = useCallback(() => {
     const el = messageRef.current;
