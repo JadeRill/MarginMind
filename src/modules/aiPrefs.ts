@@ -1,3 +1,4 @@
+import { PROMPTS } from "./popupButtons";
 import { getPref, setPref } from "../utils/prefs";
 
 type PluginPrefsMap = _ZoteroTypes.Prefs["PluginPrefsMap"];
@@ -11,7 +12,7 @@ export type AIProvider =
   // --- 国内大模型 (国产之光) ---
   | "deepseek" // DeepSeek (深度求索 - 杭州): 目前国产最强、性价比极高的模型
   | "moonshot" // Moonshot AI (月之暗面 - 北京): Kimi, 擅长超长上下文处理
-  | "zai" // 智谱 AI (清华系 - 北京): ChatGLM/GLM-4, 国内学术与工程平衡较好的模型
+  | "zhipu" // 智谱 AI (清华系 - 北京): ChatGLM/GLM-4, 国内学术与工程平衡较好的模型
   | "aliyun" // 阿里云 (阿里巴巴): 通义千问 Qwen 系列, 开源与闭源结合最好
   | "volcengine" // 火山引擎 (字节跳动): 豆包 Doubao, 算力储备极其雄厚
   | "minimax" // MiniMax (稀宇科技 - 上海): 海螺 AI, 擅长角色扮演与情感交互
@@ -42,32 +43,32 @@ export type AISettings = {
 export const AI_PROVIDER_OPTIONS: Array<{ value: AIProvider; label: string }> =
   [
     // --- 国际顶级大厂 (Tier 1) ---
-    { value: "openai", label: "OpenAI (GPT系列)" },
-    { value: "anthropic", label: "Anthropic (Claude系列)" },
-    { value: "google", label: "Google (谷歌, Gemini系列)" },
+    { value: "openai", label: "OpenAI" },
+    { value: "anthropic", label: "Anthropic" },
+    { value: "google", label: "Google" },
 
     // --- 国内大模型 (国产之光) ---
-    { value: "deepseek", label: "DeepSeek (深度求索)" },
-    { value: "moonshot", label: "Moonshot AI (月之暗面, Kimi系列)" },
-    { value: "zai", label: "Z.ai (智谱清言, GLM系列)" },
-    { value: "aliyun", label: "Qwen (通义千问, Qwen系列)" },
-    { value: "volcengine", label: "Volcengine (火山引擎, Doubao系列)" },
-    { value: "minimax", label: "MiniMax (稀宇科技, MiniMax系列)" },
-    { value: "longcat", label: "LongCat AI (美团, LongCat系列)" },
+    { value: "deepseek", label: "DeepSeek" },
+    { value: "moonshot", label: "Moonshot AI (Kimi)" },
+    { value: "zhipu", label: "Zhipu AI (GLM)" },
+    { value: "aliyun", label: "Qwen" },
+    { value: "volcengine", label: "Volcengine (Doubao)" },
+    { value: "minimax", label: "MiniMax" },
+    { value: "longcat", label: "LongCat AI" },
 
     // --- 模型聚合与托管平台 (Aggregators) ---
-    { value: "openrouter", label: "OpenRouter (全球模型聚合平台)" },
-    { value: "groq", label: "Groq (极速推理, 开源模型托管)" },
-    { value: "together", label: "Together AI (开源模型聚合推理平台)" },
-    { value: "mistral", label: "Mistral AI (欧洲开源大模型)" },
-    { value: "cohere", label: "Cohere (企业级RAG, 多语言模型)" },
-    { value: "perplexity", label: "Perplexity (搜索增强, 联网生成)" },
-    { value: "siliconflow", label: "SiliconFlow (硅基流动, 模型聚合平台)" },
+    { value: "openrouter", label: "OpenRouter" },
+    { value: "groq", label: "Groq" },
+    { value: "together", label: "Together AI" },
+    { value: "mistral", label: "Mistral AI" },
+    { value: "cohere", label: "Cohere" },
+    { value: "perplexity", label: "Perplexity" },
+    { value: "siliconflow", label: "SiliconFlow" },
 
     // --- 协议兼容性 ---
     {
       value: "openaiCompatible",
-      label: "Custom OpenAI (自定义兼容协议, 本地/私有部署)",
+      label: "OpenAI Compatible",
     },
   ];
 
@@ -77,8 +78,8 @@ const BASE_URL_MAP: Record<AIProvider, string> = {
   google: "https://generativelanguage.googleapis.com/v1beta/openai/",
   deepseek: "https://api.deepseek.com",
   moonshot: "https://api.moonshot.cn/v1",
-  zai: "https://open.bigmodel.cn/api/paas/v4",
-  aliyun: "https://dashscope.aliyuncs.com/compatible-mode/v1",
+  zhipu: "https://open.bigmodel.cn/api/paas/v4",
+  aliyun: "https://dashscope.aliyuncs.com/api/v1",
   volcengine: "https://ark.cn-beijing.volces.com/api/v3",
   minimax: "https://api.minimax.chat/v1",
   longcat: "https://api.longcat.chat/openai/v1",
@@ -93,22 +94,22 @@ const BASE_URL_MAP: Record<AIProvider, string> = {
 };
 
 const DEFAULT_MODEL_MAP: Record<AIProvider, string> = {
-  openai: "gpt-5.4-mini",
-  anthropic: "claude-4-sonnet-20260301",
-  google: "gemini-3.1-flash",
-  deepseek: "deepseek-v4-chat",
-  moonshot: "kimi-k2.5-128k",
-  zai: "glm-5-flash",
-  aliyun: "qwen-3.5-omni-flash",
-  volcengine: "doubao-seed-1-8-251228",
-  minimax: "hailuo-ai-m2.7-flash",
-  longcat: "LongCat-Flash-Thinking-2601",
-  openrouter: "stepfun/step-3.5-flash:free",
-  groq: "llama-4-70b-instruct",
-  together: "meta-llama/Llama-4-70B-Instruct",
-  mistral: "mistral-large-2506",
-  cohere: "command-r2-plus",
-  perplexity: "sonar-pro",
+  openai: "",
+  anthropic: "",
+  google: "",
+  deepseek: "",
+  moonshot: "",
+  zhipu: "",
+  aliyun: "",
+  volcengine: "",
+  minimax: "",
+  longcat: "",
+  openrouter: "",
+  groq: "",
+  together: "",
+  mistral: "",
+  cohere: "",
+  perplexity: "",
   siliconflow: "",
   openaiCompatible: "",
 };
@@ -121,8 +122,7 @@ export const AI_DEFAULTS: AISettings = {
   temperature: 0.2,
   maxTokens: 8192,
   systemPrompt:
-    // "You are MarginMind, an academic research assistant. Give precise, structured, and evidence-oriented answers based on the provided paper context.",
-    "",
+    "You are MarginMind, an academic research assistant. Give precise, structured, and evidence-oriented answers based on the provided paper context. (Respond in the user's language)",
 };
 
 export function getDefaultBaseURL(provider: AIProvider): string {
@@ -261,3 +261,45 @@ export function applyPreset(preset: AIPreset) {
   saveAISetting("maxTokens", s.maxTokens);
   saveAISetting("systemPrompt", s.systemPrompt);
 }
+
+// ─── Popup Prompts ─────────────────────────────────────────────────────────────
+
+export type PopupPromptKey =
+  | "popupExplainPrompt"
+  | "popupCritiquePrompt"
+  | "popupBulletizePrompt"
+  | "popupTranslatePrompt";
+
+export const POPUP_PROMPT_DEFAULTS: Record<PopupPromptKey, string> = {
+  popupExplainPrompt: PROMPTS.explainSelection,
+  popupCritiquePrompt: PROMPTS.critiqueSelection,
+  popupBulletizePrompt: PROMPTS.bulletizeSelection,
+  popupTranslatePrompt: PROMPTS.translateSelection,
+};
+
+export function loadPopupPrompts(): Record<PopupPromptKey, string> {
+  return {
+    popupExplainPrompt:
+      (getPref("popupExplainPrompt") as string) ||
+      POPUP_PROMPT_DEFAULTS.popupExplainPrompt,
+    popupCritiquePrompt:
+      (getPref("popupCritiquePrompt") as string) ||
+      POPUP_PROMPT_DEFAULTS.popupCritiquePrompt,
+    popupBulletizePrompt:
+      (getPref("popupBulletizePrompt") as string) ||
+      POPUP_PROMPT_DEFAULTS.popupBulletizePrompt,
+    popupTranslatePrompt:
+      (getPref("popupTranslatePrompt") as string) ||
+      POPUP_PROMPT_DEFAULTS.popupTranslatePrompt,
+  };
+}
+
+export function savePopupPrompt(key: PopupPromptKey, value: string) {
+  setPref(key, value);
+}
+
+// export function resetPopupPrompts() {
+//   (Object.keys(POPUP_PROMPT_DEFAULTS) as PopupPromptKey[]).forEach((key) => {
+//     setPref(key, POPUP_PROMPT_DEFAULTS[key]);
+//   });
+// }

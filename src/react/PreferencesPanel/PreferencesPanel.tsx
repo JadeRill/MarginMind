@@ -11,14 +11,14 @@ import {
   savePreset,
   deletePreset,
   applyPreset,
+  loadPopupPrompts,
+  savePopupPrompt,
   type AIPreset,
   type AIProvider,
   type AISettings,
+  type PopupPromptKey,
 } from "../../modules/aiPrefs";
-import {
-  listCacheFiles,
-  deleteCaches,
-} from "../../modules/markdownCache";
+import { listCacheFiles, deleteCaches } from "../../modules/markdownCache";
 import { Badge } from "@/components/ui/badge";
 import { GeneralSettingsCard } from "./components/GeneralSettingsCard";
 import { AIConfigurationCard } from "./components/AIConfigurationCard";
@@ -49,6 +49,16 @@ export function PreferencesPanel() {
   const [cacheFiles, setCacheFiles] = useState<CacheFileItem[]>([]);
   const [selectedCacheIds, setSelectedCacheIds] = useState<string[]>([]);
 
+  // Popup prompts state
+  const [popupPrompts, setPopupPrompts] = useState<
+    Record<PopupPromptKey, string>
+  >({
+    popupExplainPrompt: "",
+    popupCritiquePrompt: "",
+    popupBulletizePrompt: "",
+    popupTranslatePrompt: "",
+  });
+
   // Load on mount
   useEffect(() => {
     setBaseSettings({
@@ -58,6 +68,7 @@ export function PreferencesPanel() {
     setAISettings(loadAISettings());
     setPresets(loadPresets());
     setMineruApiKey(getPref("mineruApiKey") || "");
+    setPopupPrompts(loadPopupPrompts());
     void loadCacheFiles();
   }, []);
 
@@ -173,6 +184,25 @@ export function PreferencesPanel() {
     markSaved();
   }, [activePreset, markSaved]);
 
+  const updatePopupPrompt = useCallback(
+    (
+      key: "explain" | "critique" | "bulletize" | "translate",
+      value: string,
+    ) => {
+      const keyMap: Record<typeof key, PopupPromptKey> = {
+        explain: "popupExplainPrompt",
+        critique: "popupCritiquePrompt",
+        bulletize: "popupBulletizePrompt",
+        translate: "popupTranslatePrompt",
+      };
+      const prefKey = keyMap[key];
+      setPopupPrompts((prev) => ({ ...prev, [prefKey]: value }));
+      savePopupPrompt(prefKey, value);
+      markSaved();
+    },
+    [markSaved],
+  );
+
   const formatSize = useCallback((bytes: number): string => {
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
@@ -231,6 +261,13 @@ export function PreferencesPanel() {
           onCancelSaveInput={() => setShowSaveInput(false)}
           onChangeProvider={changeProvider}
           onChangeAISetting={updateAISetting}
+          popupPrompts={{
+            explain: popupPrompts.popupExplainPrompt,
+            critique: popupPrompts.popupCritiquePrompt,
+            bulletize: popupPrompts.popupBulletizePrompt,
+            translate: popupPrompts.popupTranslatePrompt,
+          }}
+          onChangePopupPrompt={updatePopupPrompt}
         />
 
         <MinerUConfigurationCard

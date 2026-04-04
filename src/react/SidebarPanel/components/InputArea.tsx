@@ -8,7 +8,7 @@ import {
   applyPreset,
   loadAISettings,
 } from "../../../modules/aiPrefs";
-import { PROMPTS } from "../utils";
+import { PROMPTS } from "../../../modules/popupButtons";
 import { MarkdownParseButton } from "./MarkdownParseButton";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { encodingForModel } from "js-tiktoken";

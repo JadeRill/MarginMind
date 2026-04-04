@@ -30,6 +30,16 @@ type AIConfigurationCardProps = {
     key: K,
     value: AISettings[K],
   ) => void;
+  popupPrompts: {
+    explain: string;
+    critique: string;
+    bulletize: string;
+    translate: string;
+  };
+  onChangePopupPrompt: (
+    key: "explain" | "critique" | "bulletize" | "translate",
+    value: string,
+  ) => void;
 };
 
 export function AIConfigurationCard({
@@ -47,6 +57,8 @@ export function AIConfigurationCard({
   onCancelSaveInput,
   onChangeProvider,
   onChangeAISetting,
+  popupPrompts,
+  onChangePopupPrompt,
 }: AIConfigurationCardProps) {
   const presetOptions = [
     { value: "", label: "-- No Preset --" },
@@ -56,7 +68,7 @@ export function AIConfigurationCard({
   return (
     <Card className="border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_90%,var(--fill-primary)_8%)] p-4 text-[var(--fill-primary)]">
       <CardHeader className="flex flex-row items-center justify-between p-0 pb-4">
-        <CardTitle className="text-[16px]">AI API Configuration</CardTitle>
+        <CardTitle className="text-[16px]">AI Configuration</CardTitle>
         <Button
           variant="outline"
           onClick={onReset}
@@ -141,8 +153,6 @@ export function AIConfigurationCard({
           />
         </div>
 
-        <Separator className="bg-[color-mix(in_srgb,var(--fill-primary)_14%,transparent)]" />
-
         <div className="flex w-full flex-col">
           <span className="text-[12px] font-bold uppercase tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
             Base URL
@@ -154,8 +164,6 @@ export function AIConfigurationCard({
             className="h-9 border-[1px] border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)]"
           />
         </div>
-
-        <Separator className="bg-[color-mix(in_srgb,var(--fill-primary)_14%,transparent)]" />
 
         <div className="flex w-full flex-col">
           <span className="text-[12px] font-bold uppercase tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
@@ -170,8 +178,6 @@ export function AIConfigurationCard({
           />
         </div>
 
-        <Separator className="bg-[color-mix(in_srgb,var(--fill-primary)_14%,transparent)]" />
-
         <div className="flex w-full flex-col">
           <span className="text-[12px] font-bold uppercase tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
             Model
@@ -183,8 +189,6 @@ export function AIConfigurationCard({
             className="h-9 border-[1px] border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)]"
           />
         </div>
-
-        <Separator className="bg-[color-mix(in_srgb,var(--fill-primary)_14%,transparent)]" />
 
         <div className="flex w-full items-center gap-2">
           <div className="flex flex-1 flex-col">
@@ -198,7 +202,10 @@ export function AIConfigurationCard({
               max={2}
               step={0.1}
               onChange={(e) =>
-                onChangeAISetting("temperature", parseFloat(e.target.value || "0"))
+                onChangeAISetting(
+                  "temperature",
+                  parseFloat(e.target.value || "0"),
+                )
               }
               className="h-9 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] font-mono text-[var(--fill-primary)]"
             />
@@ -212,7 +219,10 @@ export function AIConfigurationCard({
               type="number"
               value={aiSettings.maxTokens}
               onChange={(e) =>
-                onChangeAISetting("maxTokens", parseInt(e.target.value || "1", 10))
+                onChangeAISetting(
+                  "maxTokens",
+                  parseInt(e.target.value || "1", 10),
+                )
               }
               className="h-9 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] font-mono text-[var(--fill-primary)]"
             />
@@ -221,16 +231,76 @@ export function AIConfigurationCard({
 
         <Separator className="bg-[color-mix(in_srgb,var(--fill-primary)_14%,transparent)]" />
 
-        <div className="flex flex-col">
-          <span className="text-[12px] font-bold uppercase tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
-            System Prompt
-          </span>
-          <textarea
-            rows={4}
-            value={aiSettings.systemPrompt}
-            onChange={(e) => onChangeAISetting("systemPrompt", e.target.value)}
-            className="resize-none border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] p-3"
-          />
+        <div className="flex flex-col gap-4">
+          <div className="flex w-full flex-col">
+            <span className="text-[12px] font-bold uppercase tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
+              System Prompt
+            </span>
+            <textarea
+              rows={3}
+              value={aiSettings.systemPrompt}
+              onChange={(e) =>
+                onChangeAISetting("systemPrompt", e.target.value)
+              }
+              className="resize-none border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] p-3"
+            />
+          </div>
+
+          <Separator className="bg-[color-mix(in_srgb,var(--fill-primary)_14%,transparent)]" />
+
+          <div>
+            <span className="text-[14px] font-semibold">
+              Popup Button Prompts
+            </span>
+          </div>
+
+          <div className="flex w-full flex-col">
+            <span className="text-[12px] font-bold uppercase tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
+              Explain Prompt
+            </span>
+            <textarea
+              rows={3}
+              value={popupPrompts.explain}
+              onChange={(e) => onChangePopupPrompt("explain", e.target.value)}
+              className="resize-none border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] p-3"
+            />
+          </div>
+
+          <div className="flex w-full flex-col">
+            <span className="text-[12px] font-bold uppercase tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
+              Critique Prompt
+            </span>
+            <textarea
+              rows={3}
+              value={popupPrompts.critique}
+              onChange={(e) => onChangePopupPrompt("critique", e.target.value)}
+              className="resize-none border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] p-3"
+            />
+          </div>
+
+          <div className="flex w-full flex-col">
+            <span className="text-[12px] font-bold uppercase tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
+              Bulletize Prompt
+            </span>
+            <textarea
+              rows={3}
+              value={popupPrompts.bulletize}
+              onChange={(e) => onChangePopupPrompt("bulletize", e.target.value)}
+              className="resize-none border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] p-3"
+            />
+          </div>
+
+          <div className="flex w-full flex-col">
+            <span className="text-[12px] font-bold uppercase tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
+              Translate Prompt
+            </span>
+            <textarea
+              rows={3}
+              value={popupPrompts.translate}
+              onChange={(e) => onChangePopupPrompt("translate", e.target.value)}
+              className="resize-none border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] p-3"
+            />
+          </div>
         </div>
       </CardContent>
     </Card>

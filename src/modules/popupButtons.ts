@@ -1,4 +1,31 @@
 import { config } from "../../package.json";
+import { getPref } from "../utils/prefs";
+
+export const PROMPTS_EN = {
+  summarizeFullText:
+    "Summarize the core problem this paper addresses, its main methodology and thesis, and the key findings. Emphasize the unique contribution to the field and specify the research gap the authors aim to fill.",
+  critiqueFullText: "",
+  explainSelection:
+    "Explain the selected text as a term or concept. Provide a clear definition, explain its significance in the context of academic literature, and include an example if helpful.",
+  critiqueSelection:
+    "Critique the assumptions, methodology, and arguments of the selected text, highlighting any weaknesses, unexamined premises, and strained interpretations.",
+  bulletizeSelection: "Bulletize the selected text with concise, clear points.",
+  translateSelection:
+    "Translate the following into Chinese using formal academic nomenclature. Ensure technical terms align with standard terminology in Deep Learning/Biology/Computer Science. Output only the translation, maintaining a professional and objective tone.",
+};
+
+export const PROMPTS = {
+  summarizeFullText:
+    "请总结本文所要解决的核心问题、主要方法论、论点与关键发现，并重点阐述其方法论的独特之处",
+  critiqueFullText: "",
+  explainSelection:
+    "请你作为本对话领域的专家，先拆解选文中的专业术语与概念，给出它们的定义（如涉及交叉学科，请剥离交叉部分，还原其在原学科中的定义）；再结合选文所处的学科背景，将这些概念串联起来，阐述选文的具体含义。",
+  critiqueSelection:
+    "请对给定文本的假设、方法论与论证进行批判性分析对所选文本的假设、方法论和论证进行批判性分析，指出其中的不足之处、未经检验的前提以及牵强解释。",
+  bulletizeSelection: "将所选文本提炼为要点，每条要点保持简洁、清晰。",
+  translateSelection:
+    "请使用规范的学术术语将以下内容翻译成`中文`。确保技术术语符合`计算机科学/化学/生物学/人工智能`领域的标准表述。重要术语保留英文原文，并在括号内附上翻译。仅输出翻译结果，保持专业、客观的语气。",
+};
 
 const GROUP_ID = `${config.addonRef}-text-selection-popup-btn-group`;
 const LISTENER_ID = `${config.addonRef}-text-selection-popup-listener`;
@@ -7,17 +34,32 @@ let listenerRegistered = false;
 
 const docObservers = new Map<Document, MutationObserver>();
 
-// ── Prompts ──────────────────────────────────────────────────────────────────
+// ── Prompts (read from prefs, fallback to defaults) ──────────────────────────
 
-const PROMPTS = {
-  explainSelection:
-    "请你作为本对话领域的专家，先拆解选文中的专业术语与概念，给出它们的定义（如涉及交叉学科，请剥离交叉部分，还原其在原学科中的定义）；再结合选文所处的学科背景，将这些概念串联起来，阐述选文的具体含义。",
-  critiqueSelection:
-    "对所选文本的假设、方法论和论证进行批判性分析，指出其中的不足之处、未经检验的前提以及牵强的解读。",
-  bulletizeSelection: "将所选文本提炼为要点，每条要点保持简洁、清晰。",
-  translateSelection:
-    "使用规范的学术术语将以下内容翻译成【中文】。确保技术术语符合【计算机科学/化学/生物学/人工智能】领域的标准表述。重要术语保留英文原文，并在括号内附上【中文】翻译。仅输出翻译结果，保持专业、客观的语气。",
-};
+function getPopupPrompt(
+  key:
+    | "popupExplainPrompt"
+    | "popupCritiquePrompt"
+    | "popupBulletizePrompt"
+    | "popupTranslatePrompt",
+  defaultValue: string,
+): string {
+  const custom = getPref(key);
+  return typeof custom === "string" && custom.trim() ? custom : defaultValue;
+}
+
+function getExplainPrompt() {
+  return getPopupPrompt("popupExplainPrompt", PROMPTS.explainSelection);
+}
+function getCritiquePrompt() {
+  return getPopupPrompt("popupCritiquePrompt", PROMPTS.critiqueSelection);
+}
+function getBulletizePrompt() {
+  return getPopupPrompt("popupBulletizePrompt", PROMPTS.bulletizeSelection);
+}
+function getTranslatePrompt() {
+  return getPopupPrompt("popupTranslatePrompt", PROMPTS.translateSelection);
+}
 
 // ── Selection capture (single source of truth) ───────────────────────────────
 
@@ -26,12 +68,7 @@ export let latestSelectionAnnotation: _ZoteroTypes.Annotations.AnnotationJson | 
 
 // ── Popup action callback (SidebarPanel registers its send handler) ──────────
 
-type PopupAction =
-  | "explain"
-  | "critique"
-  | "bulletize"
-  | "translate"
-  | "insert";
+type PopupAction = "explain" | "critique" | "bulletize" | "translate" | "add";
 
 type PopupActionCallback = (
   action: PopupAction,
@@ -120,7 +157,7 @@ function tryInject(doc: Document): void {
       "Explain selection in MarginMind",
       "Explain",
       "explain",
-      PROMPTS.explainSelection,
+      getExplainPrompt(),
     ),
   );
   row1.appendChild(
@@ -129,7 +166,7 @@ function tryInject(doc: Document): void {
       "Critique selection in MarginMind",
       "Critique",
       "critique",
-      PROMPTS.critiqueSelection,
+      getCritiquePrompt(),
     ),
   );
   container.appendChild(row1);
@@ -142,7 +179,7 @@ function tryInject(doc: Document): void {
       "Bulletize selection in MarginMind",
       "Bulletize",
       "bulletize",
-      PROMPTS.bulletizeSelection,
+      getBulletizePrompt(),
     ),
   );
   row2.appendChild(
@@ -151,7 +188,7 @@ function tryInject(doc: Document): void {
       "Translate selection in MarginMind",
       "Translate",
       "translate",
-      PROMPTS.translateSelection,
+      getTranslatePrompt(),
     ),
   );
   container.appendChild(row2);
@@ -161,9 +198,9 @@ function tryInject(doc: Document): void {
   row3.appendChild(
     createSingleButton(
       doc,
-      "Insert selection to MarginMind",
-      "Insert",
-      "insert",
+      "Add selection to MarginMind",
+      "Add to MarginMind",
+      "add",
     ),
   );
   container.appendChild(row3);

@@ -128,7 +128,7 @@ export function SidebarPanel({
 
   useEffect(() => {
     registerPopupActionCallback((action, selectedText, prompt) => {
-      if (action === "insert") {
+      if (action === "add") {
         updateDraft(
           draftRef.current.trim()
             ? `${draftRef.current.trim()}\n\n${selectedText}`
