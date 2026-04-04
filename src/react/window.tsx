@@ -1,6 +1,6 @@
 import type { MarginMindReactWindow } from "./bridge";
 import { mountItemPane } from "./itemPane/mount";
-import { mountPreferences } from "./preferences/mount";
+import { mountPreferences } from "./PreferencesPanel/mount";
 import { mountSidebarPanel } from "./SidebarPanel/mount";
 import { config } from "../../package.json";
 

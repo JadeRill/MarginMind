@@ -625,16 +625,6 @@ export function PreferencesPanel() {
                       Delete ({selectedCacheIds.length})
                     </Button>
                   )}
-                  {cacheFiles.length > 0 && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleClearAllCache}
-                      className="h-7 border-[color-mix(in_srgb,_rgb(220_38_38)_30%,transparent)] text-[11px] text-red-500 hover:text-red-400"
-                    >
-                      Clear All
-                    </Button>
-                  )}
                 </div>
               </div>
 
