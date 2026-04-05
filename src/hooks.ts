@@ -5,14 +5,14 @@ import {
   PromptExampleFactory,
   UIExampleFactory,
 } from "./modules/examples";
-import {
-  registerItemPaneSection,
-  registerReaderItemPaneSection,
-  registerReaderSelectionListener,
-  unregisterReaderSelectionListener,
-  unregisterItemPaneSection,
-  unregisterReaderItemPaneSection,
-} from "./modules/itemPane";
+// import {
+//   registerItemPaneSection,
+//   registerReaderItemPaneSection,
+//   registerReaderSelectionListener,
+//   unregisterReaderSelectionListener,
+//   unregisterItemPaneSection,
+//   unregisterReaderItemPaneSection,
+// } from "./modules/itemPane";
 import {
   registerToolbarButton,
   unregisterToolbarButton,
