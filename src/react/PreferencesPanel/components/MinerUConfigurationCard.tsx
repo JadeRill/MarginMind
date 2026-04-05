@@ -116,6 +116,7 @@ export function MinerUConfigurationCard({
                     >
                       <td className="p-2">
                         <input
+                          id={`checkbox-${file.id}`}
                           type="checkbox"
                           checked={selectedCacheIds.includes(file.id)}
                           onChange={(e) =>
@@ -124,10 +125,15 @@ export function MinerUConfigurationCard({
                           className="cursor-pointer"
                         />
                       </td>
-                      <td className="truncate p-2" title={file.name}>
-                        {file.name.length > 30
-                          ? `${file.name.slice(0, 30)}...`
-                          : file.name}
+                      <td className="truncate p-0" title={file.name}>
+                        <label
+                          htmlFor={`checkbox-${file.id}`}
+                          className="block w-full cursor-pointer p-2"
+                        >
+                          {file.name.length > 30
+                            ? `${file.name.slice(0, 30)}...`
+                            : file.name}
+                        </label>
                       </td>
                       <td className="p-2 text-right text-[color-mix(in_srgb,var(--fill-primary)_60%,transparent)]">
                         {formatSize(file.size)}
