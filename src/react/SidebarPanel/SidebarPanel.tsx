@@ -111,7 +111,7 @@ export function SidebarPanel({
   } = useMessageSelection();
 
   const markdownFontSize =
-    (getPref("markdownFontSize") as string) || "text-[18px]";
+    (getPref("markdownFontSize") as string) || "text-[14px]";
   const annotationColor = getPref("annotationColor");
 
   useEffect(() => {

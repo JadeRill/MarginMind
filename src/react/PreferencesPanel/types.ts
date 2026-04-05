@@ -12,9 +12,9 @@ export type CacheFileItem = {
 
 export const FONT_SIZE_OPTIONS = [
   { value: "text-[12px]", label: "12px" },
-  { value: "text-[14px]", label: "14px" },
+  { value: "text-[14px]", label: "14px (Default)" },
   { value: "text-[16px]", label: "16px" },
-  { value: "text-[18px]", label: "18px (Default)" },
+  { value: "text-[18px]", label: "18px" },
   { value: "text-[20px]", label: "20px" },
   { value: "text-[22px]", label: "22px" },
   { value: "text-[24px]", label: "24px" },
@@ -22,5 +22,5 @@ export const FONT_SIZE_OPTIONS = [
 
 export const DEFAULT_BASE_SETTINGS: BaseSettings = {
   annotationColor: "#8000ff",
-  markdownFontSize: "text-[18px]",
+  markdownFontSize: "text-[14px]",
 };

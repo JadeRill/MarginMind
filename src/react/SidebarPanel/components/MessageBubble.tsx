@@ -22,7 +22,7 @@ function MessageBubbleInner({
   isSelected,
   onToggleSelect,
   onContextMenu,
-  markdownFontSize = "text-[18px]",
+  markdownFontSize = "text-[14px]",
 }: MessageBubbleProps) {
   return (
     <div
