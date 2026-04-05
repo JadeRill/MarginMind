@@ -1,0 +1,62 @@
+# Zotero MarginMind
+
+Zotero 插件，在侧边栏与 AI 讨论文献。选中文本即可调用解释、批判、翻译等功能。
+
+![Zotero](https://img.shields.io/badge/Zotero-8-green?style=flat-square&logo=zotero&logoColor=CC2936)[![Using Zotero Plugin Template](https://img.shields.io/badge/Using-Zotero%20Plugin%20Template-blue?style=flat-square&logo=github)](https://github.com/windingwind/zotero-plugin-template) [![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
+
+## 功能演示
+
+### AI 对话：基于文献上下文讨论
+
+![ai_discussion](./assets/ai_discussion.gif)
+
+### PDF 解析为 Markdown 注入上下文
+
+![pdf_parse_to_markdown](./assets/pdf_parse_to_markdown.gif)
+
+### 将对话消息保存为 PDF 批注
+
+![save_chat_to_selected_text](./assets/save_chat_to_selected_text.gif)
+
+
+## 能做什么
+
+- **侧边栏对话** — 点击工具栏图标打开面板，自动载入当前文献的标题、作者、摘要和 PDF 全文作为上下文
+- **文本快捷操作** — 阅读器中选中文本后弹出 Explain / Critique / Bulletize / Translate 按钮
+- **AI 批注** — 对话回复可直接保存为 PDF 批注，右键选择模式
+- **PDF → Markdown 解析** — 内置 MinerU 接入，解析结果自动缓存、自动注入对话
+- **Thinking 模式** — 自动解析推理模型的 `<thinking>` 标签
+- **多预设管理** — 保存多套 AI 配置快速切换，支持 17+ 兼容 OpenAI 协议的提供商
+
+## 安装
+
+1. 从 [Releases](https://github.com/northword/MarginMind/releases) 下载 `.xpi`
+2. Zotero → 工具 → 附加组件 → 齿轮图标 → 从文件安装
+3. 选择 `.xpi` 文件，重启 Zotero
+
+## 使用
+
+选中一篇文献 → 点击工具栏图标 → 在侧边栏输入问题。
+
+在阅读器选中文本后弹出四个分析按钮，点击即可调用 AI。
+
+## 配置
+
+编辑 → 设置 → MarginMind：
+
+- 填入 API Key、Base URL、Model 等参数（兼容 OpenAI 协议）
+- MinerU API Key 前往 [mineru.net/apiManage/token](https://mineru.net/apiManage/token) 申请
+- 可保存多套预设快速切换
+
+## 从源码构建
+
+```bash
+npm install
+npm run build
+```
+
+产物在 `.scaffold/build/marginmind-*.xpi`
+
+## 许可证
+
+[AGPL-3.0](LICENSE)
