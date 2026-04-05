@@ -91,7 +91,7 @@ export function MinerUConfigurationCard({
           </div>
 
           {cacheFiles.length > 0 ? (
-            <div className="max-h-48 overflow-y-auto rounded-md border border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)]">
+            <div className="max-h-96 overflow-y-auto rounded-md border border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)]">
               <table className="w-full text-[12px]">
                 <thead className="sticky top-0 bg-[color-mix(in_srgb,var(--material-sidepane)_95%,var(--fill-primary)_5%)]">
                   <tr>

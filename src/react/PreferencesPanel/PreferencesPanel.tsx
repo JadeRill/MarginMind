@@ -63,7 +63,7 @@ export function PreferencesPanel() {
   useEffect(() => {
     setBaseSettings({
       annotationColor: getPref("annotationColor") || "#8000ff",
-      markdownFontSize: getPref("markdownFontSize") || "text-[18px]",
+      markdownFontSize: getPref("markdownFontSize") || "text-[14px]",
     });
     setAISettings(loadAISettings());
     setPresets(loadPresets());
@@ -87,7 +87,9 @@ export function PreferencesPanel() {
 
   const loadCacheFiles = useCallback(async () => {
     const files = await listCacheFiles();
-    setCacheFiles(files);
+    setCacheFiles(
+      files.sort((a, b) => b.modified.getTime() - a.modified.getTime()),
+    );
     setSelectedCacheIds([]);
   }, []);
 
