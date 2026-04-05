@@ -38,7 +38,7 @@ async function uploadPDF(
   onProgress?: (msg: string) => void,
 ): Promise<string | null> {
   const headers = { Authorization: `Bearer ${apiKey}` };
-  const dataId = `${fileName}_${Date.now()}`;
+  const dataId = `$document_${Date.now()}`;
 
   onProgress?.("Requesting upload URL...");
 
