@@ -11,12 +11,12 @@ import {
   savePreset,
   deletePreset,
   applyPreset,
-  loadPopupPrompts,
-  savePopupPrompt,
+  loadQuickActionPrompts,
+  saveQuickActionPrompt,
   type AIPreset,
   type AIProvider,
   type AISettings,
-  type PopupPromptKey,
+  type QuickActionPromptKey,
 } from "../../modules/aiPrefs";
 import { listCacheFiles, deleteCaches } from "../../modules/markdownCache";
 import { Badge } from "@/components/ui/badge";
@@ -50,13 +50,14 @@ export function PreferencesPanel() {
   const [selectedCacheIds, setSelectedCacheIds] = useState<string[]>([]);
 
   // Popup prompts state
-  const [popupPrompts, setPopupPrompts] = useState<
-    Record<PopupPromptKey, string>
+  const [quickActionPrompts, setQuickActionPrompts] = useState<
+    Record<QuickActionPromptKey, string>
   >({
-    popupExplainPrompt: "",
-    popupCritiquePrompt: "",
-    popupBulletizePrompt: "",
-    popupTranslatePrompt: "",
+    quickActionExplainPrompt: "",
+    quickActionCritiquePrompt: "",
+    quickActionBulletizePrompt: "",
+    quickActionTranslatePrompt: "",
+    quickActionSummarizePrompt: "",
   });
 
   // Load on mount
@@ -68,7 +69,7 @@ export function PreferencesPanel() {
     setAISettings(loadAISettings());
     setPresets(loadPresets());
     setMineruApiKey(getPref("mineruApiKey") || "");
-    setPopupPrompts(loadPopupPrompts());
+    setQuickActionPrompts(loadQuickActionPrompts());
     void loadCacheFiles();
   }, []);
 
@@ -186,20 +187,21 @@ export function PreferencesPanel() {
     markSaved();
   }, [activePreset, markSaved]);
 
-  const updatePopupPrompt = useCallback(
+  const updateQuickActionPrompt = useCallback(
     (
-      key: "explain" | "critique" | "bulletize" | "translate",
+      key: "explain" | "critique" | "bulletize" | "translate" | "summarize",
       value: string,
     ) => {
-      const keyMap: Record<typeof key, PopupPromptKey> = {
-        explain: "popupExplainPrompt",
-        critique: "popupCritiquePrompt",
-        bulletize: "popupBulletizePrompt",
-        translate: "popupTranslatePrompt",
+      const keyMap: Record<typeof key, QuickActionPromptKey> = {
+        explain: "quickActionExplainPrompt",
+        critique: "quickActionCritiquePrompt",
+        bulletize: "quickActionBulletizePrompt",
+        translate: "quickActionTranslatePrompt",
+        summarize: "quickActionSummarizePrompt",
       };
       const prefKey = keyMap[key];
-      setPopupPrompts((prev) => ({ ...prev, [prefKey]: value }));
-      savePopupPrompt(prefKey, value);
+      setQuickActionPrompts((prev) => ({ ...prev, [prefKey]: value }));
+      saveQuickActionPrompt(prefKey, value);
       markSaved();
     },
     [markSaved],
@@ -263,13 +265,14 @@ export function PreferencesPanel() {
           onCancelSaveInput={() => setShowSaveInput(false)}
           onChangeProvider={changeProvider}
           onChangeAISetting={updateAISetting}
-          popupPrompts={{
-            explain: popupPrompts.popupExplainPrompt,
-            critique: popupPrompts.popupCritiquePrompt,
-            bulletize: popupPrompts.popupBulletizePrompt,
-            translate: popupPrompts.popupTranslatePrompt,
+          quickActionPrompts={{
+            explain: quickActionPrompts.quickActionExplainPrompt,
+            critique: quickActionPrompts.quickActionCritiquePrompt,
+            bulletize: quickActionPrompts.quickActionBulletizePrompt,
+            translate: quickActionPrompts.quickActionTranslatePrompt,
+            summarize: quickActionPrompts.quickActionSummarizePrompt,
           }}
-          onChangePopupPrompt={updatePopupPrompt}
+          onChangeQuickActionPrompt={updateQuickActionPrompt}
         />
 
         <MinerUConfigurationCard

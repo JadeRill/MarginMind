@@ -1,4 +1,3 @@
-import { PROMPTS } from "./popupButtons";
 import { getPref, setPref } from "../utils/prefs";
 
 type PluginPrefsMap = _ZoteroTypes.Prefs["PluginPrefsMap"];
@@ -114,6 +113,23 @@ const DEFAULT_MODEL_MAP: Record<AIProvider, string> = {
   openaiCompatible: "",
 };
 
+export const PROMPTS_EN = {};
+
+export const PROMPTS = {
+  // systemPrompt: "You are MarginMind, an academic research assistant. Give precise, structured, and evidence-oriented answers based on the provided paper context. (Respond in the user's language)",
+  systemPrompt: "",
+  critiqueFullText: "",
+  explainSelection:
+    "请你作为本对话领域的专家，先拆解选文中的专业术语与概念，给出它们的定义（如涉及交叉学科，请剥离交叉部分，还原其在原学科中的定义）；再结合选文所处的学科背景，将这些概念串联起来，阐述选文的具体含义。",
+  critiqueSelection:
+    "请对给定文本的假设、方法论与论证进行批判性分析对所选文本的假设、方法论和论证进行批判性分析，指出其中的不足之处、未经检验的前提以及牵强解释。",
+  bulletizeSelection: "将所选文本提炼为要点，每条要点保持简洁、清晰。",
+  translateSelection:
+    "请使用规范的学术术语将以下内容翻译成`中文`。确保技术术语符合`计算机科学/化学/生物学/人工智能`领域的标准表述。重要术语保留英文原文，并在括号内附上翻译。仅输出翻译结果，保持专业、客观的语气。",
+  summarizeFullText:
+    "请总结本文所要解决的核心问题、主要方法论、论点与关键发现，并重点阐述其方法论的独特之处。",
+};
+
 export const AI_DEFAULTS: AISettings = {
   provider: "openrouter",
   apiKey: "",
@@ -121,9 +137,7 @@ export const AI_DEFAULTS: AISettings = {
   model: DEFAULT_MODEL_MAP.openrouter,
   temperature: 0.2,
   maxTokens: 8192,
-  systemPrompt:
-    // "You are MarginMind, an academic research assistant. Give precise, structured, and evidence-oriented answers based on the provided paper context. (Respond in the user's language)",
-    "",
+  systemPrompt: PROMPTS.systemPrompt,
 };
 
 export function getDefaultBaseURL(provider: AIProvider): string {
@@ -263,43 +277,52 @@ export function applyPreset(preset: AIPreset) {
   saveAISetting("systemPrompt", s.systemPrompt);
 }
 
-// ─── Popup Prompts ─────────────────────────────────────────────────────────────
+export type QuickActionPromptKey =
+  | "quickActionExplainPrompt"
+  | "quickActionCritiquePrompt"
+  | "quickActionBulletizePrompt"
+  | "quickActionTranslatePrompt"
+  | "quickActionSummarizePrompt";
 
-export type PopupPromptKey =
-  | "popupExplainPrompt"
-  | "popupCritiquePrompt"
-  | "popupBulletizePrompt"
-  | "popupTranslatePrompt";
-
-export const POPUP_PROMPT_DEFAULTS: Record<PopupPromptKey, string> = {
-  popupExplainPrompt: PROMPTS.explainSelection,
-  popupCritiquePrompt: PROMPTS.critiqueSelection,
-  popupBulletizePrompt: PROMPTS.bulletizeSelection,
-  popupTranslatePrompt: PROMPTS.translateSelection,
+export const QUICK_ACTION_PROMPT_DEFAULTS: Record<
+  QuickActionPromptKey,
+  string
+> = {
+  quickActionExplainPrompt: PROMPTS.explainSelection,
+  quickActionCritiquePrompt: PROMPTS.critiqueSelection,
+  quickActionBulletizePrompt: PROMPTS.bulletizeSelection,
+  quickActionTranslatePrompt: PROMPTS.translateSelection,
+  quickActionSummarizePrompt: PROMPTS.summarizeFullText,
 };
 
-export function loadPopupPrompts(): Record<PopupPromptKey, string> {
+export function loadQuickActionPrompts(): Record<QuickActionPromptKey, string> {
   return {
-    popupExplainPrompt:
-      (getPref("popupExplainPrompt") as string) ||
-      POPUP_PROMPT_DEFAULTS.popupExplainPrompt,
-    popupCritiquePrompt:
-      (getPref("popupCritiquePrompt") as string) ||
-      POPUP_PROMPT_DEFAULTS.popupCritiquePrompt,
-    popupBulletizePrompt:
-      (getPref("popupBulletizePrompt") as string) ||
-      POPUP_PROMPT_DEFAULTS.popupBulletizePrompt,
-    popupTranslatePrompt:
-      (getPref("popupTranslatePrompt") as string) ||
-      POPUP_PROMPT_DEFAULTS.popupTranslatePrompt,
+    quickActionExplainPrompt:
+      (getPref("quickActionExplainPrompt") as string) ||
+      QUICK_ACTION_PROMPT_DEFAULTS.quickActionExplainPrompt,
+    quickActionCritiquePrompt:
+      (getPref("quickActionCritiquePrompt") as string) ||
+      QUICK_ACTION_PROMPT_DEFAULTS.quickActionCritiquePrompt,
+    quickActionBulletizePrompt:
+      (getPref("quickActionBulletizePrompt") as string) ||
+      QUICK_ACTION_PROMPT_DEFAULTS.quickActionBulletizePrompt,
+    quickActionTranslatePrompt:
+      (getPref("quickActionTranslatePrompt") as string) ||
+      QUICK_ACTION_PROMPT_DEFAULTS.quickActionTranslatePrompt,
+    quickActionSummarizePrompt:
+      (getPref("quickActionSummarizePrompt") as string) ||
+      QUICK_ACTION_PROMPT_DEFAULTS.quickActionSummarizePrompt,
   };
 }
 
-export function savePopupPrompt(key: PopupPromptKey, value: string) {
+export function saveQuickActionPrompt(
+  key: QuickActionPromptKey,
+  value: string,
+) {
   setPref(key, value);
 }
 
-// export function resetPopupPrompts() {
+// export function resetQuickActionPrompt() {
 //   (Object.keys(POPUP_PROMPT_DEFAULTS) as PopupPromptKey[]).forEach((key) => {
 //     setPref(key, POPUP_PROMPT_DEFAULTS[key]);
 //   });

@@ -8,11 +8,11 @@ import {
   applyPreset,
   loadAISettings,
 } from "../../../modules/aiPrefs";
-import { PROMPTS } from "../../../modules/popupButtons";
 import { MarkdownParseButton } from "./MarkdownParseButton";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { encodingForModel } from "js-tiktoken";
 import type { ChatMessage } from "../hooks/useChatSession";
+import { getSummarizePrompt } from "../../../modules/popupButtons";
 
 interface InputAreaProps {
   draft: string;
@@ -160,7 +160,7 @@ export function InputArea({
         <Button
           size="xs"
           variant="outline"
-          onClick={() => onSend(PROMPTS.summarizeFullText)}
+          onClick={() => onSend(getSummarizePrompt())}
           disabled={isSending || isSelectionMode}
           className="rounded-full border-[1px] border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_88%,var(--fill-primary)_8%)] px-2 text-[12px] text-[color-mix(in_srgb,var(--fill-primary)_78%,transparent)]"
         >
@@ -197,7 +197,7 @@ export function InputArea({
             value={draft}
             onChange={(e) => onDraftChange(e.target.value)}
             onKeyDown={handleKeyDown}
-            disabled={isSending || isSelectionMode}
+            // disabled={isSending || isSelectionMode}
             className="w-full resize-none border-[color-mix(in_srgb,var(--fill-primary)_16%,transparent)] bg-transparent text-[14px] leading-6 text-[var(--fill-primary)] placeholder:text-[color-mix(in_srgb,var(--fill-primary)_38%,transparent)]"
           />
 

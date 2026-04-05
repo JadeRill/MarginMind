@@ -7,20 +7,21 @@
 declare namespace _ZoteroTypes {
   interface Prefs {
     PluginPrefsMap: {
+      "annotationColor": string;
+      "markdownFontSize": string;
+      "aiPresets": string;
       "aiProvider": string;
-      "aiApiKey": string;
       "aiBaseURL": string;
+      "aiApiKey": string;
       "aiModel": string;
       "aiTemperature": string;
       "aiMaxTokens": number;
-      "annotationColor": string;
       "aiSystemPrompt": string;
-      "popupExplainPrompt": string;
-      "popupCritiquePrompt": string;
-      "popupBulletizePrompt": string;
-      "popupTranslatePrompt": string;
-      "aiPresets": string;
-      "markdownFontSize": string;
+      "quickActionExplainPrompt": string;
+      "quickActionCritiquePrompt": string;
+      "quickActionBulletizePrompt": string;
+      "quickActionTranslatePrompt": string;
+      "quickActionSummarizePrompt": string;
       "mineruApiKey": string;
     };
   }

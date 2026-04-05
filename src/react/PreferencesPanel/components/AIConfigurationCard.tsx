@@ -30,14 +30,15 @@ type AIConfigurationCardProps = {
     key: K,
     value: AISettings[K],
   ) => void;
-  popupPrompts: {
+  quickActionPrompts: {
     explain: string;
     critique: string;
     bulletize: string;
     translate: string;
+    summarize: string;
   };
-  onChangePopupPrompt: (
-    key: "explain" | "critique" | "bulletize" | "translate",
+  onChangeQuickActionPrompt: (
+    key: "explain" | "critique" | "bulletize" | "translate" | "summarize",
     value: string,
   ) => void;
 };
@@ -57,8 +58,8 @@ export function AIConfigurationCard({
   onCancelSaveInput,
   onChangeProvider,
   onChangeAISetting,
-  popupPrompts,
-  onChangePopupPrompt,
+  quickActionPrompts,
+  onChangeQuickActionPrompt,
 }: AIConfigurationCardProps) {
   const presetOptions = [
     { value: "", label: "-- No Preset --" },
@@ -254,8 +255,10 @@ export function AIConfigurationCard({
             </span>
             <textarea
               rows={3}
-              value={popupPrompts.explain}
-              onChange={(e) => onChangePopupPrompt("explain", e.target.value)}
+              value={quickActionPrompts.explain}
+              onChange={(e) =>
+                onChangeQuickActionPrompt("explain", e.target.value)
+              }
               className="resize-none border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] p-3"
             />
           </div>
@@ -266,8 +269,10 @@ export function AIConfigurationCard({
             </span>
             <textarea
               rows={3}
-              value={popupPrompts.critique}
-              onChange={(e) => onChangePopupPrompt("critique", e.target.value)}
+              value={quickActionPrompts.critique}
+              onChange={(e) =>
+                onChangeQuickActionPrompt("critique", e.target.value)
+              }
               className="resize-none border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] p-3"
             />
           </div>
@@ -278,8 +283,10 @@ export function AIConfigurationCard({
             </span>
             <textarea
               rows={3}
-              value={popupPrompts.bulletize}
-              onChange={(e) => onChangePopupPrompt("bulletize", e.target.value)}
+              value={quickActionPrompts.bulletize}
+              onChange={(e) =>
+                onChangeQuickActionPrompt("bulletize", e.target.value)
+              }
               className="resize-none border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] p-3"
             />
           </div>
@@ -290,8 +297,24 @@ export function AIConfigurationCard({
             </span>
             <textarea
               rows={3}
-              value={popupPrompts.translate}
-              onChange={(e) => onChangePopupPrompt("translate", e.target.value)}
+              value={quickActionPrompts.translate}
+              onChange={(e) =>
+                onChangeQuickActionPrompt("translate", e.target.value)
+              }
+              className="resize-none border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] p-3"
+            />
+          </div>
+
+          <div className="flex w-full flex-col gap-1">
+            <span className="text-[12px] font-bold tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
+              Summarize Prompt
+            </span>
+            <textarea
+              rows={3}
+              value={quickActionPrompts.summarize}
+              onChange={(e) =>
+                onChangeQuickActionPrompt("summarize", e.target.value)
+              }
               className="resize-none border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] p-3"
             />
           </div>
