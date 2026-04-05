@@ -105,6 +105,24 @@ function createSingleButton(
   btn.innerHTML = label;
   btn.className = "highlight";
   btn.style.cursor = "pointer";
+  btn.style.borderRadius = "4px";
+  btn.style.transition = "background-color 0.15s, transform 0.1s ease";
+  btn.onmouseenter = () => {
+    btn.style.backgroundColor = "rgba(100, 100, 100, 0.1)";
+  };
+  btn.onmouseleave = () => {
+    btn.style.backgroundColor = "transparent";
+    btn.style.transform = "scale(1)"; // 确保离开时完全重置
+  };
+  btn.onmousedown = () => {
+    btn.style.backgroundColor = "rgba(100, 100, 100, 0.2)";
+    btn.style.transform = "scale(0.9)"; // 缩小到 0.92 效果会比 0.95 更明显一点点
+  };
+
+  btn.onmouseup = () => {
+    btn.style.backgroundColor = "rgba(100, 100, 100, 0.1)";
+    btn.style.transform = "scale(1)";
+  };
   btn.onclick = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -151,6 +169,7 @@ function tryInject(doc: Document): void {
 
   const row1 = doc.createElement("div");
   row1.className = "tool-toggle";
+  row1.style.marginBottom = "8px";
   row1.appendChild(
     createSingleButton(
       doc,
@@ -173,6 +192,7 @@ function tryInject(doc: Document): void {
 
   const row2 = doc.createElement("div");
   row2.className = "tool-toggle";
+  row2.style.marginBottom = "8px";
   row2.appendChild(
     createSingleButton(
       doc,
