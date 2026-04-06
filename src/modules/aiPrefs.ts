@@ -244,10 +244,7 @@ export function saveAISetting<K extends keyof AISettings>(
       const prompts = value as AISettings["quickActionPrompts"];
       setPref("quickActionExplainPrompt", prompts.quickActionExplainPrompt);
       setPref("quickActionCritiquePrompt", prompts.quickActionCritiquePrompt);
-      setPref(
-        "quickActionBulletizePrompt",
-        prompts.quickActionBulletizePrompt,
-      );
+      setPref("quickActionBulletizePrompt", prompts.quickActionBulletizePrompt);
       setPref("quickActionTranslatePrompt", prompts.quickActionTranslatePrompt);
       setPref("quickActionSummarizePrompt", prompts.quickActionSummarizePrompt);
       break;
