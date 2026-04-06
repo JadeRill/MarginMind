@@ -84,173 +84,141 @@ export function AIConfigurationCard({
       </CardHeader>
 
       <CardContent className="flex flex-col justify-between gap-4 p-0">
-        <div className="flex w-full flex-col gap-1">
-          <span className="text-[12px] font-bold tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
-            Preset
-          </span>
-          <div className="flex items-center gap-2">
-            <div className="flex-1">
-              <CustomDropdown
-                value={activePreset}
-                options={presetOptions}
-                onChange={onApplyPreset}
-              />
-            </div>
-            {activePreset ? (
+        <div className="flex flex-col gap-4">
+          <div className="flex w-full flex-col gap-1">
+            <span className="text-[12px] font-bold tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
+              Preset
+            </span>
+            <div className="flex items-center gap-2">
+              <div className="flex-1">
+                <CustomDropdown
+                  value={activePreset}
+                  options={presetOptions}
+                  onChange={onApplyPreset}
+                />
+              </div>
+              {activePreset ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onDeletePreset}
+                  className="h-9 shrink-0 border-[color-mix(in_srgb,_rgb(220_38_38)_30%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[12px] text-red-500 hover:text-red-400"
+                >
+                  Delete
+                </Button>
+              ) : null}
               <Button
                 variant="outline"
                 size="sm"
-                onClick={onDeletePreset}
-                className="h-9 shrink-0 border-[color-mix(in_srgb,_rgb(220_38_38)_30%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[12px] text-red-500 hover:text-red-400"
+                onClick={onExportPresets}
+                className="h-9 shrink-0 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[12px]"
               >
-                Delete
+                Export
               </Button>
-            ) : null}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onExportPresets}
-              className="h-9 shrink-0 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[12px]"
-            >
-              Export
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onImportPresets}
-              className="h-9 shrink-0 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[12px]"
-            >
-              Import
-            </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onImportPresets}
+                className="h-9 shrink-0 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[12px]"
+              >
+                Import
+              </Button>
+            </div>
           </div>
         </div>
 
         <Separator className="bg-[color-mix(in_srgb,var(--fill-primary)_14%,transparent)]" />
 
-        <div className="flex w-full flex-col gap-1">
-          <span className="text-[12px] font-bold tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
-            Provider
-          </span>
-          <CustomDropdown
-            value={aiSettings.provider}
-            options={AI_PROVIDER_OPTIONS.map((o) => ({
-              value: o.value,
-              label: o.label,
-            }))}
-            onChange={onChangeProvider}
-          />
-        </div>
-
-        <div className="flex w-full flex-col gap-1">
-          <span className="text-[12px] font-bold tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
-            Base URL
-          </span>
-          <input
-            value={aiSettings.baseURL}
-            onChange={(e) => onChangeAISetting("baseURL", e.target.value)}
-            placeholder={getDefaultBaseURL(aiSettings.provider)}
-            className="h-9 border-[1px] border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)]"
-          />
-        </div>
-
-        <div className="flex w-full flex-col gap-1">
-          <span className="text-[12px] font-bold tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
-            API Key
-          </span>
-          <input
-            type="password"
-            value={aiSettings.apiKey}
-            onChange={(e) => onChangeAISetting("apiKey", e.target.value)}
-            placeholder="API key"
-            className="h-9 border-[1px] border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)]"
-          />
-        </div>
-
-        <div className="flex w-full flex-col gap-1">
-          <span className="text-[12px] font-bold tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
-            Model
-          </span>
-          <input
-            value={aiSettings.model}
-            onChange={(e) => onChangeAISetting("model", e.target.value)}
-            placeholder={getDefaultModel(aiSettings.provider)}
-            className="h-9 border-[1px] border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)]"
-          />
-        </div>
-
-        <div className="flex w-full items-center gap-2">
-          <div className="flex flex-1 flex-col gap-1">
+        <div className="flex flex-col gap-4">
+          <div className="flex w-full flex-col gap-1">
             <span className="text-[12px] font-bold tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
-              Temperature
+              Provider
             </span>
-            <input
-              type="number"
-              value={aiSettings.temperature}
-              min={0}
-              max={2}
-              step={0.1}
-              onChange={(e) =>
-                onChangeAISetting(
-                  "temperature",
-                  parseFloat(e.target.value || "0"),
-                )
-              }
-              className="h-9 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] font-mono text-[var(--fill-primary)]"
+            <CustomDropdown
+              value={aiSettings.provider}
+              options={AI_PROVIDER_OPTIONS.map((o) => ({
+                value: o.value,
+                label: o.label,
+              }))}
+              onChange={onChangeProvider}
             />
           </div>
 
-          <div className="flex flex-1 flex-col gap-1">
+          <div className="flex w-full flex-col gap-1">
             <span className="text-[12px] font-bold tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
-              Max Tokens
+              Base URL
             </span>
             <input
-              type="number"
-              value={aiSettings.maxTokens}
-              onChange={(e) =>
-                onChangeAISetting(
-                  "maxTokens",
-                  parseInt(e.target.value || "1", 10),
-                )
-              }
-              className="h-9 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] font-mono text-[var(--fill-primary)]"
+              value={aiSettings.baseURL}
+              onChange={(e) => onChangeAISetting("baseURL", e.target.value)}
+              placeholder={getDefaultBaseURL(aiSettings.provider)}
+              className="h-9 border-[1px] border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)]"
             />
           </div>
-        </div>
 
-        <div className="flex items-center gap-2">
-          {showSaveInput ? (
-            <>
+          <div className="flex w-full flex-col gap-1">
+            <span className="text-[12px] font-bold tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
+              API Key
+            </span>
+            <input
+              type="password"
+              value={aiSettings.apiKey}
+              onChange={(e) => onChangeAISetting("apiKey", e.target.value)}
+              placeholder="API key"
+              className="h-9 border-[1px] border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)]"
+            />
+          </div>
+
+          <div className="flex w-full flex-col gap-1">
+            <span className="text-[12px] font-bold tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
+              Model
+            </span>
+            <input
+              value={aiSettings.model}
+              onChange={(e) => onChangeAISetting("model", e.target.value)}
+              placeholder={getDefaultModel(aiSettings.provider)}
+              className="h-9 border-[1px] border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)]"
+            />
+          </div>
+
+          <div className="flex w-full items-center gap-2">
+            <div className="flex flex-1 flex-col gap-1">
+              <span className="text-[12px] font-bold tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
+                Temperature
+              </span>
               <input
-                value={saveName}
-                onChange={(e) => onChangeSaveName(e.target.value)}
-                placeholder="Preset name"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") onSavePreset();
-                  if (e.key === "Escape") onCancelSaveInput();
-                }}
-                className="h-9 flex-1 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)]"
+                type="number"
+                value={aiSettings.temperature}
+                min={0}
+                max={2}
+                step={0.1}
+                onChange={(e) =>
+                  onChangeAISetting(
+                    "temperature",
+                    parseFloat(e.target.value || "0"),
+                  )
+                }
+                className="h-9 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] font-mono text-[var(--fill-primary)]"
               />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onSavePreset}
-                className="h-9 w-48 shrink-0 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[12px]"
-              >
-                Save as Preset
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onStartSavePreset}
-                className="h-9 flex-1 shrink-0 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[12px]"
-              >
-                Save as Preset
-              </Button>
-            </>
-          )}
+            </div>
+
+            <div className="flex flex-1 flex-col gap-1">
+              <span className="text-[12px] font-bold tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
+                Max Tokens
+              </span>
+              <input
+                type="number"
+                value={aiSettings.maxTokens}
+                onChange={(e) =>
+                  onChangeAISetting(
+                    "maxTokens",
+                    parseInt(e.target.value || "1", 10),
+                  )
+                }
+                className="h-9 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] font-mono text-[var(--fill-primary)]"
+              />
+            </div>
+          </div>
         </div>
 
         <Separator className="bg-[color-mix(in_srgb,var(--fill-primary)_14%,transparent)]" />
@@ -269,8 +237,6 @@ export function AIConfigurationCard({
               className="resize-none border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] p-3"
             />
           </div>
-
-          <Separator className="bg-[color-mix(in_srgb,var(--fill-primary)_14%,transparent)]" />
 
           <div className="flex w-full flex-col gap-1">
             <span className="text-[12px] font-bold tracking-wider text-[color-mix(in_srgb,var(--fill-primary)_50%,transparent)]">
@@ -341,6 +307,44 @@ export function AIConfigurationCard({
               className="resize-none border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] p-3"
             />
           </div>
+        </div>
+
+        <Separator className="bg-[color-mix(in_srgb,var(--fill-primary)_14%,transparent)]" />
+
+        <div className="flex items-center gap-2">
+          {showSaveInput ? (
+            <>
+              <input
+                value={saveName}
+                onChange={(e) => onChangeSaveName(e.target.value)}
+                placeholder="Preset name"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") onSavePreset();
+                  if (e.key === "Escape") onCancelSaveInput();
+                }}
+                className="h-9 flex-1 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)]"
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onSavePreset}
+                className="h-9 w-48 shrink-0 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[12px]"
+              >
+                Save as Preset
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onStartSavePreset}
+                className="h-9 flex-1 shrink-0 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[12px]"
+              >
+                Save as Preset
+              </Button>
+            </>
+          )}
         </div>
       </CardContent>
     </Card>

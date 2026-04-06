@@ -9,7 +9,7 @@
 function getCacheDir(): string {
   const zoteroDataDir = Zotero.DataDirectory.dir;
   // PathUtils 是目前最新的推荐标准
-  const cacheDir = PathUtils.join(zoteroDataDir, "mineru_cache");
+  const cacheDir = PathUtils.join(zoteroDataDir, "marginmind");
   // console.log("cacheDir", cacheDir);
   return cacheDir;
 }
