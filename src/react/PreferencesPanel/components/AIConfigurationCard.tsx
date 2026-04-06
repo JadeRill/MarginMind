@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+// import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import {
   AI_PROVIDER_OPTIONS,
@@ -23,6 +23,8 @@ type AIConfigurationCardProps = {
   onStartSavePreset: () => void;
   onSavePreset: () => void;
   onDeletePreset: () => void;
+  onExportPresets: () => void;
+  onImportPresets: () => void;
   onChangeSaveName: (value: string) => void;
   onCancelSaveInput: () => void;
   onChangeProvider: (provider: AIProvider) => void;
@@ -54,6 +56,8 @@ export function AIConfigurationCard({
   onStartSavePreset,
   onSavePreset,
   onDeletePreset,
+  onExportPresets,
+  onImportPresets,
   onChangeSaveName,
   onCancelSaveInput,
   onChangeProvider,
@@ -92,49 +96,32 @@ export function AIConfigurationCard({
                 onChange={onApplyPreset}
               />
             </div>
-            {showSaveInput ? (
-              <>
-                <Input
-                  value={saveName}
-                  onChange={(e) => onChangeSaveName(e.target.value)}
-                  placeholder="Preset name"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") onSavePreset();
-                    if (e.key === "Escape") onCancelSaveInput();
-                  }}
-                  className="h-6 w-48 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)]"
-                />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={onSavePreset}
-                  className="h-8 shrink-0 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[12px]"
-                >
-                  Save
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={onStartSavePreset}
-                  className="h-8 shrink-0 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[12px]"
-                >
-                  Save
-                </Button>
-                {activePreset ? (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={onDeletePreset}
-                    className="h-8 shrink-0 border-[color-mix(in_srgb,_rgb(220_38_38)_30%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[12px] text-red-500 hover:text-red-400"
-                  >
-                    Delete
-                  </Button>
-                ) : null}
-              </>
-            )}
+            {activePreset ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onDeletePreset}
+                className="h-9 shrink-0 border-[color-mix(in_srgb,_rgb(220_38_38)_30%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[12px] text-red-500 hover:text-red-400"
+              >
+                Delete
+              </Button>
+            ) : null}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onExportPresets}
+              className="h-9 shrink-0 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[12px]"
+            >
+              Export
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onImportPresets}
+              className="h-9 shrink-0 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[12px]"
+            >
+              Import
+            </Button>
           </div>
         </div>
 
@@ -228,6 +215,42 @@ export function AIConfigurationCard({
               className="h-9 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] font-mono text-[var(--fill-primary)]"
             />
           </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {showSaveInput ? (
+            <>
+              <input
+                value={saveName}
+                onChange={(e) => onChangeSaveName(e.target.value)}
+                placeholder="Preset name"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") onSavePreset();
+                  if (e.key === "Escape") onCancelSaveInput();
+                }}
+                className="h-9 flex-1 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)]"
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onSavePreset}
+                className="h-9 w-48 shrink-0 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[12px]"
+              >
+                Save as Preset
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onStartSavePreset}
+                className="h-9 flex-1 shrink-0 border-[color-mix(in_srgb,var(--fill-primary)_18%,transparent)] bg-[color-mix(in_srgb,var(--material-sidepane)_84%,var(--fill-primary)_8%)] text-[12px]"
+              >
+                Save as Preset
+              </Button>
+            </>
+          )}
         </div>
 
         <Separator className="bg-[color-mix(in_srgb,var(--fill-primary)_14%,transparent)]" />

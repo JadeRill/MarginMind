@@ -30,6 +30,22 @@ import {
   type CacheFileItem,
 } from "./types";
 
+function isValidPreset(value: unknown): value is AIPreset {
+  if (!value || typeof value !== "object") return false;
+  const v = value as { name?: unknown; settings?: unknown };
+  return (
+    typeof v.name === "string" && !!v.settings && typeof v.settings === "object"
+  );
+}
+
+// function notify(message: string) {
+//   if (typeof globalThis.alert === "function") {
+//     globalThis.alert(message);
+//     return;
+//   }
+//   console.warn(message);
+// }
+
 export function PreferencesPanel() {
   const [baseSettings, setBaseSettings] = useState<BaseSettings>(
     DEFAULT_BASE_SETTINGS,
@@ -37,6 +53,7 @@ export function PreferencesPanel() {
   const [aiSettings, setAISettings] = useState<AISettings>(AI_DEFAULTS);
   const [status, setStatus] = useState<"idle" | "saved">("idle");
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const importPresetsInputRef = useRef<HTMLInputElement | null>(null);
 
   // Preset state
   const [presets, setPresets] = useState<AIPreset[]>([]);
@@ -187,6 +204,89 @@ export function PreferencesPanel() {
     markSaved();
   }, [activePreset, markSaved]);
 
+  const handleExportPresets = useCallback(async () => {
+    try {
+      // 保存在 Zotero 数据目录下
+      const dirPath = PathUtils.join(Zotero.DataDirectory.dir, "marginmind");
+      const filePath = PathUtils.join(dirPath, "presets.json");
+
+      // Zotero 7/8 推荐使用 IOUtils
+      await IOUtils.makeDirectory(dirPath, { ignoreExisting: true });
+
+      // 直接写入
+      await Zotero.File.putContentsAsync(
+        filePath,
+        JSON.stringify(presets, null, 2),
+      );
+
+      Zotero.alert(
+        window,
+        "Export Successful",
+        `Presets have been saved to:\n${filePath}`,
+      );
+
+      return filePath;
+    } catch (e) {
+      // 给用户一个错误反馈
+      Zotero.alert(
+        window,
+        "Export Failed",
+        `An error occurred while exporting: ${(e as Error).message}`,
+      );
+      throw e;
+    }
+  }, [presets, markSaved]);
+
+  const handleStartImportPresets = useCallback(() => {
+    importPresetsInputRef.current?.click();
+  }, []);
+
+  const handleImportPresets = useCallback(
+    async (event: { target: HTMLInputElement }) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      try {
+        const text = await file.text();
+        const parsed = JSON.parse(text) as unknown;
+
+        if (!Array.isArray(parsed)) {
+          Zotero.alert(window, "Import Failed", "JSON root must be an array.");
+          return;
+        }
+
+        const imported = parsed.filter(isValidPreset);
+        if (!imported.length) {
+          Zotero.alert(window, "Import Failed", "No valid presets found.");
+          return;
+        }
+
+        for (const preset of imported) {
+          savePreset(preset.name.trim(), preset.settings as AISettings);
+        }
+
+        const nextPresets = loadPresets();
+        setPresets(nextPresets);
+
+        if (activePreset && !nextPresets.some((p) => p.name === activePreset)) {
+          setActivePreset("");
+        }
+
+        markSaved();
+        Zotero.alert(
+          window,
+          "Import Successful",
+          `${imported.length} presets imported.`,
+        );
+      } catch {
+        Zotero.alert(window, "Import Failed", "Invalid JSON file.");
+      } finally {
+        event.target.value = "";
+      }
+    },
+    [activePreset, markSaved],
+  );
+
   const updateQuickActionPrompt = useCallback(
     (
       key: "explain" | "critique" | "bulletize" | "translate" | "summarize",
@@ -261,6 +361,8 @@ export function PreferencesPanel() {
           }}
           onSavePreset={handleSavePreset}
           onDeletePreset={handleDeletePreset}
+          onExportPresets={handleExportPresets}
+          onImportPresets={handleStartImportPresets}
           onChangeSaveName={setSaveName}
           onCancelSaveInput={() => setShowSaveInput(false)}
           onChangeProvider={changeProvider}
@@ -273,6 +375,14 @@ export function PreferencesPanel() {
             summarize: quickActionPrompts.quickActionSummarizePrompt,
           }}
           onChangeQuickActionPrompt={updateQuickActionPrompt}
+        />
+
+        <input
+          ref={importPresetsInputRef}
+          type="file"
+          accept="application/json,.json"
+          className="hidden" // 隐藏原生的文件选择框，使用按钮触发其操作
+          onChange={(e) => void handleImportPresets({ target: e.target })}
         />
 
         <MinerUConfigurationCard
