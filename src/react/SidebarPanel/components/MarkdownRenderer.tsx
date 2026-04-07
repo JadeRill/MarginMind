@@ -84,7 +84,7 @@ export const mdComponents: React.ComponentProps<typeof Markdown>["components"] =
         <table
           {...props}
           className={cn(
-            "w-full border-collapse border border-[color-mix(in_srgb,var(--fill-primary)_20%,transparent)] text-[13px]",
+            "w-full border-collapse border border-[color-mix(in_srgb,var(--fill-primary)_20%,transparent)] text-[0.85em]",
             props.className,
           )}
         />
