@@ -134,6 +134,22 @@ const clearAllFromDb = async () => {
   await database.queryAsync(`DELETE FROM ${DB_TABLE}`);
 };
 
+export async function cleanupEmptySessions() {
+  const db = await getDb();
+  try {
+    // 插件启动的时候清理 messages 为 '[]'、NULL 或者长度为 0 的session
+    await db.queryAsync(`
+      DELETE FROM sessions 
+      WHERE messages IS NULL 
+         OR messages = '[]' 
+         OR messages = ''
+    `);
+    ztoolkit.log("MarginMind: Cleaned up empty sessions from database.");
+  } catch (e) {
+    ztoolkit.log("MarginMind: Failed to cleanup sessions: " + e);
+  }
+}
+
 const seedState = async (
   data: SidebarPanelData | null,
 ): Promise<PersistedState> => {

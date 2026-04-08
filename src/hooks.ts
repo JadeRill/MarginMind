@@ -26,6 +26,7 @@ import {
   unregisterAllSidebarPanels,
   unregisterSidebarPanel,
 } from "./modules/sidebarPanel";
+import { cleanupEmptySessions } from "./react/SidebarPanel/hooks/useChatSession";
 import { getString, initLocale } from "./utils/locale";
 import {
   registerPrefsScripts,
@@ -63,6 +64,9 @@ async function onStartup() {
   // registerItemPaneSection();
   // registerReaderItemPaneSection();
   // registerReaderSelectionListener();
+
+  // 在 UI 加载前清理数据库
+  await cleanupEmptySessions();
 
   await Promise.all(
     Zotero.getMainWindows().map((win) => onMainWindowLoad(win)),
